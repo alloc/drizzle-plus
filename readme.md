@@ -45,8 +45,10 @@ A collection of useful utilities and extensions for Drizzle ORM.
 Import the `count` module to extend the query builder API with a `count` method.
 
 ```ts
-// Import your dialect
+// Choose your dialect
 import 'drizzle-plus/pg/count'
+import 'drizzle-plus/mysql/count'
+import 'drizzle-plus/sqlite/count'
 
 // Now you can use the `count` method
 const count = db.query.foo.count()
@@ -70,6 +72,35 @@ console.log(count.toSQL())
 ### Everything else
 
 The other functions are pretty self-explanatory. More documentation will be added in the future.
+
+```ts
+// Universal imports
+import { caseWhen, literal, nest } from 'drizzle-plus'
+
+// Postgres imports
+import { jsonAgg, toJsonObject } from 'drizzle-plus/pg'
+
+// MySQL imports
+import { jsonArrayAgg, toJsonObject } from 'drizzle-plus/mysql'
+
+// SQLite imports
+import { jsonGroupArray, toJsonObject } from 'drizzle-plus/sqlite'
+```
+
+You may find these types useful:
+
+```ts
+import {
+  InferWhereFilter,
+  InferFindManyArgs,
+  InferFindFirstArgs,
+} from 'drizzle-plus/types'
+
+// Pass the query builder to the type
+type WhereFilter = InferWhereFilter<typeof db.query.foo>
+type FindManyArgs = InferFindManyArgs<typeof db.query.foo>
+type FindFirstArgs = InferFindFirstArgs<typeof db.query.foo>
+```
 
 ## License
 
