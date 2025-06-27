@@ -87,6 +87,11 @@ const replacers: {
   },
 }
 
+// Clear generated files from previous runs.
+for (const dir of globSync('src/generated/*', { onlyDirectories: true })) {
+  fs.rmSync(dir, { recursive: true, force: true })
+}
+
 for (const file of globSync('src/generated/*.ts')) {
   const template = fs.readFileSync(file, 'utf-8')
   const name = path.basename(file, '.ts')
