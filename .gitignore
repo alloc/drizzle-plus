@@ -3,6 +3,6 @@ node_modules
 
 tmp.db
 
-src/mysql
-src/pg
-src/sqlite
+src/generated/mysql
+src/generated/pg
+src/generated/sqlite

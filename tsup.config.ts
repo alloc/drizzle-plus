@@ -5,10 +5,17 @@ export default defineConfig({
     'src/index.ts',
     'src/utils.ts',
     'src/types.ts',
-    'src/pg/*.ts',
-    'src/mysql/*.ts',
-    'src/sqlite/*.ts',
+    'src/generated/pg/*.ts',
+    'src/generated/mysql/*.ts',
+    'src/generated/sqlite/*.ts',
   ],
   format: ['esm'],
-  dts: true,
+  dts: {
+    compilerOptions: {
+      paths: {
+        'drizzle-plus/*': ['./src/*'],
+      },
+    },
+  },
+  external: ['drizzle-plus'],
 })

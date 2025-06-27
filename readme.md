@@ -18,6 +18,7 @@ A collection of useful utilities and extensions for Drizzle ORM.
 - Nested subqueries with `nest()` helper
 - `CASE…WHEN…ELSE…END` with `caseWhen()` helper
 - Literal values with `literal()` helper
+- JSON helpers like `jsonAgg()` and `toJsonObject()`
 - Useful types via `drizzle-plus/types`
 
 **Contributions are welcome!** Let's make this a great library for everyone.

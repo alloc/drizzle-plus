@@ -23,6 +23,12 @@ importers:
       drizzle-orm:
         specifier: beta
         version: 1.0.0-beta.1-c0277c0(@libsql/client@0.15.9)
+      drizzle-plus:
+        specifier: 'link:'
+        version: 'link:'
+      picorun:
+        specifier: ^0.1.5
+        version: 0.1.5
       picospawn:
         specifier: ^0.3.2
         version: 0.3.2
@@ -35,6 +41,9 @@ importers:
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
+      tinyglobby:
+        specifier: ^0.2.14
+        version: 0.2.14
       tsc-lint:
         specifier: ^0.1.9
         version: 0.1.9(typescript@5.8.3)
@@ -962,6 +971,9 @@ packages:
     resolution: {integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==}
     engines: {node: '>=0.10.0'}
 
+  ordana@0.4.0:
+    resolution: {integrity: sha512-+37+JsBRlRvS+rCb3XOExbBATUlYFM8kvMWa6XTvCstny2iM2GqYmxr6lVTsOsI1Vq8pMhlIInCfK9J9QWnezw==}
+
   package-json-from-dist@1.0.1:
     resolution: {integrity: sha512-UEZIS3/by4OC8vL3P2dTXRETpebLI2NiI5vIrjaD/5UtrkFX/tNbwjTSRAGC/+7CAo2pIcBaRgWmcBBHcsaCIw==}
 
@@ -990,6 +1002,10 @@ packages:
   picomatch@4.0.2:
     resolution: {integrity: sha512-M7BAV6Rlcy5u+m6oPhAPFgJTzAioX/6B0DxyvDlo9l8+T3nLKbrczg2WLUyzd45L8RqfUMyGPzekbMvX2Ldkwg==}
     engines: {node: '>=12'}
+
+  picorun@0.1.5:
+    resolution: {integrity: sha512-sxMeCCXJoNrPHwKjoaHq4HR6s0us1gyUV7s+ZBLoAInWikh1xDuA6TCn0Rv/5JTp63xL6k4CyDLecllXMShkFQ==}
+    hasBin: true
 
   picospawn@0.3.2:
     resolution: {integrity: sha512-dXc9/ffCjdLCj3hmTrvuTED5cmQarmI0siOyoMLoyo0GSwk6buT8S8mqWFskLNYlFYeK3Ny27qQioZ7xfIFQyA==}
@@ -1998,6 +2014,10 @@ snapshots:
 
   object-assign@4.1.1: {}
 
+  ordana@0.4.0:
+    dependencies:
+      picocolors: 1.1.1
+
   package-json-from-dist@1.0.1: {}
 
   path-key@3.1.1: {}
@@ -2019,6 +2039,10 @@ snapshots:
   picocolors@1.1.1: {}
 
   picomatch@4.0.2: {}
+
+  picorun@0.1.5:
+    dependencies:
+      ordana: 0.4.0
 
   picospawn@0.3.2: {}
 
