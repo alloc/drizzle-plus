@@ -15,6 +15,18 @@ const sessionTypeParams = {
   mysql: '',
 }
 
+const snippets = {
+  sqlite: {
+    then: /* ts */ `
+    then(onfulfilled, onrejected): any {
+      return Promise.resolve(session.run(query))
+        .then(results => Number(results[0].count))
+        .then(onfulfilled, onrejected)
+    },
+    `,
+  },
+}
+
 const rootDir = 'src/dialect'
 
 for (const name of fs.readdirSync(rootDir)) {
@@ -33,6 +45,13 @@ for (const name of fs.readdirSync(rootDir)) {
             .replace(
               /\bRelationalQueryBuilder<(\s*)/gm,
               '$&' + rqbTypeParams[dialect] + ',$1'
+            )
+            .replace(
+              /([ ]*)\/\/ @start (\w+)\n([\S\s]+)\/\/ @end \2\n[ ]*/gm,
+              (_, space, key, defaultImpl) => {
+                const snippet = snippets[dialect]?.[key]
+                return snippet ? space + snippet.trimStart() : defaultImpl
+              }
             )
     )
   }

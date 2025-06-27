@@ -48,12 +48,14 @@ RelationalQueryBuilder.prototype.count = function (
   }
 
   return {
+    // @start then
     then(onfulfilled, onrejected): any {
       return session
         .execute<{ count: number }[]>(query)
-        .then(results => results[0].count)
+        .then(results => Number(results[0].count))
         .then(onfulfilled, onrejected)
     },
+    // @end then
     toSQL: () => dialect.sqlToQuery(query),
   }
 }
