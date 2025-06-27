@@ -20,6 +20,7 @@ export type AnyQuery = AnySelectQuery | QueryPromise<any>
 export interface AnySelectQuery {
   _: {
     selectedFields: Record<string, unknown>
+    alias?: string
   }
   getSQL(): SQL
 }
