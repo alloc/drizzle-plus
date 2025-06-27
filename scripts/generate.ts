@@ -10,6 +10,11 @@ const rqbTypeParams = {
   mysql: `TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase`,
 }
 
+const sessionTypeParams = {
+  sqlite: `<any, any>`,
+  mysql: '',
+}
+
 const rootDir = 'src/dialect'
 
 for (const name of fs.readdirSync(rootDir)) {
@@ -22,6 +27,7 @@ for (const name of fs.readdirSync(rootDir)) {
       dialect === 'pg'
         ? content
         : content
+            .replace(/: PgSession/g, '$&' + sessionTypeParams[dialect])
             .replace(/\bpg-/g, dialect + '-')
             .replace(/\bPg/g, pascalMap[dialect])
             .replace(
