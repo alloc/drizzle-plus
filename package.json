@@ -1,0 +1,68 @@
+{
+  "name": "drizzle-plus",
+  "type": "module",
+  "version": "0.0.0",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./utils": {
+      "types": "./dist/utils.d.ts",
+      "default": "./dist/utils.js"
+    },
+    "./types": {
+      "types": "./dist/types.d.ts",
+      "default": "./dist/types.js"
+    },
+    "./sqlite/*": {
+      "types": "./dist/sqlite/*.d.ts",
+      "default": "./dist/sqlite/*.js"
+    },
+    "./mysql/*": {
+      "types": "./dist/mysql/*.d.ts",
+      "default": "./dist/mysql/*.js"
+    },
+    "./pg/*": {
+      "types": "./dist/pg/*.d.ts",
+      "default": "./dist/pg/*.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "MIT",
+  "author": "Alec Larson",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aleclarson/xxx.git"
+  },
+  "prettier": "@alloc/prettier-config",
+  "scripts": {
+    "dev": "rimraf dist && tsup --sourcemap --watch",
+    "build": "rimraf dist && tsup",
+    "format": "prettier --write .",
+    "lint": "tsc-lint",
+    "test": "vitest",
+    "prepublishOnly": "pnpm build"
+  },
+  "devDependencies": {
+    "@alloc/prettier-config": "^1.0.0",
+    "@libsql/client": "^0.15.9",
+    "@types/node": "^24.0.5",
+    "drizzle-kit": "beta",
+    "drizzle-orm": "beta",
+    "picospawn": "^0.3.2",
+    "prettier": "^3.6.2",
+    "radashi": "^12.6.0",
+    "rimraf": "^6.0.1",
+    "tsc-lint": "^0.1.9",
+    "tsup": "^8.5.0",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  },
+  "peerDependencies": {
+    "drizzle-orm": ">=1.0.0-0"
+  }
+}

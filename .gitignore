@@ -1,0 +1,8 @@
+dist
+node_modules
+
+tmp.db
+
+src/mysql
+src/pg
+src/sqlite

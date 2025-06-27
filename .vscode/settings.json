@@ -1,0 +1,10 @@
+{
+  "rewrap.wrappingColumn": 80,
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+  "[typescript][json][markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}

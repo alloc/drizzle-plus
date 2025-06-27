@@ -1,0 +1,16 @@
+{
+  "include": ["src"],
+  "exclude": ["src/pg"],
+  "compilerOptions": {
+    "strict": true,
+    "lib": ["esnext"],
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "types": []
+  }
+}
