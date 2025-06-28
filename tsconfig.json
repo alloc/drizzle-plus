@@ -1,6 +1,10 @@
 {
   "include": ["src"],
-  "exclude": ["src/pg"],
+  "exclude": [
+    "src/generated/pg",
+    "src/generated/mysql",
+    "src/generated/sqlite"
+  ],
   "compilerOptions": {
     "strict": true,
     "lib": ["esnext"],
