@@ -1,14 +1,5 @@
-import type {
-  AnyColumn,
-  DBQueryConfig,
-  QueryPromise,
-  RelationsFilter,
-  SQL,
-} from 'drizzle-orm'
-import type { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
+import type { AnyColumn, QueryPromise, SQL } from 'drizzle-orm'
 import type { SelectResultFields } from 'drizzle-orm/query-builders/select.types'
-
-export type { RelationalQueryBuilder }
 
 export type SQLValue<T = unknown> =
   | SQL<T>
@@ -41,21 +32,3 @@ export type QueryToSQL<
       ? SQL<TResult[]>
       : SQL<TResult>
   : never
-
-/**
- * Infer the type for the `where` filter of a relational query.
- */
-export type InferWhereFilter<T extends RelationalQueryBuilder<any, any>> =
-  T extends RelationalQueryBuilder<infer TSchema, infer TFields>
-    ? RelationsFilter<TFields, TSchema>
-    : never
-
-export type InferFindManyArgs<T extends RelationalQueryBuilder<any, any>> =
-  T extends RelationalQueryBuilder<infer TSchema, infer TFields>
-    ? DBQueryConfig<'many', TSchema, TFields>
-    : never
-
-export type InferFindFirstArgs<T extends RelationalQueryBuilder<any, any>> =
-  T extends RelationalQueryBuilder<infer TSchema, infer TFields>
-    ? DBQueryConfig<'one', TSchema, TFields>
-    : never

@@ -14,6 +14,18 @@ const pascalMap: Record<DialectExceptPg, string> = {
   mysql: 'MySql',
 }
 
+// RelationalQueryBuilder type parameters.
+const rqbExtraTypeParams = {
+  sqlite: {
+    code: `TMode extends 'sync' | 'async'`,
+    count: 1,
+  },
+  mysql: {
+    code: `TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase`,
+    count: 1,
+  },
+}
+
 // See the `src/generated/count.ts` module for an example of how to use this.
 const snipRegex = /([ ]*)\/\/ @start (\w+)\n([\S\s]+)\/\/ @end \2\n[ ]*/gm
 const applySnips =
@@ -28,11 +40,6 @@ const replacers: {
   [key: string]: (content: string, dialect: DialectExceptPg) => string
 } = {
   count(content, dialect) {
-    const rqbTypeParams = {
-      sqlite: `TMode extends 'sync' | 'async'`,
-      mysql: `TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase`,
-    }
-
     const sessionTypeParams = {
       sqlite: `<any, any>`,
       mysql: '',
@@ -40,10 +47,6 @@ const replacers: {
 
     return content
       .replace(/: PgSession/g, '$&' + sessionTypeParams[dialect])
-      .replace(
-        /\bRelationalQueryBuilder<(\s*)/gm,
-        '$&' + rqbTypeParams[dialect] + ',$1'
-      )
       .replace(
         snipRegex,
         applySnips(dialect, {
@@ -103,10 +106,19 @@ for (const file of globSync('src/generated/*.ts')) {
       if (replacer) {
         content = replacer(content, dialect)
       }
-      // Always update imports and type names.
       content = content
+        // Update imports and type names.
         .replace(/\bpg-/g, dialect + '-')
         .replace(/\bPg/g, pascalMap[dialect])
+        // Update type parameters of common types.
+        .replace(
+          /\binterface RelationalQueryBuilder<(\s*)/gm,
+          '$&' + rqbExtraTypeParams[dialect].code + ',$1'
+        )
+        .replace(
+          /\bextends RelationalQueryBuilder<(\s*)/gm,
+          '$&' + '$1any, '.repeat(rqbExtraTypeParams[dialect].count) + '$1'
+        )
     }
 
     fs.mkdirSync(`src/generated/${dialect}`, { recursive: true })
