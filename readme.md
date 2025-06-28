@@ -184,7 +184,17 @@ import 'drizzle-plus/mysql/findManyAndCount'
 import 'drizzle-plus/sqlite/findManyAndCount'
 
 // Now you can use the `findManyAndCount` method
-const { data, count } = await db.query.foo.findManyAndCount()
+const { data, count } = await db.query.foo.findManyAndCount({
+  where: {
+    age: { gt: 20 },
+  },
+  limit: 2,
+  columns: {
+    id: true,
+    name: true,
+    age: true,
+  },
+})
 // => {
 //   data: [
 //     { id: 1, name: 'Alice', age: 25 },
