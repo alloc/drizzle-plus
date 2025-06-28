@@ -23,6 +23,7 @@ A collection of useful utilities and extensions for Drizzle ORM.
 - Literal values with `literal()` helper
 - JSON helpers like `jsonAgg()` and `toJsonObject()`
 - Useful types via `drizzle-plus/types`
+- …and more!
 
 **Contributions are welcome!** Let's make this a great library for everyone.
 
@@ -268,23 +269,57 @@ cursorParams.orderBy
 
 Also of note, as of June 28 2025, Drizzle doesn't yet provide control over treatment of `NULL` values when using the Relational Query Builder (RQB) API. While this library _could_ implement it ourselves (at least, for the `$cursor` method), we'd prefer to wait for Drizzle to provide a proper solution.
 
-### Other Functions
+### Dialect-specific functions
+
+These functions have differences between dialects, whether it's the name, the function signature, or its TypeScript definition relies on dialect-specific types.
+
+- **Postgres:**
+  - `jsonAgg`
+  - `toJsonObject`
+- **MySQL:**
+  - `jsonArrayAgg`
+  - `toJsonObject`
+- **SQLite:**
+  - `jsonGroupArray`
+  - `toJsonObject`
 
 ```ts
-// Universal imports
-import { caseWhen, literal, nest } from 'drizzle-plus'
-
 // Postgres imports
-import { jsonAgg, toJsonObject } from 'drizzle-plus/pg'
+import { jsonAgg } from 'drizzle-plus/pg'
 
 // MySQL imports
-import { jsonArrayAgg, toJsonObject } from 'drizzle-plus/mysql'
+import { jsonArrayAgg } from 'drizzle-plus/mysql'
 
 // SQLite imports
-import { jsonGroupArray, toJsonObject } from 'drizzle-plus/sqlite'
+import { jsonGroupArray } from 'drizzle-plus/sqlite'
 ```
 
-(More documentation will be added in the future.)
+### Universal functions
+
+These functions are available in all dialects, since they're part of the SQL standard.
+
+- **Syntax:**
+  - `caseWhen`
+  - `literal`
+  - `nest`
+- **SQL functions:**
+  - `abs`
+  - `coalesce`
+  - `length`
+  - `lower`
+  - `nullif`
+  - `power`
+  - `round`
+  - `sqrt`
+  - `substring`
+  - `trim`
+  - `upper`
+
+Import them from the `drizzle-plus` module:
+
+```ts
+import { caseWhen } from 'drizzle-plus'
+```
 
 ## Types
 
