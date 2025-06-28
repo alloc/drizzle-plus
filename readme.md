@@ -14,6 +14,7 @@ A collection of useful utilities and extensions for Drizzle ORM.
 #### Highlights
 
 - Support for 🐘 **Postgres**, 🐬 **MySQL**, and 🪶 **SQLite**
+- Added `upsert()` method to `db.query` for “create or update” operations
 - Added `count()` method to `db.query` for easy counting of rows
 - Added `$cursor()` method to `db.query` for type-safe, cursor-based pagination
 - Nested subqueries with `nest()` helper
