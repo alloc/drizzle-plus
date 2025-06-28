@@ -1,11 +1,11 @@
 import { noopDecoder, SQL, sql } from 'drizzle-orm'
-import type { SQLValue } from 'drizzle-plus/types'
+import type { SQLExpression } from 'drizzle-plus/types'
 import { getDecoder } from 'drizzle-plus/utils'
 
 /**
  * Create a `json_agg()` expression from a given value.
  */
-export function jsonAgg<T>(value: SQLValue<T>) {
+export function jsonAgg<T>(value: SQLExpression<T>) {
   return sql`json_agg(${value})`.mapWith(jsonString => {
     const decoder = getDecoder(value)
     const data: any[] = JSON.parse(jsonString)

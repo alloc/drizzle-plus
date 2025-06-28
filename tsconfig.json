@@ -15,6 +15,10 @@
     "emitDeclarationOnly": true,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
+    "paths": {
+      "drizzle-plus/types": ["./src/types.ts"],
+      "drizzle-plus/utils": ["./src/utils.ts"]
+    },
     "types": []
   }
 }

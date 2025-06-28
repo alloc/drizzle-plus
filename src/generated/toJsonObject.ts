@@ -1,6 +1,10 @@
 import { noopDecoder, SQL, sql, type DriverValueDecoder } from 'drizzle-orm'
 import type { SelectResultFields } from 'drizzle-orm/query-builders/select.types'
-import type { AnySelectQuery, QueryToSQL, SQLValue } from 'drizzle-plus/types'
+import type {
+  AnySelectQuery,
+  QueryToSQL,
+  SQLExpression,
+} from 'drizzle-plus/types'
 import { getDecoder, getSelectedFields } from 'drizzle-plus/utils'
 import { isPlainObject } from 'radashi'
 
@@ -24,7 +28,7 @@ export function toJsonObject<
   Object.entries(
     isRawSelection(subquery) ? subquery : getSelectedFields(subquery)
   ).forEach(([key, column], index) => {
-    const decoder = getDecoder(column as SQLValue<any>)
+    const decoder = getDecoder(column as SQLExpression<any>)
     if (decoder !== noopDecoder) {
       decoders.set(key, decoder)
     }
