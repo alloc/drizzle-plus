@@ -1,7 +1,7 @@
 import { gt } from 'drizzle-orm'
 import { caseWhen, literal } from 'drizzle-plus'
-import * as schema from './schema'
-import { db } from './setup'
+import { db } from './config/client'
+import * as schema from './config/schema'
 
 describe('caseWhen', () => {
   test('SQL output', () => {

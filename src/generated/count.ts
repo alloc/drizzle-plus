@@ -1,13 +1,11 @@
 import {
-  relationsFilterToSQL,
   sql,
   type RelationsFilter,
   type TableRelationalConfig,
   type TablesRelationalConfig,
 } from 'drizzle-orm'
-import { CasingCache } from 'drizzle-orm/casing'
-import { PgDialect, PgSession, PgTable } from 'drizzle-orm/pg-core'
 import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
+import { getContext, getFilterSQL } from './internal'
 
 interface CountQueryPromise extends PromiseLike<number> {
   toSQL: () => { sql: string; params: any[] }
@@ -25,26 +23,11 @@ declare module 'drizzle-orm/pg-core/query-builders/query' {
 RelationalQueryBuilder.prototype.count = function (
   filter?: RelationsFilter<any, any>
 ): CountQueryPromise {
-  const { table, tableConfig, tableNamesMap, schema, dialect, session } =
-    this as unknown as {
-      tables: Record<string, PgTable>
-      schema: TablesRelationalConfig
-      tableNamesMap: Record<string, string>
-      table: PgTable
-      tableConfig: TableRelationalConfig
-      dialect: PgDialect
-      session: PgSession
-    }
-
-  const { casing } = dialect as unknown as {
-    casing: CasingCache
-  }
+  const { table, dialect, session } = getContext(this)
 
   const query = sql`select count(*) from ${table}`
   if (filter) {
-    query.append(
-      sql` where ${relationsFilterToSQL(table, filter, tableConfig.relations, schema, tableNamesMap, casing)}`
-    )
+    query.append(sql` where ${getFilterSQL(this, filter)}`)
   }
 
   return {

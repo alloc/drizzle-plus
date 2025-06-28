@@ -1,5 +1,5 @@
 import 'drizzle-plus/sqlite/count'
-import { db } from './setup'
+import { db } from './config/client'
 
 describe('count', () => {
   test('SQL output', () => {

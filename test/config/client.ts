@@ -8,7 +8,3 @@ export const db = drizzle({
   schema,
   relations: defineRelations(schema),
 })
-
-// beforeAll(async () => {
-//   await $('pnpm -s drizzle-kit push', { stdio: 'inherit' })
-// })

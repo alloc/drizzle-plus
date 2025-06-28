@@ -1,5 +1,5 @@
 import 'drizzle-plus/sqlite/cursor'
-import { db } from './setup'
+import { db } from './config/client'
 
 describe('$cursor', () => {
   test('with one column', () => {

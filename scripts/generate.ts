@@ -16,6 +16,10 @@ const pascalMap: Record<DialectExceptPg, string> = {
   mysql: 'MySql',
 }
 
+const unsupportedFeatures: Partial<Record<DialectExceptPg, string[]>> = {
+  mysql: ['upsert'],
+}
+
 // RelationalQueryBuilder type parameters.
 const rqbExtraTypeParams = {
   sqlite: {
@@ -104,6 +108,10 @@ for (const file of globSync('src/generated/*.ts')) {
   const name = path.basename(file, '.ts')
 
   for (const dialect of dialects) {
+    if (unsupportedFeatures[dialect]?.includes(name)) {
+      continue
+    }
+
     let content = template
     if (dialect !== 'pg') {
       const replacer = replacers[name]
