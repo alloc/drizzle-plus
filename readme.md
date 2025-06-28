@@ -41,6 +41,103 @@ A collection of useful utilities and extensions for Drizzle ORM.
 
 ## Usage
 
+### Upsert
+
+Import the `upsert` module to extend the query builder API with a `upsert` method.
+
+> [!WARNING]
+> 🐬 **MySQL** is not supported yet.
+
+The `upsert` method intelligently infers the correct columns to update based on the primary key and unique constraints of the table. This means you're _not_ required to manually specify a `where` clause (as you would in Prisma).
+
+```ts
+// Choose your dialect
+import 'drizzle-plus/pg/upsert'
+import 'drizzle-plus/sqlite/upsert'
+
+// Now you can use the `upsert` method
+const query = db.query.user.upsert({
+  data: {
+    id: 42,
+    name: 'Chewbacca',
+  },
+})
+
+query.toSQL()
+// => {
+//   sql: `insert into "user" ("id", "name") values (?, ?) on conflict ("user"."id") do update set "name" = excluded."name" returning "id", "name"`,
+//   params: [42, 'Chewbacca'],
+// }
+
+// Execute the query
+const result = await query
+// => {
+//   id: 42,
+//   name: 'Chewbacca',
+// }
+```
+
+#### Returning clause
+
+By default, `upsert` will return all columns of the upserted row. But you can specify a `returning` clause to return only the columns you want. Any SQL expression is allowed in the `returning` clause.
+
+```ts
+const result = await db.query.user.upsert({
+  data: {
+    id: 42,
+    name: 'Chewbacca',
+  },
+  returning: {
+    id: true,
+    nameUpper: user => sql<string>`upper(${user.name})`,
+    random: sql<number>`random()`,
+  },
+})
+// => {
+//   id: 42,
+//   nameUpper: 'CHEWBACCA',
+//   random: 0.123456789,
+// }
+```
+
+Set `returning` to an empty object to return nothing.
+
+#### Batched upserts
+
+There are no plans to support Prisma’s `connect` or `connectOrCreate` features. It’s recommended to use `db.transaction()` instead.
+
+```ts
+import 'drizzle-plus/pg/upsert'
+import { nest } from 'drizzle-plus'
+
+await db.transaction(async tx => {
+  const { id } = await tx.query.user.upsert({
+    data: {
+      id: 42,
+      name: 'Chewbacca',
+    },
+    returning: {
+      id: true,
+    },
+  })
+  await tx.query.friendship.upsert({
+    data: {
+      userId: id,
+      friendId: nest(
+        tx.query.user.findFirst({
+          where: {
+            name: 'Han Solo',
+          },
+          columns: {
+            id: true,
+          },
+        })
+      ),
+    },
+  })
+})
+```
+
 ### Count
 
 Import the `count` module to extend the query builder API with a `count` method.
