@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm'
-import type { AnyQuery, QueryToSQL } from './types'
-import { getDecoder, getSelectedFields, getSQL } from './utils'
+import type { AnyQuery, QueryToSQL } from '../types'
+import { getDecoder, getSelectedFields, getSQL } from '../utils'
 
 /**
  * Wrap a subquery with parentheses and decode the result.

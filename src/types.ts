@@ -1,7 +1,9 @@
 import type { AnyColumn, QueryPromise, SQL } from 'drizzle-orm'
 import type { SelectResultFields } from 'drizzle-orm/query-builders/select.types'
 
-export type SQLValue<T = unknown> =
+export type SQLValue<T> = T | SQLExpression<T>
+
+export type SQLExpression<T = unknown> =
   | SQL<T>
   | SQL.Aliased<T>
   | AnyColumn<{ data: T; driverParam: any }>

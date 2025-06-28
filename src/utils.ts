@@ -7,7 +7,7 @@ import {
   type DBQueryConfig,
   type DriverValueDecoder,
 } from 'drizzle-orm'
-import type { AnyQuery, SQLValue } from './types'
+import type { AnyQuery, SQLExpression } from './types'
 
 export function getSelectedFields(query: AnyQuery): Record<string, unknown> {
   if (query instanceof QueryPromise) {
@@ -23,7 +23,9 @@ export function getSelectedFields(query: AnyQuery): Record<string, unknown> {
   return query._.selectedFields
 }
 
-export function getDecoder<T>(value: SQLValue<T>): DriverValueDecoder<T, any> {
+export function getDecoder<T>(
+  value: SQLExpression<T>
+): DriverValueDecoder<T, any> {
   if (is(value, SQL.Aliased)) {
     return (value.getSQL() as any).decoder
   }

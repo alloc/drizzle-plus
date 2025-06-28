@@ -1,5 +1,5 @@
 import { SQL, sql } from 'drizzle-orm'
-import type { SQLValue } from './types'
+import type { SQLExpression } from '../types'
 
 export class SQLCaseWhen<T = never> {
   cases: SQL<T>
@@ -13,7 +13,7 @@ export class SQLCaseWhen<T = never> {
   /**
    * Add a case to the case expression.
    */
-  when<Then>(whenExpr: SQLValue, thenExpr: SQLValue<Then>) {
+  when<Then>(whenExpr: SQLExpression, thenExpr: SQLExpression<Then>) {
     this.cases.append(sql` WHEN ${whenExpr} THEN ${thenExpr}`)
     return this as SQLCaseWhen<T | Then>
   }
@@ -21,7 +21,7 @@ export class SQLCaseWhen<T = never> {
   /**
    * Add the else clause to the case expression.
    */
-  else<Else>(elseExpr: SQLValue<Else>) {
+  else<Else>(elseExpr: SQLExpression<Else>) {
     return sql`${this.cases} ELSE ${elseExpr} END` as SQL<T | Else>
   }
 
@@ -34,6 +34,9 @@ export class SQLCaseWhen<T = never> {
   }
 }
 
-export function caseWhen<Then>(whenExpr: SQLValue, thenExpr: SQLValue<Then>) {
+export function caseWhen<Then>(
+  whenExpr: SQLExpression,
+  thenExpr: SQLExpression<Then>
+) {
   return new SQLCaseWhen().when(whenExpr, thenExpr)
 }
