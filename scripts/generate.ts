@@ -60,7 +60,35 @@ const replacers: {
             then: dedent /* ts */ `
               then(onfulfilled, onrejected): any {
                 return Promise.resolve(session.run(query))
-                  .then(results => Number(results[0].count))
+                  .then(results => Number(results.rows[0]['count(*)']))
+                  .then(onfulfilled, onrejected)
+              },
+            `,
+          },
+        })
+      )
+  },
+  findManyAndCount(content, dialect) {
+    const sessionTypeParams = {
+      sqlite: `<any, any>`,
+      mysql: '',
+    }
+
+    return content
+      .replace(/: PgSession/g, '$&' + sessionTypeParams[dialect])
+      .replace(
+        snipRegex,
+        applySnips(dialect, {
+          sqlite: {
+            then: dedent /* ts */ `
+              then(onfulfilled, onrejected): any {
+                // Execute both the findMany query and count query in parallel
+                const findManyPromise = originalThis.findMany(config)
+                const countPromise = Promise.resolve(session.run(countQuery))
+                  .then(results => Number(results.rows[0]['count(*)']))
+
+                return Promise.all([findManyPromise, countPromise])
+                  .then(([data, count]) => ({ data, count }))
                   .then(onfulfilled, onrejected)
               },
             `,
