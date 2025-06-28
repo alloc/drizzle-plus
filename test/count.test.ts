@@ -8,7 +8,7 @@ describe('count', () => {
     expect(query.toSQL()).toMatchInlineSnapshot(`
       {
         "params": [],
-        "sql": "select count(*) from "foo"",
+        "sql": "select count(*) AS "count" from "foo"",
       }
     `)
 
@@ -21,7 +21,7 @@ describe('count', () => {
         "params": [
           100,
         ],
-        "sql": "select count(*) from "foo" where "foo"."id" > ?",
+        "sql": "select count(*) AS "count" from "foo" where "foo"."id" > ?",
         "typings": [
           "none",
         ],

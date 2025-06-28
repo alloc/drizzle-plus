@@ -32,6 +32,12 @@ const rqbExtraTypeParams = {
   },
 }
 
+// Database session type parameters.
+const sessionTypeParams = {
+  sqlite: `<any, any>`,
+  mysql: '',
+}
+
 // See the `src/generated/count.ts` module for an example of how to use this.
 const snipRegex = /([ ]*)\/\/ @start (\w+)\n([\S\s]+)\/\/ @end \2\n[ ]*/gm
 const applySnips =
@@ -46,27 +52,20 @@ const replacers: {
   [key: string]: (content: string, dialect: DialectExceptPg) => string
 } = {
   count(content, dialect) {
-    const sessionTypeParams = {
-      sqlite: `<any, any>`,
-      mysql: '',
-    }
-
-    return content
-      .replace(/: PgSession/g, '$&' + sessionTypeParams[dialect])
-      .replace(
-        snipRegex,
-        applySnips(dialect, {
-          sqlite: {
-            then: dedent /* ts */ `
-              then(onfulfilled, onrejected): any {
-                return Promise.resolve(session.run(query))
-                  .then(results => Number(results[0].count))
-                  .then(onfulfilled, onrejected)
-              },
-            `,
-          },
-        })
-      )
+    return content.replace(
+      snipRegex,
+      applySnips(dialect, {
+        sqlite: {
+          then: dedent /* ts */ `
+            then(onfulfilled, onrejected): any {
+              return Promise.resolve(session.run(query))
+                .then(results => Number(results.rows[0].count))
+                .then(onfulfilled, onrejected)
+            },
+          `,
+        },
+      })
+    )
   },
   jsonAgg(content, dialect) {
     return content
@@ -121,6 +120,7 @@ for (const file of globSync('src/generated/*.ts')) {
       content = content
         // Update imports and type names.
         .replace(/\bpg-/g, dialect + '-')
+        .replace(/: PgSession/g, '$&' + sessionTypeParams[dialect])
         .replace(/\bPg/g, pascalMap[dialect])
         // Update type parameters of common types.
         .replace(

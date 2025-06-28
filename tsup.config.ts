@@ -13,6 +13,7 @@ export default defineConfig({
         // Prototype extensions
         `${dir}/count.ts`,
         `${dir}/cursor.ts`,
+        `${dir}/findManyAndCount.ts`,
         `${dir}/upsert.ts`,
       ]
     }),
