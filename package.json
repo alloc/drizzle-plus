@@ -51,7 +51,7 @@
   },
   "prettier": "@alloc/prettier-config",
   "scripts": {
-    "dev": "rimraf dist && picorun --names generate,build 'tsx --watch scripts/generate.ts' 'tsup --sourcemap --watch'",
+    "dev": "rimraf dist && picorun --names generate,build 'watchlist -e scripts/* src/generated/*.ts -- tsx scripts/generate.ts --no-remove' 'tsup --sourcemap --watch'",
     "build": "rimraf dist && tsx scripts/generate.ts && tsup",
     "format": "prettier --write .",
     "lint": "tsc-lint",
@@ -59,6 +59,7 @@
     "prepublishOnly": "pnpm build"
   },
   "devDependencies": {
+    "@aleclarson/watchlist": "^0.3.5",
     "@alloc/prettier-config": "^1.0.0",
     "@libsql/client": "^0.15.9",
     "@types/node": "^24.0.5",

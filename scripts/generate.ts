@@ -3,6 +3,8 @@ import path from 'node:path'
 import { dedent } from 'radashi'
 import { globSync } from 'tinyglobby'
 
+console.log('Generating...')
+
 const dialects = ['pg', 'mysql', 'sqlite'] as const
 
 type Dialect = (typeof dialects)[number]
@@ -91,8 +93,10 @@ const replacers: {
 }
 
 // Clear generated files from previous runs.
-for (const dir of globSync('src/generated/*', { onlyDirectories: true })) {
-  fs.rmSync(dir, { recursive: true, force: true })
+if (!process.argv.includes('--no-remove')) {
+  for (const dir of globSync('src/generated/*', { onlyDirectories: true })) {
+    fs.rmSync(dir, { recursive: true, force: true })
+  }
 }
 
 for (const file of globSync('src/generated/*.ts')) {
