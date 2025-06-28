@@ -207,9 +207,6 @@ const { data, count } = await db.query.foo.findManyAndCount({
 The two queries (`findMany` and `count`) are executed in parallel.
 
 > [!WARNING]
-> This method is not supported by SQLite.
-
-> [!WARNING]
 > Your database connection _may not_ support parallel queries, in which case this method will execute the queries sequentially.
 
 ### Cursor
