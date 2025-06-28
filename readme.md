@@ -16,6 +16,7 @@ A collection of useful utilities and extensions for Drizzle ORM.
 - Support for 🐘 **Postgres**, 🐬 **MySQL**, and 🪶 **SQLite**
 - Added `upsert()` method to `db.query` for “create or update” operations
 - Added `count()` method to `db.query` for easy counting of rows
+- Added `findManyAndCount()` method to `db.query` for convenient, parallel execution of `findMany()` and `count()` queries
 - Added `$cursor()` method to `db.query` for type-safe, cursor-based pagination
 - Nested subqueries with `nest()` helper
 - `CASE…WHEN…ELSE…END` with `caseWhen()` helper
@@ -169,6 +170,37 @@ console.log(countWithFilter.toSQL())
 const result = await countWithFilter
 // => 0
 ```
+
+### Find Many and Count
+
+Import the `findManyAndCount` module to extend the query builder API with a `findManyAndCount` method.
+
+The `findManyAndCount` method accepts the same arguments as `findMany()`, and returns an object with `data` and `count` properties. The count is the total number of rows that would be returned by the `findMany` query, without any `limit` or `offset` applied.
+
+```ts
+// Choose your dialect
+import 'drizzle-plus/pg/findManyAndCount'
+import 'drizzle-plus/mysql/findManyAndCount'
+import 'drizzle-plus/sqlite/findManyAndCount'
+
+// Now you can use the `findManyAndCount` method
+const { data, count } = await db.query.foo.findManyAndCount()
+// => {
+//   data: [
+//     { id: 1, name: 'Alice', age: 25 },
+//     { id: 2, name: 'Bob', age: 30 },
+//   ],
+//   count: 10,
+// }
+```
+
+The two queries (`findMany` and `count`) are executed in parallel.
+
+> [!WARNING]
+> This method is not supported by SQLite.
+
+> [!WARNING]
+> Your database connection _may not_ support parallel queries, in which case this method will execute the queries sequentially.
 
 ### Cursor
 
