@@ -25,7 +25,7 @@ RelationalQueryBuilder.prototype.count = function (
 ): CountQueryPromise {
   const { table, dialect, session } = getContext(this)
 
-  const query = sql`select count(*) from ${table}`
+  const query = sql`select count(*) AS "count" from ${table}`
   if (filter) {
     query.append(sql` where ${getFilterSQL(this, filter)}`)
   }

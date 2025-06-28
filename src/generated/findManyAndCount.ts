@@ -1,18 +1,14 @@
 import {
-  relationsFilterToSQL,
-  sql,
   type BuildQueryResult,
   type DBQueryConfig,
   type KnownKeysOnly,
-  type RelationsFilter,
   type TableRelationalConfig,
   type TablesRelationalConfig,
 } from 'drizzle-orm'
-import { CasingCache } from 'drizzle-orm/casing'
-import { PgDialect, PgSession, PgTable } from 'drizzle-orm/pg-core'
 import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
+import './count'
 
-interface FindManyAndCountResult<T> {
+export interface FindManyAndCountResult<T> {
   data: T[]
   count: number
 }
@@ -37,56 +33,21 @@ declare module 'drizzle-orm/pg-core/query-builders/query' {
 }
 
 RelationalQueryBuilder.prototype.findManyAndCount = function (
-  config?: any
+  config?: DBQueryConfig<any, any, any>
 ): FindManyAndCountQueryPromise<any> {
-  const { table, tableConfig, tableNamesMap, schema, dialect, session } =
-    this as unknown as {
-      tables: Record<string, PgTable>
-      schema: TablesRelationalConfig
-      tableNamesMap: Record<string, string>
-      table: PgTable
-      tableConfig: TableRelationalConfig
-      dialect: PgDialect
-      session: PgSession
-    }
-
-  const { casing } = dialect as unknown as {
-    casing: CasingCache
-  }
-
-  // Get the filter from config
-  const filter = config?.where as RelationsFilter<any, any> | undefined
-
-  // Create the count query
-  const countQuery = sql`select count(*) from ${table}`
-  if (filter) {
-    countQuery.append(
-      sql` where ${relationsFilterToSQL(table, filter, tableConfig.relations, schema, tableNamesMap, casing)}`
-    )
-  }
-
-  // Create the findMany query for toSQL()
-  const findManyPromise = (this as any).findMany(config)
-
-  // Capture the original RelationalQueryBuilder instance
-  const originalThis = this as any
+  const findManyPromise = this.findMany(config)
+  const countQuery = this.count(config?.where)
 
   return {
-    // @start then
     then(onfulfilled, onrejected): any {
       // Execute both the findMany query and count query in parallel
-      const countPromise = session
-        .execute<{ count: number }[]>(countQuery)
-        .then(results => Number(results[0].count))
-
-      return Promise.all([findManyPromise, countPromise])
+      return Promise.all([findManyPromise, countQuery])
         .then(([data, count]) => ({ data, count }))
         .then(onfulfilled, onrejected)
     },
-    // @end then
     toSQL: () => ({
       findMany: findManyPromise.toSQL(),
-      count: dialect.sqlToQuery(countQuery),
+      count: countQuery.toSQL(),
     }),
   }
 }
