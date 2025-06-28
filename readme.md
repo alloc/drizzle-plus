@@ -157,15 +157,17 @@ const count = db.query.foo.count()
 const countWithFilter = db.query.foo.count({
   id: { gt: 100 },
 })
-// equivalent to:
-//   select count(*) from "foo" where "foo"."id" > 100
 
 // Inspect the SQL:
-console.log(count.toSQL())
+console.log(countWithFilter.toSQL())
 // {
-//   sql: `select count(*) from "foo"`,
+//   sql: `select count(*) from "foo" where "foo"."id" > 100`,
 //   params: [],
 // }
+
+// Execute the query
+const result = await countWithFilter
+// => 0
 ```
 
 ### Cursor
