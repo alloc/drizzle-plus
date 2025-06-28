@@ -1,4 +1,4 @@
-import '../src/sqlite/count'
+import 'drizzle-plus/sqlite/count'
 import { db } from './setup'
 
 describe('count', () => {

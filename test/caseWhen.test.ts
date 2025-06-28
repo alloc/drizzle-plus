@@ -1,6 +1,5 @@
 import { gt } from 'drizzle-orm'
-import { caseWhen } from '../src/caseWhen'
-import { literal } from '../src/literal'
+import { caseWhen, literal } from 'drizzle-plus'
 import * as schema from './schema'
 import { db } from './setup'
 
