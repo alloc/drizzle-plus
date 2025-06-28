@@ -74,7 +74,7 @@ console.log(count.toSQL())
 
 Import the `cursor` module to extend the query builder API with a `$cursor` method.
 
-With `$cursor()`, you get the peace of mind knowing that TypeScript will catch any errors in your cursor-based pagination. No more forgotten `orderBy` clauses or incorrect cursor objects.
+With `$cursor()`, you get the peace of mind knowing that TypeScript will catch any errors in your cursor-based pagination. No more forgotten `orderBy` clauses, mismatched cursor objects, or manually-written `where` clauses.
 
 Just give it your desired sort order and the cursor object, and it will generate the correct `where` clause.
 
