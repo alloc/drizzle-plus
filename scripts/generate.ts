@@ -137,3 +137,20 @@ for (const file of globSync('src/generated/*.ts')) {
     fs.writeFileSync(`src/generated/${dialect}/${name}.ts`, content)
   }
 }
+
+for (const dir of globSync('src/functions/*', { onlyDirectories: true })) {
+  const dialect = path.basename(dir)
+  for (const file of fs.readdirSync(dir)) {
+    if (!file.endsWith('.ts')) {
+      continue
+    }
+    fs.copyFileSync(
+      path.join(dir, file),
+      path.join('src/generated', dialect, file)
+    )
+    fs.appendFileSync(
+      path.join('src/generated', dialect, 'index.ts'),
+      `export * from './${path.basename(file, '.ts')}'\n`
+    )
+  }
+}

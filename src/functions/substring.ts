@@ -1,5 +1,5 @@
 import { SQL, sql } from 'drizzle-orm'
-import { toSQL } from '../syntax/coerceSQL'
+import { toSQL } from '../syntax/toSQL'
 import { SQLExpression, SQLValue } from '../types'
 
 /**

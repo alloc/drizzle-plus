@@ -305,9 +305,11 @@ These functions are available in all dialects, since they're part of the SQL sta
   - `caseWhen`
   - `literal`
   - `nest`
+  - `toSQL`
 - **SQL functions:**
   - `abs`
   - `coalesce`
+  - `concat`
   - `length`
   - `lower`
   - `nullif`

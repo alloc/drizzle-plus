@@ -1,6 +1,7 @@
 export * from './syntax/caseWhen'
 export * from './syntax/literal'
 export * from './syntax/nest'
+export * from './syntax/toSQL'
 
 export * from './functions/abs'
 export * from './functions/coalesce'
