@@ -10,7 +10,7 @@ import {
 import { getTableConfig, PgColumn, PgInsertBuilder } from 'drizzle-orm/pg-core'
 import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
 import { SelectResultField } from 'drizzle-orm/query-builders/select.types'
-import { isFunction, mapValues, select } from 'radashi'
+import { castArray, isFunction, mapValues, select } from 'radashi'
 import { getContext } from './internal'
 
 type ReturningClause<TTable extends Table> = Partial<
@@ -21,10 +21,13 @@ type ReturningClause<TTable extends Table> = Partial<
 >
 
 interface UpsertOptions<
+  TMode extends 'one' | 'many',
   TTable extends Table,
   TReturning extends ReturningClause<TTable>,
 > {
-  data: InferInsertModel<TTable>
+  data: TMode extends 'one'
+    ? InferInsertModel<TTable>
+    : readonly InferInsertModel<TTable>[]
   /**
    * Specify which columns to return. An empty object means “return nothing”.
    *
@@ -63,25 +66,33 @@ declare module 'drizzle-orm/pg-core/query-builders/query' {
     TFields extends TableRelationalConfig,
   > {
     upsert<TReturning extends ReturningClause<InferTable<TFields>>>(
-      options: UpsertOptions<InferTable<TFields>, TReturning>
+      options: UpsertOptions<'one', InferTable<TFields>, TReturning>
     ): UpsertQueryPromise<InferUpsertResult<InferTable<TFields>, TReturning>>
+
+    upsert<TReturning extends ReturningClause<InferTable<TFields>>>(
+      options: UpsertOptions<'many', InferTable<TFields>, TReturning>
+    ): UpsertQueryPromise<InferUpsertResult<InferTable<TFields>, TReturning>[]>
   }
 }
 
 RelationalQueryBuilder.prototype.upsert = function (
-  options: UpsertOptions<any, any>
+  options: UpsertOptions<any, any, any>
 ): UpsertQueryPromise<any> {
   const { table, dialect, session } = getContext(this)
 
-  const keys = Object.keys(options.data).filter(
-    key => options.data[key] !== undefined
-  )
+  const usedKeys = new Set<string>()
+  for (const item of castArray(options.data)) {
+    for (const key in item) {
+      if (item[key] !== undefined) {
+        usedKeys.add(key)
+      }
+    }
+  }
 
   const columns = getTableColumns(table)
-  const target = getTargetColumns(
-    table,
-    keys.map(key => columns[key])
-  )
+  const usedColumns = Array.from(usedKeys, key => columns[key])
+
+  const target = getTargetColumns(table, usedColumns)
   if (!target) {
     throw new Error('No matching primary key or unique constraint found')
   }
@@ -90,9 +101,8 @@ RelationalQueryBuilder.prototype.upsert = function (
     options.data
   )
 
-  const targetKeys = keys.filter(key => target.includes(columns[key]))
-  const updatedEntries = select(Object.keys(options.data), key =>
-    !targetKeys.includes(key)
+  const updatedEntries = select(Array.from(usedKeys), key =>
+    !target.includes(columns[key])
       ? [key, sql`excluded.${sql.identifier(columns[key].name)}`]
       : null
   )

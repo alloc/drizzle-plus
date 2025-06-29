@@ -24,7 +24,6 @@ A collection of useful utilities and extensions for Drizzle ORM.
 - Added `$cursor()` method to `db.query` for type-safe, cursor-based pagination
 - Nested subqueries with `nest()` helper
 - `CASE…WHEN…ELSE…END` with `caseWhen()` helper
-- Literal values with `literal()` helper
 - JSON helpers like `jsonAgg()` and `toJsonObject()`
 - Useful types via `drizzle-plus/types`
 - …and more!
@@ -112,7 +111,21 @@ const result = await db.query.user.upsert({
 
 Set `returning` to an empty object to return nothing.
 
-#### Batched upserts
+#### Upserting many rows
+
+You may pass an array of objects to the `data` property to upsert many rows at once.
+
+```ts
+const rows = await db.query.user.upsert({
+  data: [
+    { id: 42, name: 'Chewbacca' },
+    { id: 43, name: 'Han Solo' },
+  ],
+})
+// => [{ id: 42, name: 'Chewbacca' }, { id: 43, name: 'Han Solo' }]
+```
+
+#### Upserting relations
 
 There are no plans to support Prisma’s `connect` or `connectOrCreate` features. It’s recommended to use `db.transaction()` instead.
 
