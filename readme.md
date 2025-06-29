@@ -215,7 +215,7 @@ The two queries (`findMany` and `count`) are executed in parallel.
 
 ### Cursor
 
-Import the `cursor` module to extend the query builder API with a `$cursor` method.
+Import the `$cursor` module to extend the query builder API with a `$cursor` method.
 
 With `$cursor()`, you get the peace of mind knowing that TypeScript will catch any errors in your cursor-based pagination. No more forgotten `orderBy` clauses, mismatched cursor objects, or manually-written `where` clauses.
 
@@ -223,9 +223,9 @@ Just give it your desired sort order and the cursor object, and it will generate
 
 ```ts
 // Step 1: Choose your dialect
-import 'drizzle-plus/pg/cursor'
-import 'drizzle-plus/mysql/cursor'
-import 'drizzle-plus/sqlite/cursor'
+import 'drizzle-plus/pg/$cursor'
+import 'drizzle-plus/mysql/$cursor'
+import 'drizzle-plus/sqlite/$cursor'
 
 // Step 2: Use the `$cursor` method
 const cursorParams = db.query.foo.$cursor({ id: 'asc' }, { id: 99 })
