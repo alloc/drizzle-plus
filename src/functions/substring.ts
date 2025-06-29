@@ -1,5 +1,4 @@
 import { SQL, sql } from 'drizzle-orm'
-import { toSQL } from '../syntax/toSQL'
 import { SQLExpression, SQLValue } from '../types'
 
 /**
@@ -19,6 +18,6 @@ export function substring<
   length?: SQLValue<TRange> | TRange
 ): SQL<string | Extract<TInput | TRange, null>> {
   return length !== undefined
-    ? sql`substring(${toSQL(value)}, ${toSQL(start)}, ${toSQL(length)})`
-    : sql`substring(${toSQL(value)}, ${toSQL(start)})`
+    ? sql`substring(${value}, ${start}, ${length})`
+    : sql`substring(${value}, ${start})`
 }

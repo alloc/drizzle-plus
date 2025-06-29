@@ -1,5 +1,4 @@
 import { SQL, sql } from 'drizzle-orm'
-import { toSQL } from '../syntax/toSQL'
 import { SQLValue } from '../types'
 
 /**
@@ -13,5 +12,5 @@ export function power<T extends number | null>(
   base: SQLValue<T>,
   exponent: SQLValue<T>
 ): SQL<number | Extract<T, null>> {
-  return sql`power(${toSQL(base)}, ${toSQL(exponent)})`
+  return sql`power(${base}, ${exponent})`
 }

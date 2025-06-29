@@ -1,6 +1,5 @@
 import { sql, SQL } from 'drizzle-orm'
-import { toSQL } from 'drizzle-plus'
-import { SQLValue } from 'drizzle-plus/types'
+import { SQLExpression, SQLValue } from 'drizzle-plus/types'
 
 /**
  * Concatenates two or more strings. If an argument is null, it's treated as an
@@ -16,5 +15,12 @@ export function concat(
     ...SQLValue<string | null>[],
   ]
 ): SQL<string> {
-  return sql`concat(${sql.join(args.map(toSQL), sql`, `)})`
+  return sql`concat(${sql.join(
+    args.map(arg =>
+      arg === null || typeof arg === 'string'
+        ? sql`${arg}`
+        : (arg as SQLExpression)
+    ),
+    sql`, `
+  )})`
 }
