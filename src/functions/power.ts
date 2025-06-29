@@ -1,5 +1,6 @@
 import { SQL, sql } from 'drizzle-orm'
-import { SQLExpression } from '../types'
+import { toSQL } from '../syntax/toSQL'
+import { SQLValue } from '../types'
 
 /**
  * Raises a number to the power of another.
@@ -9,8 +10,8 @@ import { SQLExpression } from '../types'
  * @returns The result of the power calculation.
  */
 export function power<T extends number | null>(
-  base: SQLExpression<T>,
-  exponent: SQLExpression<T>
+  base: SQLValue<T>,
+  exponent: SQLValue<T>
 ): SQL<number | Extract<T, null>> {
-  return sql`power(${base}, ${exponent})`
+  return sql`power(${toSQL(base)}, ${toSQL(exponent)})`
 }
