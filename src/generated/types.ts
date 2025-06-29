@@ -1,4 +1,4 @@
-import type { DBQueryConfig, RelationsFilter } from 'drizzle-orm'
+import type { RelationsFilter } from 'drizzle-orm'
 import type { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
 
 export type { RelationalQueryBuilder }
@@ -45,10 +45,8 @@ export type InferOrderBy<T extends RelationalQueryBuilder<any, any>> =
  * //   ^? type { columns, where, orderBy, … }
  * ```
  */
-export type InferFindManyArgs<T extends RelationalQueryBuilder<any, any>> =
-  T extends RelationalQueryBuilder<infer TSchema, infer TFields>
-    ? DBQueryConfig<'many', TSchema, TFields>
-    : never
+export type InferFindManyArgs<T extends { findMany(args?: any): any }> =
+  T extends { findMany(args?: infer TArgs): any } ? TArgs : never
 
 /**
  * Infer the query arguments for a `db.query#findFirst` call.
@@ -59,10 +57,8 @@ export type InferFindManyArgs<T extends RelationalQueryBuilder<any, any>> =
  * //   ^? type { columns, where, orderBy, … }
  * ```
  */
-export type InferFindFirstArgs<T extends RelationalQueryBuilder<any, any>> =
-  T extends RelationalQueryBuilder<infer TSchema, infer TFields>
-    ? DBQueryConfig<'one', TSchema, TFields>
-    : never
+export type InferFindFirstArgs<T extends { findFirst(args?: any): any }> =
+  T extends { findFirst(args?: infer TArgs): any } ? TArgs : never
 
 /**
  * Infer table columns from a `db.query` factory.
