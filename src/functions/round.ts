@@ -1,5 +1,5 @@
 import { SQL, sql } from 'drizzle-orm'
-import { SQLExpression } from '../types'
+import { SQLValue } from '../types'
 
 /**
  * Rounds a numeric value to specified decimal places. By default, rounds to the
@@ -10,8 +10,8 @@ import { SQLExpression } from '../types'
  * @returns The rounded number.
  */
 export function round<T extends number | null>(
-  value: SQLExpression<T>,
-  decimals?: SQLExpression<T>
+  value: SQLValue<T>,
+  decimals?: SQLValue<T>
 ): SQL<number | Extract<T, null>> {
   return decimals ? sql`round(${value}, ${decimals})` : sql`round(${value})`
 }

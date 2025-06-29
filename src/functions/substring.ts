@@ -1,5 +1,5 @@
 import { SQL, sql } from 'drizzle-orm'
-import { SQLExpression, SQLValue } from '../types'
+import { SQLValue } from '../types'
 
 /**
  * Extracts a substring from a string.
@@ -11,12 +11,12 @@ import { SQLExpression, SQLValue } from '../types'
  */
 export function substring<
   TInput extends string | null,
-  TRange extends number | null,
+  TPosition extends number | null,
 >(
-  value: SQLExpression<TInput>,
-  start: SQLValue<TRange> | TRange,
-  length?: SQLValue<TRange> | TRange
-): SQL<string | Extract<TInput | TRange, null>> {
+  value: SQLValue<TInput>,
+  start: SQLValue<TPosition>,
+  length?: SQLValue<TPosition>
+): SQL<string | Extract<TInput | TPosition, null>> {
   return length !== undefined
     ? sql`substring(${value}, ${start}, ${length})`
     : sql`substring(${value}, ${start})`
