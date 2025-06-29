@@ -27,6 +27,9 @@ A collection of useful utilities and extensions for Drizzle ORM.
 
 **Contributions are welcome!** Let's make this a great library for everyone.
 
+> [!NOTE]
+> If you like what you see, please ⭐ this repository! It really helps to attract more contributors. If you have any ❓ **questions** or 💪 **feature requests**, do not hesitate to 💬 **open an issue**.
+
 ## Installation
 
 - **PNPM**
