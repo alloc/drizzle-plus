@@ -1,5 +1,9 @@
 # drizzle-plus
 
+[![npm version][npm-version-src]][npm-version-href]
+[![npm downloads][npm-downloads-src]][npm-downloads-href]
+[![License][license-src]][license-href]
+
 A collection of useful utilities and extensions for Drizzle ORM.
 
 > [!WARNING]
@@ -415,3 +419,12 @@ type FindFirstArgs = InferFindFirstArgs<typeof db.query.foo>
 ## License
 
 MIT
+
+<!-- Badges -->
+
+[npm-version-src]: https://img.shields.io/npm/v/drizzle-plus?style=flat&colorA=080f12&colorB=1fa669
+[npm-version-href]: https://npmjs.com/package/drizzle-plus
+[npm-downloads-src]: https://img.shields.io/npm/dm/drizzle-plus?style=flat&colorA=080f12&colorB=1fa669
+[npm-downloads-href]: https://npmjs.com/package/drizzle-plus
+[license-src]: https://img.shields.io/github/license/alloc/drizzle-plus.svg?style=flat&colorA=080f12&colorB=1fa669
+[license-href]: https://github.com/alloc/drizzle-plus/blob/main/LICENSE
