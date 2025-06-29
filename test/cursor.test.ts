@@ -1,4 +1,4 @@
-import 'drizzle-plus/sqlite/cursor'
+import 'drizzle-plus/sqlite/$cursor'
 import { db } from './config/client'
 
 describe('$cursor', () => {

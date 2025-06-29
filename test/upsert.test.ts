@@ -130,4 +130,25 @@ describe('upsert', () => {
       }
     `)
   })
+
+  test('upsert many rows', async () => {
+    const query = db.query.foo.upsert({
+      data: [
+        { id: 100, name: 'Gregory' },
+        { id: 101, name: 'John' },
+      ],
+    })
+
+    expect(query.toSQL()).toMatchInlineSnapshot(`
+      {
+        "params": [
+          100,
+          "Gregory",
+          101,
+          "John",
+        ],
+        "sql": "insert into "foo" ("id", "name", "age", "handle") values (?, ?, null, null), (?, ?, null, null) on conflict ("foo"."id") do update set "name" = excluded."name" returning "id", "name", "age", "handle"",
+      }
+    `)
+  })
 })

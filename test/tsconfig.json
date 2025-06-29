@@ -2,6 +2,12 @@
   "extends": "../tsconfig.json",
   "include": ["./"],
   "compilerOptions": {
-    "types": ["node", "vitest/globals"]
+    "types": ["node", "vitest/globals"],
+    "paths": {
+      "drizzle-plus": ["../src"],
+      "drizzle-plus/types": ["../src/types.ts"],
+      "drizzle-plus/utils": ["../src/utils.ts"],
+      "drizzle-plus/*": ["../src/generated/*"]
+    }
   }
 }

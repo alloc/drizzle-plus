@@ -295,7 +295,6 @@ These functions are available in all dialects, since they're part of the SQL sta
 
 - **Syntax:**
   - `caseWhen`
-  - `literal`
   - `nest`
   - `toSQL`
 - **SQL functions:**
