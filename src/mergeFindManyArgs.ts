@@ -1,9 +1,9 @@
-import type { AnyDBQueryConfig } from 'drizzle-plus/types'
 import type { Simplify } from 'radashi'
 import {
   type MergeRelationsFilter,
   mergeRelationsFilter,
 } from './mergeRelationsFilter'
+import type { AnyDBQueryConfig } from './types'
 
 export type MergeFindManyArgs<
   TLeft extends AnyDBQueryConfig,

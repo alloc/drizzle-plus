@@ -4,8 +4,8 @@ import type {
   TablesRelationalConfig,
 } from 'drizzle-orm'
 import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
+import { mergeFindManyArgs, type MergeFindManyArgs } from 'drizzle-plus'
 import { AnyDBQueryConfig } from 'drizzle-plus/types'
-import { mergeFindManyArgs, type MergeFindManyArgs } from './mergeFindManyArgs'
 
 declare module 'drizzle-orm/pg-core/query-builders/query' {
   export interface RelationalQueryBuilder<

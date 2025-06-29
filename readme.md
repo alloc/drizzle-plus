@@ -337,6 +337,10 @@ The `drizzle-plus` package also has some functions that don't produce SQL expres
 - `mergeRelationsFilter`
   _Combines two `where` filters for the same table._
 
+```ts
+import { mergeFindManyArgs, mergeRelationsFilter } from 'drizzle-plus'
+```
+
 ### Type-safe query definitions
 
 Import the `$findMany` module to extend the query builder API with a `$findMany` method.

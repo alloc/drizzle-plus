@@ -1,3 +1,6 @@
+export * from './mergeFindManyArgs'
+export * from './mergeRelationsFilter'
+
 export * from './syntax/caseWhen'
 export * from './syntax/literal'
 export * from './syntax/nest'

@@ -1,5 +1,5 @@
 import type { SQL, SQLWrapper } from 'drizzle-orm'
-import { AnyDBQueryConfig, AnyRelationsFilter } from 'drizzle-plus/types'
+import { AnyDBQueryConfig, AnyRelationsFilter } from './types'
 
 type FilterOperators = {
   OR?: AnyRelationsFilter[]
