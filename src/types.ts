@@ -1,4 +1,16 @@
-import type { AnyColumn, QueryPromise, SQL } from 'drizzle-orm'
+import type {
+  AnyColumn,
+  OrderByOperators,
+  Placeholder,
+  QueryPromise,
+  RelationsFieldFilter,
+  SQL,
+  SQLOperator,
+  SQLWrapper,
+  Table,
+  ValueOrArray,
+  View,
+} from 'drizzle-orm'
 import type { SelectResultFields } from 'drizzle-orm/query-builders/select.types'
 
 export type SQLValue<T> = T | SQLExpression<T>
@@ -34,3 +46,42 @@ export type QueryToSQL<
       ? SQL<TResult[]>
       : SQL<TResult>
   : never
+
+export interface AnyRelationsFilter {
+  [key: string]:
+    | boolean
+    | RelationsFieldFilter<unknown>
+    | undefined
+    // Nested relations / NOT operator
+    | AnyRelationsFilter
+    // AND/OR operators
+    | AnyRelationsFilter[]
+    // RAW operator
+    | SQLWrapper
+    | ((table: any, operators: any) => SQL)
+}
+
+/**
+ * A bug-free version of `AnyDBQueryConfig` from the `drizzle-orm` module.
+ */
+export type AnyDBQueryConfig = {
+  columns?: Record<string, boolean | undefined> | undefined
+  where?: AnyRelationsFilter | undefined
+  extras?:
+    | Record<
+        string,
+        | SQLWrapper
+        | ((table: Table | View, operators: SQLOperator) => SQLWrapper)
+      >
+    | undefined
+  with?: Record<string, boolean | AnyDBQueryConfig | undefined> | undefined
+  orderBy?:
+    | Record<string, 'asc' | 'desc' | undefined>
+    | ((
+        table: Table | View,
+        operators: OrderByOperators
+      ) => ValueOrArray<AnyColumn | SQL>)
+    | undefined
+  offset?: number | Placeholder | undefined
+  limit?: number | Placeholder | undefined
+}

@@ -272,32 +272,7 @@ cursorParams.orderBy
 
 Also of note, as of June 28 2025, Drizzle doesn't yet provide control over treatment of `NULL` values when using the Relational Query Builder (RQB) API. While this library _could_ implement it ourselves (at least, for the `$cursor` method), we'd prefer to wait for Drizzle to provide a proper solution.
 
-### Dialect-specific functions
-
-These functions have differences between dialects, whether it's the name, the function signature, or its TypeScript definition relies on dialect-specific types.
-
-- **Postgres:**
-  - `jsonAgg`
-  - `toJsonObject`
-- **MySQL:**
-  - `jsonArrayAgg`
-  - `toJsonObject`
-- **SQLite:**
-  - `jsonGroupArray`
-  - `toJsonObject`
-
-```ts
-// Postgres imports
-import { jsonAgg } from 'drizzle-plus/pg'
-
-// MySQL imports
-import { jsonArrayAgg } from 'drizzle-plus/mysql'
-
-// SQLite imports
-import { jsonGroupArray } from 'drizzle-plus/sqlite'
-```
-
-### Universal functions
+### Universal SQL functions
 
 These functions are available in all dialects, since they're part of the SQL standard.
 
@@ -309,7 +284,6 @@ These functions are available in all dialects, since they're part of the SQL sta
 - **SQL functions:**
   - `abs`
   - `coalesce`
-  - `concat`
   - `length`
   - `lower`
   - `nullif`
@@ -325,6 +299,43 @@ Import them from the `drizzle-plus` module:
 ```ts
 import { caseWhen } from 'drizzle-plus'
 ```
+
+### Dialect-specific SQL functions
+
+These functions have differences between dialects, whether it's the name, the function signature, or its TypeScript definition relies on dialect-specific types.
+
+- **Postgres:**
+  - `concat`
+  - `jsonAgg`
+  - `toJsonObject`
+- **MySQL:**
+  - `concat`
+  - `jsonArrayAgg`
+  - `toJsonObject`
+- **SQLite:**
+  - `concat`
+  - `jsonGroupArray`
+  - `toJsonObject`
+
+```ts
+// Postgres imports
+import { jsonAgg } from 'drizzle-plus/pg'
+
+// MySQL imports
+import { jsonArrayAgg } from 'drizzle-plus/mysql'
+
+// SQLite imports
+import { jsonGroupArray } from 'drizzle-plus/sqlite'
+```
+
+### Utility functions
+
+The `drizzle-plus` package also has some functions that don't produce SQL expressions, but exist for various use cases.
+
+- `mergeFindManyArgs`
+  _Combines two configs for a `findMany` query._
+- `mergeRelationsFilter`
+  _Combines two `where` filters for the same table._
 
 ## Types
 
