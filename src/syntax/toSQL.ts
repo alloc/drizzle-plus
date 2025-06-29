@@ -1,25 +1,30 @@
-import { Column, is, SQL } from 'drizzle-orm'
+import { sql, SQL } from 'drizzle-orm'
 import { SQLExpression } from '../types'
-import { literal } from './literal'
 
 /**
- * Accepts any kind of value and returns a `SQLWrapper` instance. If a constant
- * is passed, it is wrapped with the `literal()` function. Otherwise, the value
- * is returned as is.
+ * Accepts any kind of value and returns a `SQLWrapper` instance. Strings are
+ * escaped, constants are wrapped with `sql.raw()`, and objects are returned as
+ * is.
  *
  * This function is useful in cases where a constant value is permitted, but so
- * is a SQL expression. It avoids using a query parameter for constant numbers
- * and booleans, while still escaping strings to prevent SQL injection.
+ * is a SQL expression. It avoids using a query parameter for
+ * numbers/booleans/null, while still escaping strings to prevent SQL injection.
  *
  * @param value - The value to coerce.
  * @returns A `SQLWrapper` instance.
  */
 export function toSQL<T>(
   value: T
-): T extends SQLExpression<unknown> ? T : SQL<T> {
+): T extends SQLExpression<unknown>
+  ? T
+  : T extends number | boolean | null
+    ? SQL<T>
+    : SQL<string> {
   return (
-    is(value, SQL) || is(value, SQL.Aliased) || is(value, Column)
-      ? value
-      : literal(value)
+    value === null || typeof value === 'number' || typeof value === 'boolean'
+      ? sql.raw(String(value))
+      : typeof value !== 'object'
+        ? sql`${value}`
+        : value
   ) as any
 }
