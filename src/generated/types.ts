@@ -8,16 +8,16 @@ export type { RelationalQueryBuilder }
  *
  * @example
  * ```ts
- * type FooWhereFilter = InferWhereFilter<typeof db.query.foo>
+ * type FooFilter = InferRelationsFilter<typeof db.query.foo>
  * //   ^? type RelationsFilter<TFields, TSchema>
  *
- * const where: FooWhereFilter = {
+ * const where: FooFilter = {
  *   bar: { gt: 0 },
  *   baz: { in: [1, 2, 3] },
  * }
  * ```
  */
-export type InferWhereFilter<T extends RelationalQueryBuilder<any, any>> =
+export type InferRelationsFilter<T extends RelationalQueryBuilder<any, any>> =
   T extends RelationalQueryBuilder<infer TSchema, infer TFields>
     ? RelationsFilter<TFields, TSchema>
     : never
