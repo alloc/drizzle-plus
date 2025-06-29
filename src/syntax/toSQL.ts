@@ -1,4 +1,4 @@
-import { sql, SQL } from 'drizzle-orm'
+import { isSQLWrapper, sql, SQL } from 'drizzle-orm'
 import { SQLExpression } from '../types'
 
 /**
@@ -20,11 +20,5 @@ export function toSQL<T>(
   : T extends number | boolean | null
     ? SQL<T>
     : SQL<string> {
-  return (
-    value === null || typeof value === 'number' || typeof value === 'boolean'
-      ? sql.raw(String(value))
-      : typeof value !== 'object'
-        ? sql`${value}`
-        : value
-  ) as any
+  return (isSQLWrapper(value) ? value : sql`${value}`) as any
 }
