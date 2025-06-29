@@ -113,7 +113,7 @@ Set `returning` to an empty object to return nothing.
 
 #### Upserting many rows
 
-You may pass an array of objects to the `data` property to upsert many rows at once.
+You may pass an array of objects to the `data` property to upsert many rows at once. For optimal performance and atomicity guarantees, the rows are upserted in a single query.
 
 ```ts
 const rows = await db.query.user.upsert({
