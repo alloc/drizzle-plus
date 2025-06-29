@@ -24,6 +24,7 @@ export default defineConfig({
     compilerOptions: {
       paths: {
         'drizzle-plus/*': ['./src/*'],
+        'drizzle-plus': ['./src/index.ts'],
       },
     },
   },
