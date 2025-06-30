@@ -47,4 +47,17 @@ describe('count', () => {
 
     expect(await query).toEqual(0)
   })
+
+  test('with relation', () => {
+    const query = db.query.user.count({
+      emails: true,
+    })
+
+    expect(query.toSQL()).toMatchInlineSnapshot(`
+      {
+        "params": [],
+        "sql": "select count(*) AS "count" from "user" where exists (select * from "user_email" as "f0" where "user"."id" = "f0"."userId" limit 1)",
+      }
+    `)
+  })
 })
