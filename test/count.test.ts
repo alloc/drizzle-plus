@@ -2,7 +2,7 @@ import { SQL } from 'drizzle-orm'
 import { nest } from 'drizzle-plus'
 import 'drizzle-plus/sqlite/count'
 import { getDialect } from 'drizzle-plus/utils'
-import { db, truncate } from './config/client'
+import { db } from './config/client'
 
 describe('count', () => {
   test('SQL output', () => {
@@ -45,7 +45,6 @@ describe('count', () => {
       }
     `)
 
-    await truncate(['user'])
     expect(await query).toEqual(0)
   })
 })
