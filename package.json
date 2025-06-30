@@ -19,6 +19,10 @@
       "types": "./dist/generated/sqlite/index.d.ts",
       "default": "./dist/generated/sqlite/index.js"
     },
+    "./sqlite/$*": {
+      "types": "./dist/generated/sqlite/_*.d.ts",
+      "default": "./dist/generated/sqlite/$*.js"
+    },
     "./sqlite/*": {
       "types": "./dist/generated/sqlite/*.d.ts",
       "default": "./dist/generated/sqlite/*.js"
@@ -27,6 +31,10 @@
       "types": "./dist/generated/mysql/index.d.ts",
       "default": "./dist/generated/mysql/index.js"
     },
+    "./mysql/$*": {
+      "types": "./dist/generated/mysql/_*.d.ts",
+      "default": "./dist/generated/mysql/$*.js"
+    },
     "./mysql/*": {
       "types": "./dist/generated/mysql/*.d.ts",
       "default": "./dist/generated/mysql/*.js"
@@ -34,6 +42,10 @@
     "./pg": {
       "types": "./dist/generated/pg/index.d.ts",
       "default": "./dist/generated/pg/index.js"
+    },
+    "./pg/$*": {
+      "types": "./dist/generated/pg/_*.d.ts",
+      "default": "./dist/generated/pg/$*.js"
     },
     "./pg/*": {
       "types": "./dist/generated/pg/*.d.ts",
