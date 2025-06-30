@@ -1,6 +1,11 @@
-import { sql } from 'drizzle-orm'
-import type { AnyQuery, QueryToSQL } from '../types'
-import { getDecoder, getSelectedFields, getSQL } from '../utils'
+import { QueryPromise, sql } from 'drizzle-orm'
+import type { AnyQuery, QueryToSQL, SQLExpression } from '../types'
+import {
+  buildRelationalQuery,
+  getDecoder,
+  getSelectedFields,
+  getSQL,
+} from '../utils'
 
 /**
  * Wrap a subquery with parentheses and decode the result.
@@ -13,8 +18,19 @@ export function nest<T extends AnyQuery>(subquery: T) {
   if (keys.length !== 1) {
     throw new Error('Subquery must have exactly one column')
   }
+
+  if (subquery instanceof QueryPromise) {
+    const builtQuery = buildRelationalQuery(subquery)
+    const { field } = builtQuery.selection[0]
+
+    return sql`(${builtQuery.sql})`.mapWith(result => {
+      return getDecoder(field as SQLExpression).mapFromDriverValue(result)
+    }) as QueryToSQL<T, { unwrap: true }>
+  }
+
+  const field = selectedFields[keys[0] as string]
+
   return sql`(${getSQL(subquery)})`.mapWith(result => {
-    const decoder = getDecoder(selectedFields[keys[0] as string] as any)
-    return decoder.mapFromDriverValue(result)
+    return getDecoder(field as SQLExpression).mapFromDriverValue(result)
   }) as QueryToSQL<T, { unwrap: true }>
 }

@@ -1,7 +1,9 @@
 import {
+  BuildRelationalQueryResult,
   getTableColumns,
   is,
   QueryPromise,
+  QueryWithTypings,
   SQL,
   Table,
   type DBQueryConfig,
@@ -37,4 +39,17 @@ export function getDecoder<T>(
 
 export function getSQL(value: AnyQuery): SQL {
   return (value as any).getSQL()
+}
+
+type AnyDialect = {
+  sqlToQuery(sql: SQL): QueryWithTypings
+}
+
+export function getDialect(value: AnyQuery): AnyDialect {
+  return (value as any).dialect
+}
+
+export function buildRelationalQuery(value: QueryPromise<any>) {
+  const getQuery = (value as any)._getQuery as () => BuildRelationalQueryResult
+  return getQuery.call(value)
 }

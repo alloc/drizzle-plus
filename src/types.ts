@@ -32,19 +32,17 @@ export interface AnySelectQuery {
 
 export type QueryToSQL<
   T extends AnyQuery,
-  Options extends { toArray?: boolean; unwrap?: boolean } = {},
+  TOptions extends { unwrap: true } = never,
 > = (
   T extends QueryPromise<infer TResult>
     ? TResult
     : SelectResultFields<Extract<T, AnySelectQuery>['_']['selectedFields']>
 ) extends infer TResult
-  ? Options['unwrap'] extends true
-    ? Options['toArray'] extends true
-      ? SQL<TResult[keyof TResult][]>
+  ? TOptions extends { unwrap: true }
+    ? TResult extends readonly (infer TElement)[]
+      ? SQL<TElement[keyof TElement]>
       : SQL<TResult[keyof TResult]>
-    : Options['toArray'] extends true
-      ? SQL<TResult[]>
-      : SQL<TResult>
+    : SQL<TResult>
   : never
 
 export interface AnyRelationsFilter {
