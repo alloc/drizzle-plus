@@ -40,8 +40,8 @@ export type QueryToSQL<
 ) extends infer TResult
   ? TOptions extends { unwrap: true }
     ? TResult extends readonly (infer TElement)[]
-      ? SQL<TElement[keyof TElement]>
-      : SQL<TResult[keyof TResult]>
+      ? SQL<TElement extends object ? TElement[keyof TElement] : TElement>
+      : SQL<TResult extends object ? TResult[keyof TResult] : TResult>
     : SQL<TResult>
   : never
 
