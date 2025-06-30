@@ -415,12 +415,12 @@ When you pass two configs to `$findMany()`, it passes them to `mergeFindManyArgs
 Here are some useful types that `drizzle-plus` provides:
 
 ```ts
-// Dialect-specific types
+// Universal types
 import {
   InferWhereFilter,
   InferFindManyArgs,
   InferFindFirstArgs,
-} from 'drizzle-plus/pg/types'
+} from 'drizzle-plus/types'
 
 // Pass the query builder to the type
 type WhereFilter = InferWhereFilter<typeof db.query.foo>

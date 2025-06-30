@@ -85,3 +85,58 @@ export type AnyDBQueryConfig = {
   offset?: number | Placeholder | undefined
   limit?: number | Placeholder | undefined
 }
+
+/**
+ * Infer the type for the `where` filter of a relational query.
+ *
+ * @example
+ * ```ts
+ * type FooFilter = InferRelationsFilter<typeof db.query.foo>
+ * //   ^? type RelationsFilter<TFields, TSchema>
+ *
+ * const where: FooFilter = {
+ *   bar: { gt: 0 },
+ *   baz: { in: [1, 2, 3] },
+ * }
+ * ```
+ */
+export type InferRelationsFilter<T extends { findMany(args?: any): any }> =
+  Extract<InferFindManyArgs<T>['where'], object>
+
+/**
+ * Infer the type for the `orderBy` clause of a relational query.
+ *
+ * @example
+ * ```ts
+ * type FooOrderBy = InferOrderBy<typeof db.query.foo>
+ * //   ^? type { id?: 'asc' | 'desc' | undefined, name?: 'asc' | 'desc' | undefined }
+ * ```
+ */
+export type InferOrderBy<T extends { findMany(args?: any): any }> = Extract<
+  InferFindManyArgs<T>['orderBy'],
+  object
+>
+
+/**
+ * Infer the query arguments for a `db.query#findMany` call.
+ *
+ * @example
+ * ```ts
+ * type FooFindManyArgs = InferFindManyArgs<typeof db.query.foo>
+ * //   ^? type { columns, where, orderBy, … }
+ * ```
+ */
+export type InferFindManyArgs<T extends { findMany(args?: any): any }> =
+  T extends { findMany(args?: infer TArgs): any } ? TArgs : never
+
+/**
+ * Infer the query arguments for a `db.query#findFirst` call.
+ *
+ * @example
+ * ```ts
+ * type FooFindFirstArgs = InferFindFirstArgs<typeof db.query.foo>
+ * //   ^? type { columns, where, orderBy, … }
+ * ```
+ */
+export type InferFindFirstArgs<T extends { findFirst(args?: any): any }> =
+  T extends { findFirst(args?: infer TArgs): any } ? TArgs : never

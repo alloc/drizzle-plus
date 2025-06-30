@@ -5,8 +5,9 @@ import {
   type TablesRelationalConfig,
 } from 'drizzle-orm'
 import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
-import { SelectResultFields } from 'drizzle-orm/query-builders/select.types'
-import { InferColumns, InferOrderBy } from './types'
+import type { SelectResultFields } from 'drizzle-orm/query-builders/select.types'
+import type { InferOrderBy } from 'drizzle-plus/types'
+import type { InferColumns } from './types'
 
 export type InferCursor<T extends RelationalQueryBuilder<any, any>> = Partial<
   SelectResultFields<InferColumns<T>>
@@ -50,8 +51,8 @@ declare module 'drizzle-orm/pg-core/query-builders/query' {
 }
 
 RelationalQueryBuilder.prototype.$cursor = function (
-  orderBy: Record<string, 'asc' | 'desc' | undefined>,
-  cursor: object | null | undefined
+  orderBy: any,
+  cursor: any
 ): RelationalQueryCursor<any, any, any, any> {
   if (!cursor) {
     return { where: undefined, orderBy }
@@ -61,7 +62,7 @@ RelationalQueryBuilder.prototype.$cursor = function (
   Object.keys(orderBy)
     .filter(key => orderBy[key] !== undefined)
     .forEach((column, index, columns) => {
-      const value = (cursor as any)[column]
+      const value = cursor[column]
       const comparator =
         index < columns.length - 1
           ? orderBy[column] === 'asc'
