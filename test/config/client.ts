@@ -8,3 +8,12 @@ export const db = drizzle({
   schema,
   relations,
 })
+
+/** Truncate all tables or the specified tables. */
+export async function truncate(keys?: (keyof typeof schema)[]) {
+  await Promise.all(
+    (keys ?? Object.keys(schema)).map(table =>
+      db.delete(schema[table as never])
+    )
+  )
+}

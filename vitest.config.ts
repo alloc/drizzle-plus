@@ -7,7 +7,6 @@ export default defineConfig({
     globals: true,
     isolate: false,
     globalSetup: ['./test/config/globalSetup.ts'],
-    setupFiles: ['./test/config/localSetup.ts'],
   },
   plugins: [tsconfigPaths()],
 })
