@@ -1,11 +1,11 @@
 import 'drizzle-plus/sqlite/findManyAndCount'
 import { db } from './config/client'
-import { foo } from './config/schema'
+import { user } from './config/schema'
 
 describe('findManyAndCount', () => {
   beforeAll(async () => {
     await db
-      .insert(foo)
+      .insert(user)
       .values([
         { id: 1, name: 'Alice', age: 25 },
         { id: 2, name: 'Bob', age: 30 },

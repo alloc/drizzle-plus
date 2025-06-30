@@ -9,7 +9,7 @@ describe('caseWhen', () => {
       .select({
         test: caseWhen(sql`true`, 1).else(2),
       })
-      .from(schema.foo)
+      .from(schema.user)
 
     expect(query.toSQL()).toMatchInlineSnapshot(`
       {
@@ -23,11 +23,11 @@ describe('caseWhen', () => {
 
     const query2 = db
       .select({
-        test: caseWhen(gt(schema.foo.id, 100), 1)
-          .when(gt(schema.foo.id, 200), 2)
+        test: caseWhen(gt(schema.user.id, 100), 1)
+          .when(gt(schema.user.id, 200), 2)
           .elseNull(),
       })
-      .from(schema.foo)
+      .from(schema.user)
 
     expect(query2.toSQL()).toMatchInlineSnapshot(`
       {

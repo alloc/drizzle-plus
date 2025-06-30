@@ -6,15 +6,15 @@ import {
   unique,
 } from 'drizzle-orm/sqlite-core'
 
-export const foo = sqliteTable('foo', {
+export const user = sqliteTable('user', {
   id: integer().primaryKey(),
   name: text(),
   age: integer(),
   handle: text().unique(),
 })
 
-export const orderItems = sqliteTable(
-  'order_items',
+export const orderItem = sqliteTable(
+  'order_item',
   {
     orderId: integer().notNull(),
     productId: integer().notNull(),
@@ -27,12 +27,14 @@ export const orderItems = sqliteTable(
   ]
 )
 
-export const userEmails = sqliteTable(
-  'user_emails',
+export const userEmail = sqliteTable(
+  'user_email',
   {
-    userId: integer().notNull(),
+    userId: integer()
+      .notNull()
+      .references(() => user.id),
     email: text().notNull(),
     label: text(),
   },
-  table => [unique().on(table.userId, table.email)]
+  table => [unique('user_email_unique').on(table.userId, table.email)]
 )
