@@ -1,18 +1,21 @@
+import { SQL } from 'drizzle-orm'
+import { nest } from 'drizzle-plus'
 import 'drizzle-plus/sqlite/count'
-import { db } from './config/client'
+import { getDialect } from 'drizzle-plus/utils'
+import { db, truncate } from './config/client'
 
 describe('count', () => {
   test('SQL output', () => {
-    const query = db.query.foo.count()
+    const query = db.query.user.count()
 
     expect(query.toSQL()).toMatchInlineSnapshot(`
       {
         "params": [],
-        "sql": "select count(*) AS "count" from "foo"",
+        "sql": "select count(*) AS "count" from "user"",
       }
     `)
 
-    const query2 = db.query.foo.count({
+    const query2 = db.query.user.count({
       id: { gt: 100 },
     })
 
@@ -21,11 +24,28 @@ describe('count', () => {
         "params": [
           100,
         ],
-        "sql": "select count(*) AS "count" from "foo" where "foo"."id" > ?",
+        "sql": "select count(*) AS "count" from "user" where "user"."id" > ?",
         "typings": [
           "none",
         ],
       }
     `)
+  })
+
+  test('with the nest() helper', async () => {
+    const query = db.query.user.count()
+
+    const nestedQuery = nest(query)
+    expect(nestedQuery).toBeInstanceOf(SQL)
+
+    expect(getDialect(query).sqlToQuery(nestedQuery)).toMatchInlineSnapshot(`
+      {
+        "params": [],
+        "sql": "(select count(*) AS "count" from "user")",
+      }
+    `)
+
+    await truncate(['user'])
+    expect(await query).toEqual(0)
   })
 })

@@ -17,7 +17,7 @@ describe('caseWhen', () => {
           1,
           2,
         ],
-        "sql": "select CASE WHEN true THEN ? ELSE ? END from "foo"",
+        "sql": "select CASE WHEN true THEN ? ELSE ? END from "user"",
       }
     `)
 
@@ -37,7 +37,7 @@ describe('caseWhen', () => {
           200,
           2,
         ],
-        "sql": "select CASE WHEN "foo"."id" > ? THEN ? WHEN "foo"."id" > ? THEN ? END from "foo"",
+        "sql": "select CASE WHEN "user"."id" > ? THEN ? WHEN "user"."id" > ? THEN ? END from "user"",
       }
     `)
   })

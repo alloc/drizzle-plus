@@ -4,14 +4,14 @@ import { db } from './config/client'
 
 describe('upsert', () => {
   test('primary key + returning', async () => {
-    const query = db.query.foo.upsert({
+    const query = db.query.user.upsert({
       data: {
         id: 100,
         name: 'Gregory',
       },
       returning: {
         id: true,
-        name: foo => sql<string>`upper(${foo.name})`,
+        name: user => sql<string>`upper(${user.name})`,
       },
     })
 
@@ -21,7 +21,7 @@ describe('upsert', () => {
           100,
           "Gregory",
         ],
-        "sql": "insert into "foo" ("id", "name", "age", "handle") values (?, ?, null, null) on conflict ("foo"."id") do update set "name" = excluded."name" returning "id", upper("name")",
+        "sql": "insert into "user" ("id", "name", "age", "handle") values (?, ?, null, null) on conflict ("user"."id") do update set "name" = excluded."name" returning "id", upper("name")",
       }
     `)
 
@@ -34,7 +34,7 @@ describe('upsert', () => {
   })
 
   test('composite primary key + no returning', () => {
-    const query = db.query.orderItems.upsert({
+    const query = db.query.orderItem.upsert({
       data: {
         orderId: 100,
         productId: 200,
@@ -50,13 +50,13 @@ describe('upsert', () => {
           200,
           3,
         ],
-        "sql": "insert into "order_items" ("orderId", "productId", "quantity") values (?, ?, ?) on conflict ("order_items"."orderId", "order_items"."productId") do update set "quantity" = excluded."quantity"",
+        "sql": "insert into "order_item" ("orderId", "productId", "quantity") values (?, ?, ?) on conflict ("order_item"."orderId", "order_item"."productId") do update set "quantity" = excluded."quantity"",
       }
     `)
   })
 
   test('unique constraint', () => {
-    const query = db.query.userEmails.upsert({
+    const query = db.query.userEmail.upsert({
       data: {
         userId: 100,
         email: 'gregory@example.com',
@@ -71,13 +71,13 @@ describe('upsert', () => {
           "gregory@example.com",
           "work",
         ],
-        "sql": "insert into "user_emails" ("userId", "email", "label") values (?, ?, ?) on conflict ("user_emails"."userId", "user_emails"."email") do update set "label" = excluded."label" returning "userId", "email", "label"",
+        "sql": "insert into "user_email" ("userId", "email", "label") values (?, ?, ?) on conflict ("user_email"."userId", "user_email"."email") do update set "label" = excluded."label" returning "userId", "email", "label"",
       }
     `)
   })
 
   test('update a unique column through primary key', () => {
-    const query = db.query.foo.upsert({
+    const query = db.query.user.upsert({
       data: {
         handle: 'gregory',
         id: 100, // Property order is unimportant.
@@ -90,13 +90,13 @@ describe('upsert', () => {
           100,
           "gregory",
         ],
-        "sql": "insert into "foo" ("id", "name", "age", "handle") values (?, null, null, ?) on conflict ("foo"."id") do update set "handle" = excluded."handle" returning "id", "name", "age", "handle"",
+        "sql": "insert into "user" ("id", "name", "age", "handle") values (?, null, null, ?) on conflict ("user"."id") do update set "handle" = excluded."handle" returning "id", "name", "age", "handle"",
       }
     `)
   })
 
   test('update through a unique column', () => {
-    const query = db.query.foo.upsert({
+    const query = db.query.user.upsert({
       data: {
         name: 'Gregory',
         handle: 'gregory', // Property order is unimportant.
@@ -109,13 +109,13 @@ describe('upsert', () => {
           "Gregory",
           "gregory",
         ],
-        "sql": "insert into "foo" ("id", "name", "age", "handle") values (null, ?, null, ?) on conflict ("foo"."handle") do update set "name" = excluded."name" returning "id", "name", "age", "handle"",
+        "sql": "insert into "user" ("id", "name", "age", "handle") values (null, ?, null, ?) on conflict ("user"."handle") do update set "name" = excluded."name" returning "id", "name", "age", "handle"",
       }
     `)
   })
 
   test('do nothing on conflict', () => {
-    const query = db.query.foo.upsert({
+    const query = db.query.user.upsert({
       data: {
         id: 100,
       },
@@ -126,13 +126,13 @@ describe('upsert', () => {
         "params": [
           100,
         ],
-        "sql": "insert into "foo" ("id", "name", "age", "handle") values (?, null, null, null) on conflict do nothing returning "id", "name", "age", "handle"",
+        "sql": "insert into "user" ("id", "name", "age", "handle") values (?, null, null, null) on conflict do nothing returning "id", "name", "age", "handle"",
       }
     `)
   })
 
   test('upsert many rows', async () => {
-    const query = db.query.foo.upsert({
+    const query = db.query.user.upsert({
       data: [
         { id: 100, name: 'Gregory' },
         { id: 101, name: 'John' },
@@ -147,7 +147,7 @@ describe('upsert', () => {
           101,
           "John",
         ],
-        "sql": "insert into "foo" ("id", "name", "age", "handle") values (?, ?, null, null), (?, ?, null, null) on conflict ("foo"."id") do update set "name" = excluded."name" returning "id", "name", "age", "handle"",
+        "sql": "insert into "user" ("id", "name", "age", "handle") values (?, ?, null, null), (?, ?, null, null) on conflict ("user"."id") do update set "name" = excluded."name" returning "id", "name", "age", "handle"",
       }
     `)
   })

@@ -1,5 +1,6 @@
 import { eq, noopDecoder, sql, SQL } from 'drizzle-orm'
 import { nest } from 'drizzle-plus'
+import 'drizzle-plus/sqlite/count'
 import { getDecoder, getDialect } from 'drizzle-plus/utils'
 import { db } from './config/client'
 import * as schema from './config/schema'

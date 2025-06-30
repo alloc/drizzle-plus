@@ -4,7 +4,7 @@ import { db } from './config/client'
 describe('$cursor', () => {
   test('with one column', () => {
     // Ascending.
-    expect(db.query.foo.$cursor({ id: 'asc' }, { id: 99 }))
+    expect(db.query.user.$cursor({ id: 'asc' }, { id: 99 }))
       .toMatchInlineSnapshot(`
         {
           "orderBy": {
@@ -19,7 +19,7 @@ describe('$cursor', () => {
       `)
 
     // Descending.
-    expect(db.query.foo.$cursor({ id: 'desc' }, { id: 99 }))
+    expect(db.query.user.$cursor({ id: 'desc' }, { id: 99 }))
       .toMatchInlineSnapshot(`
         {
           "orderBy": {
@@ -36,7 +36,7 @@ describe('$cursor', () => {
 
   test('with multiple columns', () => {
     expect(
-      db.query.foo.$cursor(
+      db.query.user.$cursor(
         { name: 'asc', age: 'desc' },
         { name: 'John', age: 20 }
       )
@@ -59,7 +59,7 @@ describe('$cursor', () => {
 
     // Reverse order.
     expect(
-      db.query.foo.$cursor(
+      db.query.user.$cursor(
         { name: 'desc', age: 'asc' },
         { name: 'John', age: 20 }
       )
@@ -81,7 +81,7 @@ describe('$cursor', () => {
     `)
 
     // Three columns.
-    const cursor = db.query.foo.$cursor(
+    const cursor = db.query.user.$cursor(
       { name: 'desc', age: 'desc', id: 'desc' },
       { name: 'John', age: 20, id: 99 }
     )
