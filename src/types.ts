@@ -104,6 +104,20 @@ export type InferRelationsFilter<T extends { findMany(args?: any): any }> =
   Extract<InferFindManyArgs<T>['where'], object>
 
 /**
+ * Infer the type for the `with` clause of a relational query.
+ *
+ * @example
+ * ```ts
+ * type FooRelations = InferRelations<typeof db.query.foo>
+ * //   ^? type { bar: { columns?, with?, … } }
+ * ```
+ */
+export type InferRelations<T extends { findMany(args?: any): any }> = Extract<
+  InferFindManyArgs<T>['with'],
+  object
+>
+
+/**
  * Infer the type for the `orderBy` clause of a relational query.
  *
  * @example
