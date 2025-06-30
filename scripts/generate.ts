@@ -56,12 +56,8 @@ const replacers: {
       snipRegex,
       applySnips(dialect, {
         sqlite: {
-          then: dedent /* ts */ `
-            then(onfulfilled, onrejected): any {
-              return Promise.resolve(session.run(query))
-                .then(results => Number(results.rows[0].count))
-                .then(onfulfilled, onrejected)
-            },
+          execute: dedent /* ts */ `
+            const result = await this.session.get<any>(query)
           `,
         },
       })
