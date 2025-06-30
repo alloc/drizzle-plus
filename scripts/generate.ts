@@ -102,6 +102,18 @@ if (!process.argv.includes('--no-remove')) {
   }
 }
 
+for (const dialect of dialects) {
+  const root = path.join('src/generated', dialect)
+  fs.mkdirSync(root, { recursive: true })
+  fs.writeFileSync(
+    path.join(root, 'tsconfig.json'),
+    JSON.stringify({
+      extends: '../tsconfig.json',
+      include: ['./'],
+    })
+  )
+}
+
 for (const file of globSync('src/generated/*.ts')) {
   const template = fs.readFileSync(file, 'utf-8')
   const name = path.basename(file, '.ts')
@@ -133,8 +145,7 @@ for (const file of globSync('src/generated/*.ts')) {
         )
     }
 
-    fs.mkdirSync(`src/generated/${dialect}`, { recursive: true })
-    fs.writeFileSync(`src/generated/${dialect}/${name}.ts`, content)
+    fs.writeFileSync(path.join('src/generated', dialect, name + '.ts'), content)
   }
 }
 
