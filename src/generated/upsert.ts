@@ -130,6 +130,9 @@ RelationalQueryBuilder.prototype.upsert = function (
 
   return {
     then(onfulfilled, onrejected): any {
+      if (Array.isArray(options.data)) {
+        return query.then(onfulfilled, onrejected)
+      }
       return query
         .then((results: any) => results[0])
         .then(onfulfilled, onrejected)
