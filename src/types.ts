@@ -101,7 +101,9 @@ export type AnyDBQueryConfig = {
  * ```
  */
 export type InferRelationsFilter<T extends { findMany(args?: any): any }> =
-  Extract<InferFindManyArgs<T>['where'], object>
+  InferFindManyArgs<T>['where'] extends infer TWhere
+    ? Extract<TWhere, object>
+    : never
 
 /**
  * Infer the type for the `with` clause of a relational query.
@@ -112,10 +114,10 @@ export type InferRelationsFilter<T extends { findMany(args?: any): any }> =
  * //   ^? type { bar: { columns?, with?, … } }
  * ```
  */
-export type InferRelations<T extends { findMany(args?: any): any }> = Extract<
-  InferFindManyArgs<T>['with'],
-  object
->
+export type InferRelations<T extends { findMany(args?: any): any }> =
+  InferFindManyArgs<T>['with'] extends infer TWith
+    ? Extract<TWith, object>
+    : never
 
 /**
  * Infer the type for the `orderBy` clause of a relational query.
@@ -126,10 +128,10 @@ export type InferRelations<T extends { findMany(args?: any): any }> = Extract<
  * //   ^? type { id?: 'asc' | 'desc' | undefined, name?: 'asc' | 'desc' | undefined }
  * ```
  */
-export type InferOrderBy<T extends { findMany(args?: any): any }> = Extract<
-  InferFindManyArgs<T>['orderBy'],
-  object
->
+export type InferOrderBy<T extends { findMany(args?: any): any }> =
+  InferFindManyArgs<T>['orderBy'] extends infer TOrderBy
+    ? Extract<TOrderBy, object>
+    : never
 
 /**
  * Infer the query arguments for a `db.query#findMany` call.
@@ -141,7 +143,9 @@ export type InferOrderBy<T extends { findMany(args?: any): any }> = Extract<
  * ```
  */
 export type InferFindManyArgs<T extends { findMany(args?: any): any }> =
-  T extends { findMany(args?: infer TArgs): any } ? TArgs : never
+  T extends { findMany(args?: infer TArgs): any }
+    ? Extract<TArgs, object>
+    : never
 
 /**
  * Infer the query arguments for a `db.query#findFirst` call.
