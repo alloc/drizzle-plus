@@ -301,6 +301,7 @@ These functions are available in all dialects, since they're part of the SQL sta
   - `abs`
   - `ceil`
   - `coalesce`
+  - `currentTimestamp`
   - `floor`
   - `length`
   - `lower`
@@ -317,6 +318,20 @@ Import them from the `drizzle-plus` module:
 
 ```ts
 import { caseWhen } from 'drizzle-plus'
+```
+
+#### Timestamps
+
+Any function that returns a timestamp will return a `Timestamp` object. If you want Drizzle to parse it into a `Date` object for your JavaScript code, you can call the `toDate()` method.
+
+```ts
+import { currentTimestamp } from 'drizzle-plus'
+
+const now = currentTimestamp()
+// => Timestamp<string>
+
+now.toDate()
+// => SQL<Date>
 ```
 
 ### Dialect-specific SQL functions
