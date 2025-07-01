@@ -105,11 +105,14 @@ RelationalQueryBuilder.prototype.upsert = function (
     options.data
   )
 
-  const updatedEntries = select(Array.from(usedKeys), key =>
-    !target.includes(columns[key])
-      ? [key, sql`excluded.${sql.identifier(columns[key].name)}`]
-      : null
-  )
+  const updatedEntries = select(Array.from(usedKeys), key => {
+    const column = columns[key]
+    if (target.includes(column)) {
+      return null
+    }
+    const name = dialect.casing.getColumnCasing(column)
+    return [key, sql`excluded.${sql.identifier(name)}`]
+  })
   if (updatedEntries.length > 0) {
     query.onConflictDoUpdate({
       target,
