@@ -299,9 +299,12 @@ These functions are available in all dialects, since they're part of the SQL sta
   - `toSQL`
 - **SQL functions:**
   - `abs`
+  - `ceil`
   - `coalesce`
+  - `floor`
   - `length`
   - `lower`
+  - `mod`
   - `nullif`
   - `power`
   - `round`
