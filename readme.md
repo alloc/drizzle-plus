@@ -323,15 +323,15 @@ These functions have differences between dialects, whether it's the name, the fu
 - **Postgres:**
   - `concat`
   - `jsonAgg`
-  - `toJsonObject`
+  - `jsonBuildObject`
 - **MySQL:**
   - `concat`
   - `jsonArrayAgg`
-  - `toJsonObject`
+  - `jsonObject`
 - **SQLite:**
   - `concat`
   - `jsonGroupArray`
-  - `toJsonObject`
+  - `jsonObject`
 
 ```ts
 // Postgres imports

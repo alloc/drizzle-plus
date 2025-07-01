@@ -166,3 +166,10 @@ export type InferFindManyArgs<T extends { findMany(args?: any): any }> =
  */
 export type InferFindFirstArgs<T extends { findFirst(args?: any): any }> =
   T extends { findFirst(args?: infer TArgs): any } ? TArgs : never
+
+/**
+ * Coerce a `db.select()` result or a record of SQL expressions to a JSON object
+ * query result.
+ */
+export type ToJsonObject<T extends AnySelectQuery | Record<string, unknown>> =
+  T extends AnySelectQuery ? QueryToSQL<T> : SQL<SelectResultFields<T>>

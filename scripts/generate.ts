@@ -63,32 +63,6 @@ const replacers: {
       })
     )
   },
-  jsonAgg(content, dialect) {
-    return content
-      .replace(
-        /json_agg/g,
-        {
-          sqlite: 'json_group_array',
-          mysql: 'json_arrayagg',
-        }[dialect]
-      )
-      .replace(
-        /jsonAgg/g,
-        {
-          sqlite: 'jsonGroupArray',
-          mysql: 'jsonArrayAgg',
-        }[dialect]
-      )
-  },
-  toJsonObject(content, dialect) {
-    return content.replace(
-      /json_build_object/g,
-      {
-        sqlite: 'json_object',
-        mysql: 'json_object',
-      }[dialect]
-    )
-  },
 }
 
 // Clear generated files from previous runs.
