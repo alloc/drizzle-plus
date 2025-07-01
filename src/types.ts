@@ -30,6 +30,8 @@ export interface AnySelectQuery {
   getSQL(): SQL
 }
 
+type UndefinedToNull<T> = T extends undefined ? null : T
+
 export type QueryToSQL<
   T extends AnyQuery,
   TOptions extends { unwrap: true } = never,
@@ -38,11 +40,19 @@ export type QueryToSQL<
     ? TResult
     : SelectResultFields<Extract<T, AnySelectQuery>['_']['selectedFields']>
 ) extends infer TResult
-  ? TOptions extends { unwrap: true }
-    ? TResult extends readonly (infer TElement)[]
-      ? SQL<TElement extends object ? TElement[keyof TElement] : TElement>
-      : SQL<TResult extends object ? TResult[keyof TResult] : TResult>
-    : SQL<TResult>
+  ? SQL<
+      UndefinedToNull<
+        TOptions extends { unwrap: true }
+          ? TResult extends readonly (infer TElement)[]
+            ? TElement extends object
+              ? TElement[keyof TElement]
+              : TElement
+            : TResult extends object
+              ? TResult[keyof TResult]
+              : TResult
+          : TResult
+      >
+    >
   : never
 
 export interface AnyRelationsFilter {
