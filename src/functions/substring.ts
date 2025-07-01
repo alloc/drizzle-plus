@@ -18,6 +18,6 @@ export function substring<
   length?: SQLValue<TPosition>
 ): SQL<string | Extract<TInput | TPosition, null>> {
   return length !== undefined
-    ? sql`substring(${value}, ${start}, ${length})`
-    : sql`substring(${value}, ${start})`
+    ? sql`substring(${value} from ${start} for ${length})`
+    : sql`substring(${value} from ${start})`
 }
