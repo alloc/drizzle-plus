@@ -1,13 +1,17 @@
 import {
   getTableColumns,
-  InferInsertModel,
   SQL,
   sql,
   Table,
   type TableRelationalConfig,
   type TablesRelationalConfig,
 } from 'drizzle-orm'
-import { getTableConfig, PgColumn, PgInsertBuilder } from 'drizzle-orm/pg-core'
+import {
+  getTableConfig,
+  PgColumn,
+  PgInsertBuilder,
+  PgInsertValue,
+} from 'drizzle-orm/pg-core'
 import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
 import { SelectResultField } from 'drizzle-orm/query-builders/select.types'
 import { castArray, isFunction, mapValues, select } from 'radashi'
@@ -26,8 +30,8 @@ interface UpsertOptions<
   TReturning extends ReturningClause<TTable>,
 > {
   data: TMode extends 'one'
-    ? InferInsertModel<TTable>
-    : readonly InferInsertModel<TTable>[]
+    ? PgInsertValue<TTable>
+    : readonly PgInsertValue<TTable>[]
   /**
    * Specify which columns to return. An empty object means “return nothing”.
    *
