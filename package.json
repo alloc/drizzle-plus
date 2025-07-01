@@ -53,7 +53,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "!**/*.map"
   ],
   "license": "MIT",
   "author": "Alec Larson",
