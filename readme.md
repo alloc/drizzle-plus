@@ -322,7 +322,7 @@ import { caseWhen } from 'drizzle-plus'
 
 #### Timestamps
 
-Any function that returns a timestamp will return a `Timestamp` object. If you want Drizzle to parse it into a `Date` object for your JavaScript code, you can call the `toDate()` method.
+Any function that returns a timestamp will return a `Timestamp` object, which extends the `SQL` class. Call the `toDate()` method to instruct Drizzle to parse it into a `Date` object (which is only relevant if the timestamp is used in a `select` or `returning` clause).
 
 ```ts
 import { currentTimestamp } from 'drizzle-plus'
