@@ -11,6 +11,7 @@ import {
   PgColumn,
   PgInsertBuilder,
   PgInsertValue,
+  PgTable,
 } from 'drizzle-orm/pg-core'
 import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
 import { SelectResultField } from 'drizzle-orm/query-builders/select.types'
@@ -26,7 +27,7 @@ type ReturningClause<TTable extends Table> = Partial<
 
 interface UpsertOptions<
   TMode extends 'one' | 'many',
-  TTable extends Table,
+  TTable extends PgTable,
   TReturning extends ReturningClause<TTable>,
 > {
   data: TMode extends 'one'
@@ -46,11 +47,11 @@ interface UpsertQueryPromise<T> extends PromiseLike<T> {
 
 type InferTable<TFields extends TableRelationalConfig> = Extract<
   TFields['table'],
-  Table
+  PgTable
 >
 
 type InferUpsertResult<
-  TTable extends Table,
+  TTable extends PgTable,
   TReturning extends ReturningClause<any>,
 > = {
   [K in keyof TReturning]: TReturning[K] extends infer TValue
@@ -110,6 +111,7 @@ RelationalQueryBuilder.prototype.upsert = function (
       ? [key, sql`excluded.${sql.identifier(columns[key].name)}`]
       : null
   )
+  // @start onConflict
   if (updatedEntries.length > 0) {
     query.onConflictDoUpdate({
       target,
@@ -118,7 +120,9 @@ RelationalQueryBuilder.prototype.upsert = function (
   } else {
     query.onConflictDoNothing()
   }
+  // @end onConflict
 
+  // @start returning
   if (!options.returning || Object.keys(options.returning).length > 0) {
     query.returning(
       options.returning &&
@@ -131,6 +135,7 @@ RelationalQueryBuilder.prototype.upsert = function (
         )
     )
   }
+  // @end returning
 
   return {
     then(onfulfilled, onrejected): any {

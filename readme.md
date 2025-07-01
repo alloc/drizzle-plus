@@ -54,14 +54,12 @@ A collection of useful utilities and extensions for Drizzle ORM.
 
 Import the `upsert` module to extend the query builder API with a `upsert` method.
 
-> [!WARNING]
-> 🐬 **MySQL** is not supported yet.
-
 The `upsert` method intelligently infers the correct columns to update based on the primary key and unique constraints of the table. This means you're _not_ required to manually specify a `where` clause (as you would in Prisma).
 
 ```ts
 // Choose your dialect
 import 'drizzle-plus/pg/upsert'
+import 'drizzle-plus/mysql/upsert'
 import 'drizzle-plus/sqlite/upsert'
 
 // Now you can use the `upsert` method

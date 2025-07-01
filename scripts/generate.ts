@@ -16,9 +16,8 @@ const pascalMap: Record<DialectExceptPg, string> = {
   mysql: 'MySql',
 }
 
-const unsupportedFeatures: Partial<Record<DialectExceptPg, string[]>> = {
-  mysql: ['upsert'],
-}
+// If a generated module is not supported for a dialect, document it here.
+const unsupportedFeatures: Partial<Record<DialectExceptPg, string[]>> = {}
 
 // RelationalQueryBuilder type parameters.
 const rqbExtraTypeParams = {
