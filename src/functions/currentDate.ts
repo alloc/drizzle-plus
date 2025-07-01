@@ -1,5 +1,5 @@
 import { StringChunk } from 'drizzle-orm'
-import { Timestamp } from '../sql/timestamp'
+import { SQLTimestamp } from '../sql/timestamp'
 
 /**
  * Returns the current date, without any time component.
@@ -15,12 +15,12 @@ import { Timestamp } from '../sql/timestamp'
  * import { currentDate } from 'drizzle-plus'
  *
  * const today = currentDate()
- * // => Timestamp<string>
+ * // => SQLTimestamp<string>
  *
  * today.toDate()
  * // => SQL<Date>
  * ```
  */
 export function currentDate() {
-  return new Timestamp<string>([new StringChunk('current_date')])
+  return new SQLTimestamp<string>([new StringChunk('current_date')])
 }

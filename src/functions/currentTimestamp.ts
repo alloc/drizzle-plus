@@ -1,8 +1,8 @@
 import { StringChunk } from 'drizzle-orm'
-import { Timestamp } from '../sql/timestamp'
+import { SQLTimestamp } from '../sql/timestamp'
 
 /**
- * Returns the current timestamp.
+ * Returns the current timestamp (both date and time).
  *
  * **Note:** Check your dialect's documentation to know if the timestamp is
  * local or UTC.
@@ -12,12 +12,12 @@ import { Timestamp } from '../sql/timestamp'
  * import { currentTimestamp } from 'drizzle-plus'
  *
  * const now = currentTimestamp()
- * // => Timestamp<string>
+ * // => SQLTimestamp<string>
  *
  * now.toDate()
  * // => SQL<Date>
  * ```
  */
 export function currentTimestamp() {
-  return new Timestamp<string>([new StringChunk('current_timestamp')])
+  return new SQLTimestamp<string>([new StringChunk('current_timestamp')])
 }
