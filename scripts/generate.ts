@@ -17,7 +17,8 @@ const pascalMap: Record<DialectExceptPg, string> = {
 }
 
 const unsupportedFeatures: Partial<Record<DialectExceptPg, string[]>> = {
-  mysql: ['upsert'],
+  mysql: ['upsert', '$withMaterialized'],
+  sqlite: ['$withMaterialized'],
 }
 
 // RelationalQueryBuilder type parameters.
