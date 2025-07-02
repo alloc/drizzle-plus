@@ -25,7 +25,7 @@ A collection of useful utilities and extensions for Drizzle ORM.
 - Added `$cursor()` method to `db.query` for type-safe, cursor-based pagination
 - Nested subqueries with `nest()` helper
 - `CASE…WHEN…ELSE…END` with `caseWhen()` helper
-- JSON helpers like `jsonAgg()` and `toJsonObject()`
+- JSON helpers like `jsonAgg()` and `jsonBuildObject()`
 - Useful types via `drizzle-plus/types`
 - …and more!
 
