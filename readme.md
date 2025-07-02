@@ -20,6 +20,7 @@ A collection of useful utilities and extensions for Drizzle ORM.
 - Support for 🐘 **Postgres**, 🐬 **MySQL**, and 🪶 **SQLite**
 - Added `upsert()` method to `db.query` for “create or update” operations
 - Added `count()` method to `db.query` for easy counting of rows
+- Added `findUnique()` method to `db.query` for efficient lookups by primary key or unique constraint
 - Added `findManyAndCount()` method to `db.query` for convenient, parallel execution of `findMany()` and `count()` queries
 - Added `$cursor()` method to `db.query` for type-safe, cursor-based pagination
 - Nested subqueries with `nest()` helper
@@ -191,6 +192,30 @@ console.log(countWithFilter.toSQL())
 const result = await countWithFilter
 // => 0
 ```
+
+### Find Unique
+
+Import the `findUnique` module to extend the query builder API with a `findUnique` method.
+
+The only thing `findUnique()` does differently from `findFirst()` is that it
+requires the `where` clause to match a primary key or unique constraint. Unfortunately, Drizzle doesn't have type-level tracking of primary keys or unique constraints, so `findUnique()` will only throw at runtime (no compile-time warnings).
+
+```ts
+// Choose your dialect
+import 'drizzle-plus/pg/findUnique'
+import 'drizzle-plus/mysql/findUnique'
+import 'drizzle-plus/sqlite/findUnique'
+
+// Now you can use the `findUnique` method
+const result = await db.query.user.findUnique({
+  where: {
+    id: 42,
+  },
+})
+// => { id: 42, name: 'Chewbacca' }
+```
+
+If no matching record is found, `findUnique()` will resolve to `undefined`.
 
 ### Find Many and Count
 

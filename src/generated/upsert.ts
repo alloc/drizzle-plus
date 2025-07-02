@@ -6,16 +6,11 @@ import {
   type TableRelationalConfig,
   type TablesRelationalConfig,
 } from 'drizzle-orm'
-import {
-  getTableConfig,
-  PgColumn,
-  PgInsertBuilder,
-  PgInsertValue,
-} from 'drizzle-orm/pg-core'
+import { PgInsertBuilder, PgInsertValue } from 'drizzle-orm/pg-core'
 import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
 import { SelectResultField } from 'drizzle-orm/query-builders/select.types'
 import { castArray, isFunction, mapValues, select } from 'radashi'
-import { getContext } from './internal'
+import { getContext, getTargetColumns } from './internal'
 
 type ReturningClause<TTable extends Table> = Partial<
   Record<
@@ -145,57 +140,5 @@ RelationalQueryBuilder.prototype.upsert = function (
         .then(onfulfilled, onrejected)
     },
     toSQL: () => query.toSQL(),
-  }
-}
-
-const getTableConfigMemoized = memoByFirstArgument((table: Table) => {
-  const { primaryKeys, uniqueConstraints } = getTableConfig(table)
-  return { primaryKeys, uniqueConstraints }
-})
-
-function getTargetColumns(table: Table, columns: PgColumn[]) {
-  // If the primary key is defined, prefer it over any unique constraint.
-  const uniqueColumn =
-    columns.find(column => column.primary) ||
-    columns.find(column => column.isUnique)
-  if (uniqueColumn) {
-    return [uniqueColumn]
-  }
-
-  // Find a composite column constraint that matches the columns.
-  const { primaryKeys, uniqueConstraints } = getTableConfigMemoized(table)
-  if (primaryKeys[0]) {
-    // We can't just use `arrayEquals` here because the `columns` could be in a
-    // different order.
-    const target = select(primaryKeys[0].columns, column =>
-      columns.includes(column) ? column : null
-    )
-    if (target.length === primaryKeys[0].columns.length) {
-      return target
-    }
-  }
-  for (const uniqueConstraint of uniqueConstraints) {
-    // We can't just use `arrayEquals` here because the `columns` could be in a
-    // different order.
-    const target = select(uniqueConstraint.columns, column =>
-      columns.includes(column) ? column : null
-    )
-    if (target.length === uniqueConstraint.columns.length) {
-      return target
-    }
-  }
-}
-
-function memoByFirstArgument<TFunc extends (...args: any[]) => any>(
-  func: TFunc
-) {
-  const cache = new Map<any, any>()
-  return (...args: Parameters<TFunc>): ReturnType<TFunc> => {
-    if (cache.has(args[0])) {
-      return cache.get(args[0])
-    }
-    const result = func(...args)
-    cache.set(args[0], result)
-    return result
   }
 }
