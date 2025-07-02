@@ -327,7 +327,8 @@ These methods add `MATERIALIZED` and `NOT MATERIALIZED` keywords to the CTEs, re
 import 'drizzle-plus/pg/$withMaterialized'
 
 // Same API as db.$with()
-const subquery = db.$withNotMaterialized(…)
+const cte1 = db.$withMaterialized(alias).as(subquery)
+const cte2 = db.$withNotMaterialized(alias).as(subquery)
 ```
 
 ### Universal SQL functions
