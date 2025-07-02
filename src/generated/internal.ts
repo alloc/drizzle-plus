@@ -1,9 +1,13 @@
 import {
   RelationsFilter,
   relationsFilterToSQL,
+  sql,
+  SQL,
+  Subquery,
   Table,
   TableRelationalConfig,
   TablesRelationalConfig,
+  WithSubquery,
 } from 'drizzle-orm'
 import { CasingCache } from 'drizzle-orm/casing'
 import {
@@ -93,4 +97,61 @@ function memoByFirstArgument<TFunc extends (...args: any[]) => any>(
     cache.set(args[0], result)
     return result
   }
+}
+
+let withSubqueryFlags:
+  | WeakMap<
+      WithSubquery,
+      {
+        materialized?: boolean
+        recursive?: boolean
+      }
+    >
+  | undefined
+
+export function setWithSubqueryFlags(
+  withSubquery: WithSubquery,
+  flags: {
+    materialized?: boolean
+    recursive?: boolean
+  }
+) {
+  if (!withSubqueryFlags) {
+    withSubqueryFlags = new WeakMap()
+
+    // @ts-expect-error: Rewrite internal method
+    PgDialect.prototype.buildWithCTE = function (
+      queries: Subquery[] | undefined
+    ): SQL | undefined {
+      if (!queries?.length) return undefined
+
+      const result = sql.raw('with ')
+      for (const [i, withSubquery] of queries.entries()) {
+        const flags = withSubqueryFlags!.get(withSubquery)
+        const { alias, sql: subquery } =
+          withSubquery._ as typeof withSubquery._ & {
+            materializeFlag?: boolean
+            recursiveFlag?: boolean
+          }
+        result.append(sql`${sql.identifier(alias)} as `)
+        if (flags) {
+          if (flags.recursive) {
+            result.append(sql.raw('recursive '))
+          } else if (flags.materialized) {
+            result.append(sql.raw('materialized '))
+          } else if (flags.materialized === false) {
+            result.append(sql.raw('not materialized '))
+          }
+        }
+        result.append(sql`(${subquery})`)
+        if (i < queries.length - 1) {
+          result.append(sql.raw(', '))
+        }
+      }
+      result.append(sql.raw(' '))
+      return result
+    }
+  }
+
+  withSubqueryFlags.set(withSubquery, flags)
 }

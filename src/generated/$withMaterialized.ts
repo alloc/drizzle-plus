@@ -1,5 +1,6 @@
-import { sql, SQL, Subquery } from 'drizzle-orm'
-import { PgDialect, QueryBuilder, WithBuilder } from 'drizzle-orm/pg-core'
+import { ColumnsSelection } from 'drizzle-orm'
+import { QueryBuilder, WithBuilder } from 'drizzle-orm/pg-core'
+import { setWithSubqueryFlags } from './internal'
 
 declare module 'drizzle-orm/pg-core' {
   interface QueryBuilder {
@@ -26,51 +27,33 @@ declare module 'drizzle-orm/pg-core' {
   }
 }
 
-QueryBuilder.prototype.$withMaterialized = function (alias: string) {
-  return withMaterialized(this.$with(alias), true)
+QueryBuilder.prototype.$withMaterialized = function (
+  alias: string,
+  selection?: ColumnsSelection
+) {
+  return withMaterialized(this.$with(alias, selection!), {
+    materialized: true,
+  })
 }
 
-QueryBuilder.prototype.$withNotMaterialized = function (alias: string) {
-  return withMaterialized(this.$with(alias), false)
+QueryBuilder.prototype.$withNotMaterialized = function (
+  alias: string,
+  selection?: ColumnsSelection
+) {
+  return withMaterialized(this.$with(alias, selection!), {
+    materialized: false,
+  })
 }
 
 function withMaterialized(
-  withBuilder: { as: (arg: any) => Subquery },
-  materializeFlag: boolean
+  withBuilder: ReturnType<WithBuilder>,
+  flags: { materialized: boolean }
 ) {
   const originalMethod = withBuilder.as
-  withBuilder.as = function (arg) {
+  withBuilder.as = function (arg: any) {
     const subquery = originalMethod(arg)
-    // @ts-expect-error: Custom property
-    subquery._.materializeFlag = materializeFlag
+    setWithSubqueryFlags(subquery, flags)
     return subquery
   }
   return withBuilder
-}
-
-// @ts-expect-error: Rewrite internal method
-PgDialect.prototype.buildWithCTE = function (
-  queries: Subquery[] | undefined
-): SQL | undefined {
-  if (!queries?.length) return undefined
-
-  const withSqlChunks = [sql`with `]
-  for (const [i, w] of queries.entries()) {
-    const materializeFlag = (w._ as any).materializeFlag
-    const materializeKeyword =
-      materializeFlag === true
-        ? sql` materialized`
-        : materializeFlag === false
-          ? sql` not materialized`
-          : sql.empty()
-
-    withSqlChunks.push(
-      sql`${sql.identifier(w._.alias)} as${materializeKeyword} (${w._.sql})`
-    )
-    if (i < queries.length - 1) {
-      withSqlChunks.push(sql`, `)
-    }
-  }
-  withSqlChunks.push(sql` `)
-  return sql.join(withSqlChunks)
 }
