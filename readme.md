@@ -386,12 +386,15 @@ These functions have differences between dialects, whether it's the name, the fu
   - `concat`
   - `jsonAgg`
   - `jsonBuildObject`
+  - `position`
 - **MySQL:**
   - `concat`
   - `jsonArrayAgg`
   - `jsonObject`
+  - `position`
 - **SQLite:**
   - `concat`
+  - `instr`
   - `jsonGroupArray`
   - `jsonObject`
 
