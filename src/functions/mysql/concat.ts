@@ -9,7 +9,7 @@ import { SQLExpression, SQLValue } from 'drizzle-plus/types'
  * @returns The concatenated string.
  */
 export function concat<T extends string | null>(
-  ...args: [SQLValue<T>, SQLValue<T>, ...SQLValue<T>[]]
+  ...args: SQLValue<T>[]
 ): SQL<string | Extract<T, null>> {
   return sql`concat(${sql.join(
     args.map(arg =>
