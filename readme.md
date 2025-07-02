@@ -343,6 +343,8 @@ These functions are available in all dialects, since they're part of the SQL sta
   - `abs`
   - `ceil`
   - `coalesce`
+  - `currentDate`
+  - `currentTime`
   - `currentTimestamp`
   - `floor`
   - `length`
