@@ -15,6 +15,7 @@ export default defineConfig({
         `${dir}/$findMany.ts`,
         `${dir}/count.ts`,
         `${dir}/findManyAndCount.ts`,
+        `${dir}/findUnique.ts`,
         `${dir}/upsert.ts`,
       ]
     }),
