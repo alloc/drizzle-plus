@@ -14,6 +14,15 @@ import {
 import { isPlainObject } from 'radashi'
 import type { AnyQuery, AnySelectQuery, SQLExpression } from './types'
 
+/**
+ * Returns the name of a table, before it was aliased.
+ */
+export function getOriginalTableName<T extends Table>(
+  table: T
+): T['_']['config']['name'] {
+  return (table as any)[Symbol.for('drizzle:OriginalName')]
+}
+
 export function getSelectedFields(query: AnyQuery): Record<string, unknown> {
   if (query instanceof QueryPromise) {
     const { config, table }: { config: DBQueryConfig; table: Table } =
