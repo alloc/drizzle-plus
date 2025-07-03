@@ -33,7 +33,7 @@ describe('upsert', () => {
     `)
   })
 
-  test('composite primary key + no returning', () => {
+  test('composite primary key + no returning', async () => {
     const query = db.query.orderItem.upsert({
       data: {
         orderId: 100,
@@ -53,6 +53,8 @@ describe('upsert', () => {
         "sql": "insert into "order_item" ("orderId", "productId", "quantity") values (?, ?, ?) on conflict ("order_item"."orderId", "order_item"."productId") do update set "quantity" = excluded."quantity"",
       }
     `)
+
+    expect(await query).toMatchInlineSnapshot(`undefined`)
   })
 
   test('unique constraint', () => {

@@ -8,7 +8,10 @@ import {
 } from 'drizzle-orm'
 import { PgInsertBuilder, PgInsertValue } from 'drizzle-orm/pg-core'
 import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
-import { SelectResultField } from 'drizzle-orm/query-builders/select.types'
+import {
+  SelectResultField,
+  SelectResultFields,
+} from 'drizzle-orm/query-builders/select.types'
 import { castArray, isFunction, mapValues, select } from 'radashi'
 import { getContext, getTargetColumns } from './internal'
 
@@ -46,19 +49,22 @@ type InferTable<TFields extends TableRelationalConfig> = Extract<
 
 type InferUpsertResult<
   TTable extends Table,
-  TReturning extends ReturningClause<any>,
-> = {
-  [K in keyof TReturning]: TReturning[K] extends infer TValue
-    ? SelectResultField<
-        TValue extends true
-          ? K extends keyof TTable['_']['columns']
-            ? TTable['_']['columns'][K]
-            : never
-          : TValue
-      >
-    : never
-}
-
+  TReturning extends ReturningClause<TTable>,
+> = keyof TReturning extends never
+  ? undefined
+  : ReturningClause<TTable> extends TReturning
+    ? SelectResultFields<TTable['_']['columns']>
+    : {
+        [K in keyof TReturning]: TReturning[K] extends infer TValue
+          ? SelectResultField<
+              TValue extends true
+                ? K extends keyof TTable['_']['columns']
+                  ? TTable['_']['columns'][K]
+                  : never
+                : TValue
+            >
+          : never
+      }
 declare module 'drizzle-orm/pg-core/query-builders/query' {
   export interface RelationalQueryBuilder<
     TSchema extends TablesRelationalConfig,

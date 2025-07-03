@@ -7,6 +7,10 @@ export default defineConfig({
     globals: true,
     isolate: false,
     fileParallelism: false,
+    typecheck: {
+      enabled: true,
+      tsconfig: './test/tsconfig.json',
+    },
     globalSetup: ['./test/config/globalSetup.ts'],
     setupFiles: ['./test/config/localSetup.ts'],
   },
