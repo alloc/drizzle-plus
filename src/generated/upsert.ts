@@ -65,6 +65,7 @@ type InferUpsertResult<
             >
           : never
       }
+
 declare module 'drizzle-orm/pg-core/query-builders/query' {
   export interface RelationalQueryBuilder<
     TSchema extends TablesRelationalConfig,
