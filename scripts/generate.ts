@@ -117,7 +117,7 @@ for (const file of globSync('src/generated/*.ts')) {
             ',$1'
         )
         .replace(
-          /\bextends RelationalQueryBuilder<(\s*)/gm,
+          /\b(?:extends|:) RelationalQueryBuilder<(\s*)/gm,
           '$&' + '$1any, '.repeat(rqbExtraTypeParams[dialect].count) + '$1'
         )
     }
