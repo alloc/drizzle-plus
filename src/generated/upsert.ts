@@ -40,10 +40,11 @@ interface UpsertOptions<
   update?:
     | PgInsertValue<TTable>
     | ((table: TTable['_']['columns']) => PgInsertValue<TTable>)
+    | undefined
   /**
    * Specify a filter to only update rows that match the filter.
    */
-  where?: TWhere
+  where?: TWhere | undefined
   /**
    * Specify which columns to return. An empty object means “return nothing”.
    *
