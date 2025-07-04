@@ -126,6 +126,24 @@ const rows = await db.query.user.upsert({
 // => [{ id: 42, name: 'Chewbacca' }, { id: 43, name: 'Han Solo' }]
 ```
 
+#### Updating with different data
+
+If the data you wish to _insert_ with is different from the data you wish to
+_update_ with, try setting the `update` option.
+
+```ts
+const query = db.query.user.upsert({
+  data: {
+    id: 42,
+    loginCount: 0,
+  },
+  update: user => ({
+    // Mutate the existing count if the row already exists.
+    loginCount: sql`${user.loginCount} + 1`,
+  }),
+})
+```
+
 #### Upserting relations
 
 There are no plans to support Prisma’s `connect` or `connectOrCreate` features. It’s recommended to use `db.transaction()` instead.

@@ -31,6 +31,13 @@ interface UpsertOptions<
     ? PgInsertValue<TTable>
     : readonly PgInsertValue<TTable>[]
   /**
+   * This option enables you to partially override `data` with values that are
+   * only used when the row already exists.
+   */
+  update?:
+    | PgInsertValue<TTable>
+    | ((table: TTable['_']['columns']) => PgInsertValue<TTable>)
+  /**
    * Specify which columns to return. An empty object means “return nothing”.
    *
    * If left undefined, the query returns all columns of the updated row.
@@ -107,7 +114,17 @@ RelationalQueryBuilder.prototype.upsert = function (
     options.data
   )
 
+  // Values to use instead of the ones in `data` if the row already exists.
+  const update = isFunction(options.update)
+    ? options.update(table)
+    : options.update
+
+  // Filter out values that don't need to be updated.
   const updatedEntries = select(Array.from(usedKeys), key => {
+    const value = update?.[key]
+    if (value !== undefined) {
+      return [key, value]
+    }
     const column = columns[key]
     if (target.includes(column)) {
       return null
@@ -115,6 +132,7 @@ RelationalQueryBuilder.prototype.upsert = function (
     const name = dialect.casing.getColumnCasing(column)
     return [key, sql`excluded.${sql.identifier(name)}`]
   })
+
   if (updatedEntries.length > 0) {
     query.onConflictDoUpdate({
       target,
