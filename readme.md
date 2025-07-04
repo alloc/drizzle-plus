@@ -151,7 +151,7 @@ query.toSQL()
 #### Updating with different data
 
 If the data you wish to _insert_ with is different from the data you wish to
-_update_ with, try setting the `update` option.
+_update_ with, try setting the `update` option. This option can either be a function that receives the table as an argument, or a plain object. This feature works with both single and many upserts (e.g. when `data` is an array).
 
 ```ts
 const query = db.query.user.upsert({
@@ -164,6 +164,12 @@ const query = db.query.user.upsert({
     loginCount: sql`${user.loginCount} + 1`,
   }),
 })
+
+query.toSQL()
+// => {
+//   sql: `insert into "user" ("id", "login_count") values (?, ?) on conflict ("user"."id") do update set "login_count" = "user"."login_count" + 1 returning "id", "login_count"`,
+//   params: [42, 0],
+// }
 ```
 
 #### Upserting relations
