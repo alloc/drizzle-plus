@@ -56,7 +56,7 @@ declare module 'drizzle-orm/pg-core/query-builders/query' {
     TFields extends TableRelationalConfig,
   > {
     upsert<TReturning extends ReturningClause<ExtractTable<TFields>>>(
-      options: DBUpsertConfig<
+      config: DBUpsertConfig<
         'one',
         ExtractTable<TFields>,
         TReturning,
@@ -67,7 +67,7 @@ declare module 'drizzle-orm/pg-core/query-builders/query' {
     >
 
     upsert<TReturning extends ReturningClause<ExtractTable<TFields>>>(
-      options: DBUpsertConfig<
+      config: DBUpsertConfig<
         'many',
         ExtractTable<TFields>,
         TReturning,
@@ -79,7 +79,7 @@ declare module 'drizzle-orm/pg-core/query-builders/query' {
   }
 }
 
-RelationalQueryBuilder.prototype.upsert = function (options: {
+RelationalQueryBuilder.prototype.upsert = function (config: {
   data: any
   update?: any
   where?: RelationsFilter<any, any>
@@ -91,7 +91,7 @@ RelationalQueryBuilder.prototype.upsert = function (options: {
   // Columns that *might* be used as a "conflict target" must be defined in the
   // very first object of `data`.
   const targetCandidates = getDefinedColumns(columns, [
-    Array.isArray(options.data) ? options.data[0] : options.data,
+    Array.isArray(config.data) ? config.data[0] : config.data,
   ])
 
   const target = getTargetColumns(table, Object.values(targetCandidates))
@@ -99,19 +99,17 @@ RelationalQueryBuilder.prototype.upsert = function (options: {
     throw new Error('No matching primary key or unique constraint found')
   }
 
-  const query = new PgInsertBuilder(table, session, dialect).values(
-    options.data
-  )
+  const query = new PgInsertBuilder(table, session, dialect).values(config.data)
 
   // Values to use instead of the ones in `data` if the row already exists.
-  const update = isFunction(options.update)
-    ? options.update(table)
-    : options.update
+  const update = isFunction(config.update)
+    ? config.update(table)
+    : config.update
 
   // Any column that is defined in at least one object of `data` needs to be
   // included in the `set` clause (unless it's a conflict target).
-  const setCandidates = Array.isArray(options.data)
-    ? getDefinedColumns(columns, options.data)
+  const setCandidates = Array.isArray(config.data)
+    ? getDefinedColumns(columns, config.data)
     : targetCandidates
 
   // Filter out values that don't need to be updated.
@@ -132,16 +130,16 @@ RelationalQueryBuilder.prototype.upsert = function (options: {
     query.onConflictDoUpdate({
       target,
       set: Object.fromEntries(updatedEntries),
-      setWhere: options.where && relationsFilterToSQL(table, options.where),
+      setWhere: config.where && relationsFilterToSQL(table, config.where),
     })
   } else {
     query.onConflictDoNothing()
   }
 
-  if (!options.returning || Object.keys(options.returning).length > 0) {
+  if (!config.returning || Object.keys(config.returning).length > 0) {
     query.returning(
-      options.returning &&
-        mapValues(options.returning, (value, key) =>
+      config.returning &&
+        mapValues(config.returning, (value, key) =>
           value === true
             ? columns[key as string]
             : isFunction(value)
@@ -153,7 +151,7 @@ RelationalQueryBuilder.prototype.upsert = function (options: {
 
   return {
     then(onfulfilled, onrejected): any {
-      if (Array.isArray(options.data)) {
+      if (Array.isArray(config.data)) {
         return query.then(onfulfilled, onrejected)
       }
       return query
