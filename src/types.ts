@@ -3,6 +3,7 @@ import type {
   OrderByOperators,
   Placeholder,
   QueryPromise,
+  QueryWithTypings,
   RelationsFieldFilter,
   SQL,
   SQLOperator,
@@ -11,6 +12,7 @@ import type {
   ValueOrArray,
   View,
 } from 'drizzle-orm'
+import { CasingCache } from 'drizzle-orm/casing'
 import type { SelectResultFields } from 'drizzle-orm/query-builders/select.types'
 
 export type SQLValue<T> = T | SQLExpression<T>
@@ -173,3 +175,8 @@ export type InferFindFirstArgs<T extends { findFirst(args?: any): any }> =
  */
 export type ToJsonObject<T extends AnySelectQuery | Record<string, unknown>> =
   T extends AnySelectQuery ? QueryToSQL<T> : SQL<SelectResultFields<T>>
+
+export type AnyDialect = {
+  casing: CasingCache
+  sqlToQuery(sql: SQL): QueryWithTypings
+}

@@ -4,7 +4,6 @@ import {
   is,
   noopDecoder,
   QueryPromise,
-  QueryWithTypings,
   sql,
   SQL,
   Table,
@@ -12,7 +11,12 @@ import {
   type DriverValueDecoder,
 } from 'drizzle-orm'
 import { isPlainObject } from 'radashi'
-import type { AnyQuery, AnySelectQuery, SQLExpression } from './types'
+import type {
+  AnyDialect,
+  AnyQuery,
+  AnySelectQuery,
+  SQLExpression,
+} from './types'
 
 /**
  * Returns the name of a table, before it was aliased.
@@ -51,10 +55,6 @@ export function getDecoder<T>(
 
 export function getSQL(value: AnyQuery): SQL {
   return (value as any).getSQL()
-}
-
-type AnyDialect = {
-  sqlToQuery(sql: SQL): QueryWithTypings
 }
 
 export function getDialect(value: AnyQuery): AnyDialect {
