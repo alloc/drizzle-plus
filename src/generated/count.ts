@@ -9,6 +9,7 @@ import {
 } from 'drizzle-orm'
 import { PgDialect, PgSession, PgTable } from 'drizzle-orm/pg-core'
 import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
+import * as adapter from './adapters/pg'
 import { getContext, getFilterSQL } from './internal'
 
 declare module 'drizzle-orm/pg-core/query-builders/query' {
@@ -32,9 +33,7 @@ export class CountQueryPromise extends QueryPromise<number> {
 
   async execute() {
     const query = this.getSQL()
-    // @start execute
-    const [result] = await this.session.execute<any>(query)
-    // @end execute
+    const [result] = await adapter.execute<any[]>(this.session, query)
     return Number(result.count)
   }
 

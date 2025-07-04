@@ -1,6 +1,5 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { dedent } from 'radashi'
 import { globSync } from 'tinyglobby'
 
 console.log('Generating...')
@@ -39,33 +38,6 @@ const sessionTypeParams = {
   mysql: '',
 }
 
-// See the `src/generated/count.ts` module for an example of how to use this.
-const snipRegex = /([ ]*)\/\/ @start (\w+)\n([\S\s]+)\/\/ @end \2\n[ ]*/gm
-const applySnips =
-  (dialect: Dialect, snips: Partial<Record<Dialect, Record<string, string>>>) =>
-  (_: any, space: string, key: string, original: string) => {
-    const snip = snips[dialect]?.[key]
-    return snip ? space + snip.replace(/(\n|$)/g, '\n' + space) : original
-  }
-
-// Each module in `src/generated` has its own replacer function.
-const replacers: {
-  [key: string]: (content: string, dialect: DialectExceptPg) => string
-} = {
-  count(content, dialect) {
-    return content.replace(
-      snipRegex,
-      applySnips(dialect, {
-        sqlite: {
-          execute: dedent /* ts */ `
-            const result = await this.session.get<any>(query)
-          `,
-        },
-      })
-    )
-  },
-}
-
 // Clear generated files from previous runs.
 if (!process.argv.includes('--no-remove')) {
   for (const dir of globSync('src/generated/*', { onlyDirectories: true })) {
@@ -85,6 +57,7 @@ for (const dialect of dialects) {
   )
 }
 
+// Note: This is intentionally not recursive.
 for (const file of globSync('src/generated/*.ts')) {
   const template = fs.readFileSync(file, 'utf-8')
   const name = path.basename(file, '.ts')
@@ -96,15 +69,15 @@ for (const file of globSync('src/generated/*.ts')) {
 
     let content = template
     if (dialect !== 'pg') {
-      const replacer = replacers[name]
-      if (replacer) {
-        content = replacer(content, dialect)
-      }
       content = content
-        // Update imports and type names.
+        // Update import specifiers.
         .replace(/\bpg-/g, dialect + '-')
+        .replace(/\.\/(adapters\/)pg/g, '../$1' + dialect)
+
+        // Update type names.
         .replace(/: PgSession/g, '$&' + sessionTypeParams[dialect])
         .replace(/\bPg/g, pascalMap[dialect])
+
         // Update type parameters of common types.
         .replace(
           /\binterface RelationalQueryBuilder<(\s*)/gm,
