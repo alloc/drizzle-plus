@@ -1,5 +1,6 @@
 import {
   BuildRelationalQueryResult,
+  Column,
   getTableColumns,
   is,
   noopDecoder,
@@ -125,4 +126,20 @@ export function createJsonObjectDecoder<T>(
     }
     return data
   }
+}
+
+export function getDefinedColumns<TColumn extends Column>(
+  columns: Record<string, TColumn>,
+  data: any[]
+) {
+  const usedColumns: Record<string, TColumn> = {}
+  for (const key of Object.keys(columns)) {
+    for (const object of data) {
+      if (Object.hasOwn(object, key) && object[key] !== undefined) {
+        usedColumns[key] = columns[key]
+        break
+      }
+    }
+  }
+  return usedColumns
 }

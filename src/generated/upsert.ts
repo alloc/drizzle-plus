@@ -7,13 +7,14 @@ import {
   type TableRelationalConfig,
   type TablesRelationalConfig,
 } from 'drizzle-orm'
-import { PgColumn, PgInsertBuilder, PgInsertValue } from 'drizzle-orm/pg-core'
+import { PgInsertBuilder, PgInsertValue } from 'drizzle-orm/pg-core'
 import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
 import {
   ExtractTable,
   ReturningClause,
   ReturningResultFields,
 } from 'drizzle-plus/types'
+import { getDefinedColumns } from 'drizzle-plus/utils'
 import { isFunction, mapValues, select } from 'radashi'
 import { getContext, getTargetColumns } from './internal'
 
@@ -160,17 +161,4 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
     },
     toSQL: () => query.toSQL(),
   }
-}
-
-function getDefinedColumns(columns: Record<string, PgColumn>, data: any[]) {
-  const usedColumns: Record<string, PgColumn> = {}
-  for (const key of Object.keys(columns)) {
-    for (const object of data) {
-      if (Object.hasOwn(object, key) && object[key] !== undefined) {
-        usedColumns[key] = columns[key]
-        break
-      }
-    }
-  }
-  return usedColumns
 }
