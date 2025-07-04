@@ -153,4 +153,27 @@ describe('upsert', () => {
       }
     `)
   })
+
+  test('where clause', () => {
+    // ON CONFLICT (…) WHERE … DO UPDATE SET …
+    const query = db.query.user.upsert({
+      data: {
+        id: 100,
+        name: 'Gregory',
+      },
+      where: {
+        name: { isNull: true },
+      },
+    })
+
+    expect(query.toSQL()).toMatchInlineSnapshot(`
+      {
+        "params": [
+          100,
+          "Gregory",
+        ],
+        "sql": "insert into "user" ("id", "name", "age", "handle") values (?, ?, null, null) on conflict ("user"."id") do update set "name" = excluded."name" where "user"."name" is null returning "id", "name", "age", "handle"",
+      }
+    `)
+  })
 })

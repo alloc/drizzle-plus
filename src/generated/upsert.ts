@@ -1,5 +1,7 @@
 import {
   getTableColumns,
+  RelationsFilter,
+  relationsFilterToSQL,
   SQL,
   sql,
   Table,
@@ -26,6 +28,7 @@ interface UpsertOptions<
   TMode extends 'one' | 'many',
   TTable extends Table,
   TReturning extends ReturningClause<TTable>,
+  TWhere,
 > {
   data: TMode extends 'one'
     ? PgInsertValue<TTable>
@@ -37,6 +40,10 @@ interface UpsertOptions<
   update?:
     | PgInsertValue<TTable>
     | ((table: TTable['_']['columns']) => PgInsertValue<TTable>)
+  /**
+   * Specify a filter to only update rows that match the filter.
+   */
+  where?: TWhere
   /**
    * Specify which columns to return. An empty object means “return nothing”.
    *
@@ -79,17 +86,27 @@ declare module 'drizzle-orm/pg-core/query-builders/query' {
     TFields extends TableRelationalConfig,
   > {
     upsert<TReturning extends ReturningClause<InferTable<TFields>>>(
-      options: UpsertOptions<'one', InferTable<TFields>, TReturning>
+      options: UpsertOptions<
+        'one',
+        InferTable<TFields>,
+        TReturning,
+        RelationsFilter<TFields, TSchema>
+      >
     ): UpsertQueryPromise<InferUpsertResult<InferTable<TFields>, TReturning>>
 
     upsert<TReturning extends ReturningClause<InferTable<TFields>>>(
-      options: UpsertOptions<'many', InferTable<TFields>, TReturning>
+      options: UpsertOptions<
+        'many',
+        InferTable<TFields>,
+        TReturning,
+        RelationsFilter<TFields, TSchema>
+      >
     ): UpsertQueryPromise<InferUpsertResult<InferTable<TFields>, TReturning>[]>
   }
 }
 
 RelationalQueryBuilder.prototype.upsert = function (
-  options: UpsertOptions<any, any, any>
+  options: UpsertOptions<any, any, any, any>
 ): UpsertQueryPromise<any> {
   const { table, dialect, session } = getContext(this)
 
@@ -137,6 +154,7 @@ RelationalQueryBuilder.prototype.upsert = function (
     query.onConflictDoUpdate({
       target,
       set: Object.fromEntries(updatedEntries),
+      setWhere: options.where && relationsFilterToSQL(table, options.where),
     })
   } else {
     query.onConflictDoNothing()

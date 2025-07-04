@@ -126,6 +126,28 @@ const rows = await db.query.user.upsert({
 // => [{ id: 42, name: 'Chewbacca' }, { id: 43, name: 'Han Solo' }]
 ```
 
+#### Conditional updates
+
+If a row should only be updated if it matches a certain condition, you can set the `where` option. This accepts the same object as the `where` clause of `db.query#findMany()`.
+
+```ts
+const query = db.query.user.upsert({
+  data: {
+    id: 42,
+    handle: 'chewie',
+  },
+  where: {
+    emailVerified: true,
+  },
+})
+
+query.toSQL()
+// => {
+//   sql: `insert into "user" ("id", "handle") values (?, ?) on conflict ("user"."id") do update set "handle" = excluded."handle" where "user"."email_verified" = true returning "id", "handle"`,
+//   params: [42, 'chewie'],
+// }
+```
+
 #### Updating with different data
 
 If the data you wish to _insert_ with is different from the data you wish to
