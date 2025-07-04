@@ -1,4 +1,5 @@
 import { sql } from 'drizzle-orm'
+import { upper } from 'drizzle-plus'
 import 'drizzle-plus/sqlite/upsert'
 import { db } from './config/client'
 
@@ -150,6 +151,53 @@ describe('upsert', () => {
           "John",
         ],
         "sql": "insert into "user" ("id", "name", "age", "handle") values (?, ?, null, null), (?, ?, null, null) on conflict ("user"."id") do update set "name" = excluded."name" returning "id", "name", "age", "handle"",
+      }
+    `)
+  })
+
+  test('override data for update', () => {
+    // Single upsert
+    const query = db.query.user.upsert({
+      data: {
+        id: 100,
+        name: 'Gregory',
+      },
+      update: {
+        name: 'John',
+      },
+    })
+
+    expect(query.toSQL()).toMatchInlineSnapshot(`
+      {
+        "params": [
+          100,
+          "Gregory",
+          "John",
+        ],
+        "sql": "insert into "user" ("id", "name", "age", "handle") values (?, ?, null, null) on conflict ("user"."id") do update set "name" = ? returning "id", "name", "age", "handle"",
+      }
+    `)
+
+    // Many upserts
+    const query2 = db.query.user.upsert({
+      data: [
+        { id: 100, name: 'Gregory' },
+        { id: 101, name: 'John' },
+      ],
+      update: user => ({
+        name: upper(user.name),
+      }),
+    })
+
+    expect(query2.toSQL()).toMatchInlineSnapshot(`
+      {
+        "params": [
+          100,
+          "Gregory",
+          101,
+          "John",
+        ],
+        "sql": "insert into "user" ("id", "name", "age", "handle") values (?, ?, null, null), (?, ?, null, null) on conflict ("user"."id") do update set "name" = upper("user"."name") returning "id", "name", "age", "handle"",
       }
     `)
   })
