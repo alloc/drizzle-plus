@@ -130,6 +130,11 @@ const rows = await db.query.user.upsert({
 
 There are no plans to support Prisma’s `connect` or `connectOrCreate` features. It’s recommended to use `db.transaction()` instead.
 
+> [!NOTE]
+> Depending on the complexity of the relations, it may be possible to utilize
+> _subqueries_ instead of using `db.transaction()`. Do that if you can, since it
+> will avoid the round trip caused by each `await` in the transaction callback.
+
 ```ts
 import 'drizzle-plus/pg/upsert'
 import { nest } from 'drizzle-plus'
