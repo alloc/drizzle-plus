@@ -8,13 +8,13 @@ import {
   type TableRelationalConfig,
   type TablesRelationalConfig,
 } from 'drizzle-orm'
-import { PgInsertBuilder, PgInsertValue } from 'drizzle-orm/pg-core'
+import { PgColumn, PgInsertBuilder, PgInsertValue } from 'drizzle-orm/pg-core'
 import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
 import {
   SelectResultField,
   SelectResultFields,
 } from 'drizzle-orm/query-builders/select.types'
-import { castArray, isFunction, mapValues, select } from 'radashi'
+import { isFunction, mapValues, select } from 'radashi'
 import { getContext, getTargetColumns } from './internal'
 
 type ReturningClause<TTable extends Table> = Partial<
@@ -109,20 +109,15 @@ RelationalQueryBuilder.prototype.upsert = function (
   options: UpsertOptions<any, any, any, any>
 ): UpsertQueryPromise<any> {
   const { table, dialect, session } = getContext(this)
-
-  const usedKeys = new Set<string>()
-  for (const item of castArray(options.data)) {
-    for (const key in item) {
-      if (item[key] !== undefined) {
-        usedKeys.add(key)
-      }
-    }
-  }
-
   const columns = getTableColumns(table)
-  const usedColumns = Array.from(usedKeys, key => columns[key])
 
-  const target = getTargetColumns(table, usedColumns)
+  // Columns that *might* be used as a "conflict target" must be defined in the
+  // very first object of `data`.
+  const targetCandidates = getDefinedColumns(columns, [
+    Array.isArray(options.data) ? options.data[0] : options.data,
+  ])
+
+  const target = getTargetColumns(table, Object.values(targetCandidates))
   if (!target) {
     throw new Error('No matching primary key or unique constraint found')
   }
@@ -136,8 +131,14 @@ RelationalQueryBuilder.prototype.upsert = function (
     ? options.update(table)
     : options.update
 
+  // Any column that is defined in at least one object of `data` needs to be
+  // included in the `set` clause (unless it's a conflict target).
+  const setCandidates = Array.isArray(options.data)
+    ? getDefinedColumns(columns, options.data)
+    : targetCandidates
+
   // Filter out values that don't need to be updated.
-  const updatedEntries = select(Array.from(usedKeys), key => {
+  const updatedEntries = select(Object.keys(setCandidates), key => {
     const value = update?.[key]
     if (value !== undefined) {
       return [key, value]
@@ -184,4 +185,17 @@ RelationalQueryBuilder.prototype.upsert = function (
     },
     toSQL: () => query.toSQL(),
   }
+}
+
+function getDefinedColumns(columns: Record<string, PgColumn>, data: any[]) {
+  const usedColumns: Record<string, PgColumn> = {}
+  for (const key of Object.keys(columns)) {
+    for (const object of data) {
+      if (Object.hasOwn(object, key) && object[key] !== undefined) {
+        usedColumns[key] = columns[key]
+        break
+      }
+    }
+  }
+  return usedColumns
 }

@@ -176,4 +176,26 @@ describe('upsert', () => {
       }
     `)
   })
+
+  test('ignore non-column properties', () => {
+    const data = {
+      id: 100,
+      name: 'Gregory',
+      unknown: true,
+    }
+
+    const query = db.query.user.upsert({
+      data,
+    })
+
+    expect(query.toSQL()).toMatchInlineSnapshot(`
+      {
+        "params": [
+          100,
+          "Gregory",
+        ],
+        "sql": "insert into "user" ("id", "name", "age", "handle") values (?, ?, null, null) on conflict ("user"."id") do update set "name" = excluded."name" returning "id", "name", "age", "handle"",
+      }
+    `)
+  })
 })
