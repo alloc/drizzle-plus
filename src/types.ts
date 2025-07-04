@@ -13,7 +13,10 @@ import type {
   View,
 } from 'drizzle-orm'
 import { CasingCache } from 'drizzle-orm/casing'
-import type { SelectResultFields } from 'drizzle-orm/query-builders/select.types'
+import type {
+  SelectResultField,
+  SelectResultFields,
+} from 'drizzle-orm/query-builders/select.types'
 
 export type SQLValue<T> = T | SQLExpression<T>
 
@@ -180,3 +183,42 @@ export type AnyDialect = {
   casing: CasingCache
   sqlToQuery(sql: SQL): QueryWithTypings
 }
+
+/**
+ * Represents the `returning` clause of an `insert`, `update`, or `delete`
+ * query.
+ */
+export type ReturningClause<TTable extends Table> = Partial<
+  Record<
+    keyof TTable['_']['columns'] | (string & {}),
+    boolean | SQL | ((table: TTable) => SQL)
+  >
+>
+
+/**
+ * Infer the result fields of a `returning` clause.
+ */
+export type ReturningResultFields<
+  TTable extends Table,
+  TReturning extends ReturningClause<TTable>,
+> = keyof TReturning extends never
+  ? undefined
+  : ReturningClause<TTable> extends TReturning
+    ? SelectResultFields<TTable['_']['columns']>
+    : {
+        [K in keyof TReturning]: TReturning[K] extends infer TValue
+          ? SelectResultField<
+              TValue extends true
+                ? K extends keyof TTable['_']['columns']
+                  ? TTable['_']['columns'][K]
+                  : never
+                : TValue
+            >
+          : never
+      }
+
+export type ExtractTable<T extends { table: any }> = T extends {
+  table: infer TTable extends Table
+}
+  ? TTable
+  : never

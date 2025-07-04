@@ -2,7 +2,6 @@ import {
   getTableColumns,
   RelationsFilter,
   relationsFilterToSQL,
-  SQL,
   sql,
   Table,
   type TableRelationalConfig,
@@ -11,20 +10,14 @@ import {
 import { PgColumn, PgInsertBuilder, PgInsertValue } from 'drizzle-orm/pg-core'
 import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
 import {
-  SelectResultField,
-  SelectResultFields,
-} from 'drizzle-orm/query-builders/select.types'
+  ExtractTable,
+  ReturningClause,
+  ReturningResultFields,
+} from 'drizzle-plus/types'
 import { isFunction, mapValues, select } from 'radashi'
 import { getContext, getTargetColumns } from './internal'
 
-type ReturningClause<TTable extends Table> = Partial<
-  Record<
-    keyof TTable['_']['columns'] | (string & {}),
-    boolean | SQL | ((table: TTable) => SQL)
-  >
->
-
-interface UpsertOptions<
+export interface DBUpsertConfig<
   TMode extends 'one' | 'many',
   TTable extends Table,
   TReturning extends ReturningClause<TTable>,
@@ -57,58 +50,41 @@ interface UpsertQueryPromise<T> extends PromiseLike<T> {
   toSQL: () => { sql: string; params: any[] }
 }
 
-type InferTable<TFields extends TableRelationalConfig> = Extract<
-  TFields['table'],
-  Table
->
-
-type InferUpsertResult<
-  TTable extends Table,
-  TReturning extends ReturningClause<TTable>,
-> = keyof TReturning extends never
-  ? undefined
-  : ReturningClause<TTable> extends TReturning
-    ? SelectResultFields<TTable['_']['columns']>
-    : {
-        [K in keyof TReturning]: TReturning[K] extends infer TValue
-          ? SelectResultField<
-              TValue extends true
-                ? K extends keyof TTable['_']['columns']
-                  ? TTable['_']['columns'][K]
-                  : never
-                : TValue
-            >
-          : never
-      }
-
 declare module 'drizzle-orm/pg-core/query-builders/query' {
   export interface RelationalQueryBuilder<
     TSchema extends TablesRelationalConfig,
     TFields extends TableRelationalConfig,
   > {
-    upsert<TReturning extends ReturningClause<InferTable<TFields>>>(
-      options: UpsertOptions<
+    upsert<TReturning extends ReturningClause<ExtractTable<TFields>>>(
+      options: DBUpsertConfig<
         'one',
-        InferTable<TFields>,
+        ExtractTable<TFields>,
         TReturning,
         RelationsFilter<TFields, TSchema>
       >
-    ): UpsertQueryPromise<InferUpsertResult<InferTable<TFields>, TReturning>>
+    ): UpsertQueryPromise<
+      ReturningResultFields<ExtractTable<TFields>, TReturning>
+    >
 
-    upsert<TReturning extends ReturningClause<InferTable<TFields>>>(
-      options: UpsertOptions<
+    upsert<TReturning extends ReturningClause<ExtractTable<TFields>>>(
+      options: DBUpsertConfig<
         'many',
-        InferTable<TFields>,
+        ExtractTable<TFields>,
         TReturning,
         RelationsFilter<TFields, TSchema>
       >
-    ): UpsertQueryPromise<InferUpsertResult<InferTable<TFields>, TReturning>[]>
+    ): UpsertQueryPromise<
+      ReturningResultFields<ExtractTable<TFields>, TReturning>[]
+    >
   }
 }
 
-RelationalQueryBuilder.prototype.upsert = function (
-  options: UpsertOptions<any, any, any, any>
-): UpsertQueryPromise<any> {
+RelationalQueryBuilder.prototype.upsert = function (options: {
+  data: any
+  update?: any
+  where?: RelationsFilter<any, any>
+  returning?: any
+}): UpsertQueryPromise<any> {
   const { table, dialect, session } = getContext(this)
   const columns = getTableColumns(table)
 
