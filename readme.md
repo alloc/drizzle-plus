@@ -416,7 +416,7 @@ Import them from the `drizzle-plus` module:
 import { caseWhen } from 'drizzle-plus'
 ````
 
-#### Timestamps
+### Timestamps
 
 Any function that returns a timestamp will return a `SQLTimestamp` object, which extends the `SQL` class. Call the `toDate()` method to instruct Drizzle to parse it into a `Date` object (which is only relevant if the timestamp is used in a `select` or `returning` clause).
 
