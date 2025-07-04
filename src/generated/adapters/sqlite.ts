@@ -12,7 +12,7 @@ import {
   SQLiteUpdateBase,
 } from 'drizzle-orm/sqlite-core'
 
-export function execute(session: SQLiteSession<any, any>, query: SQL) {
+export function execute<T>(session: SQLiteSession<any, any>, query: SQL): T {
   return session.all(query)
 }
 

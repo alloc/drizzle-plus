@@ -41,7 +41,9 @@ const sessionTypeParams = {
 // Clear generated files from previous runs.
 if (!process.argv.includes('--no-remove')) {
   for (const dir of globSync('src/generated/*', { onlyDirectories: true })) {
-    fs.rmSync(dir, { recursive: true, force: true })
+    if (dialects.some(dialect => dir.endsWith(dialect))) {
+      fs.rmSync(dir, { recursive: true, force: true })
+    }
   }
 }
 
@@ -68,11 +70,17 @@ for (const file of globSync('src/generated/*.ts')) {
     }
 
     let content = template
+      // Rewrite the adapter import.
+      .replace(/\.\/(adapters\/)pg/g, '../$1' + dialect)
+      // Replace the DIALECT constant.
+      .replace(/\bDIALECT\b/g, `'${dialect}'`)
+      // Evaluate comparisons of two string literals.
+      .replace(/'\w+' (!==|===) '\w+'/g, expr => eval(expr))
+
     if (dialect !== 'pg') {
       content = content
         // Update import specifiers.
         .replace(/\bpg-/g, dialect + '-')
-        .replace(/\.\/(adapters\/)pg/g, '../$1' + dialect)
 
         // Update type names.
         .replace(/: PgSession/g, '$&' + sessionTypeParams[dialect])
@@ -93,9 +101,6 @@ for (const file of globSync('src/generated/*.ts')) {
           /\b(?:extends|:) RelationalQueryBuilder<(\s*)/gm,
           '$&' + '$1any, '.repeat(rqbExtraTypeParams[dialect].count) + '$1'
         )
-
-        // Replace the DIALECT constant.
-        .replace(/\bDIALECT\b/g, `'${dialect}'`)
     }
 
     fs.writeFileSync(path.join('src/generated', dialect, name + '.ts'), content)

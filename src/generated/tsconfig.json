@@ -1,6 +1,6 @@
 {
   "extends": "../../tsconfig.json",
-  "include": ["./*.ts", "../functions/pg/jsonAgg.ts"],
+  "include": ["./*.ts", "./adapters/*.ts"],
   "exclude": [],
   "compilerOptions": {
     "paths": {
