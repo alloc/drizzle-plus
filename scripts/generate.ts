@@ -93,6 +93,9 @@ for (const file of globSync('src/generated/*.ts')) {
           /\b(?:extends|:) RelationalQueryBuilder<(\s*)/gm,
           '$&' + '$1any, '.repeat(rqbExtraTypeParams[dialect].count) + '$1'
         )
+
+        // Replace the DIALECT constant.
+        .replace(/\bDIALECT\b/g, `'${dialect}'`)
     }
 
     fs.writeFileSync(path.join('src/generated', dialect, name + '.ts'), content)

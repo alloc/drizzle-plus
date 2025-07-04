@@ -226,3 +226,17 @@ export type ExtractTable<T extends { table: any }> = T extends {
 }
   ? TTable
   : never
+
+/**
+ * Represents the `orderBy` clause of a given table.
+ *
+ * Similar to `OrderBy` from the `drizzle-orm` package, but more type-safe.
+ */
+export type OrderByClause<TTable extends Table> =
+  | {
+      [K in keyof TTable['_']['columns']]?: 'asc' | 'desc' | undefined
+    }
+  | ((
+      table: TTable,
+      operators: OrderByOperators
+    ) => ValueOrArray<AnyColumn | SQL>)
