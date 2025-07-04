@@ -439,6 +439,8 @@ These functions have differences between dialects, whether it's the name, the fu
   - `jsonAgg`
   - `jsonBuildObject`
   - `position`
+  - `uuidv7`
+  - `uuidExtractTimestamp`
 - **MySQL:**
   - `concat`
   - `jsonArrayAgg`
