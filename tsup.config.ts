@@ -1,4 +1,15 @@
+import fs from 'node:fs'
+import path from 'node:path'
+import { globSync } from 'tinyglobby'
 import { defineConfig } from 'tsup'
+
+const generatedSourceRoot = 'src/generated'
+const moduleExtensions = globSync('*.ts', { cwd: generatedSourceRoot }).filter(
+  name =>
+    fs
+      .readFileSync(path.join(generatedSourceRoot, name), 'utf-8')
+      .includes('declare module')
+)
 
 export default defineConfig({
   entry: [
@@ -6,18 +17,12 @@ export default defineConfig({
     'src/utils.ts',
     'src/types.ts',
     ...['pg', 'mysql', 'sqlite'].flatMap(dialect => {
-      const dir = `src/generated/${dialect}`
+      const dir = `${generatedSourceRoot}/${dialect}`
       return [
         `${dir}/index.ts`,
         `${dir}/types.ts`,
-        // Prototype extensions
-        `${dir}/$cursor.ts`,
-        `${dir}/$findMany.ts`,
-        `${dir}/$withMaterialized.ts`,
-        `${dir}/count.ts`,
-        `${dir}/findManyAndCount.ts`,
-        `${dir}/findUnique.ts`,
-        `${dir}/upsert.ts`,
+        // Module extensions
+        ...moduleExtensions.map(name => `${dir}/${name}`),
       ]
     }),
   ],
