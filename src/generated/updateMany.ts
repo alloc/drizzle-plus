@@ -4,7 +4,7 @@ import {
   type TableRelationalConfig,
   type TablesRelationalConfig,
 } from 'drizzle-orm'
-import { PgInsertValue, PgTable, PgUpdateBase } from 'drizzle-orm/pg-core'
+import { PgTable, PgUpdateBase, PgUpdateSetSource } from 'drizzle-orm/pg-core'
 import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
 import {
   AnyRelationsFilter,
@@ -23,8 +23,8 @@ export interface DBUpdateManyConfig<
   TWhere = AnyRelationsFilter,
 > {
   set:
-    | PgInsertValue<TTable>
-    | ((table: TTable['_']['columns']) => PgInsertValue<TTable>)
+    | PgUpdateSetSource<TTable>
+    | ((table: TTable['_']['columns']) => PgUpdateSetSource<TTable>)
   /**
    * Specify a filter to only update rows that match the filter.
    */
