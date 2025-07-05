@@ -221,11 +221,10 @@ export type ReturningResultFields<
           }
     >
 
-export type ExtractTable<T extends { table: any }> = T extends {
-  table: infer TTable extends Table
-}
-  ? TTable
-  : never
+export type ExtractTable<
+  T extends { table: any },
+  TTable extends Table = Table,
+> = Extract<T['table'], TTable>
 
 /**
  * Represents the `orderBy` clause of a given table.

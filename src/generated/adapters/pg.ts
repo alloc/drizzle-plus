@@ -1,4 +1,5 @@
 import {
+  Column,
   is,
   OrderBy,
   RelationsFilter,
@@ -15,7 +16,8 @@ import {
   PgSession,
   PgUpdateBase,
 } from 'drizzle-orm/pg-core'
-import { getContext, getFilterSQL } from '../pg/internal'
+import { isFunction } from 'radashi'
+import { getContext, getFilterSQL, getReturningFields } from '../pg/internal'
 import { RelationalQueryBuilder } from '../pg/types'
 
 export function execute<T>(session: PgSession, query: SQL) {
@@ -72,6 +74,26 @@ export function innerJoinMatchedRows(
     throw new Error(
       'Drizzle does not support joins in delete queries. See https://github.com/drizzle-team/drizzle-orm/issues/3100'
     )
+  }
+}
+
+export function setReturningClauseForUpdateOrDelete(
+  query: { returning(fields: any): any },
+  returningOption:
+    | Record<string, unknown>
+    | ((columns: Record<string, Column>) => Record<string, unknown>)
+    | undefined,
+  columns: Record<string, Column>
+) {
+  const returning = returningOption
+    ? isFunction(returningOption)
+      ? returningOption(columns)
+      : returningOption
+    : undefined
+
+  // Undefined and {} are both ignored.
+  if (returning && Object.keys(returning).length > 0) {
+    query.returning(getReturningFields(returning, columns))
   }
 }
 

@@ -1,4 +1,5 @@
 import {
+  Column,
   is,
   OrderBy,
   relationsOrderToSQL,
@@ -11,6 +12,8 @@ import {
   SQLiteSession,
   SQLiteUpdateBase,
 } from 'drizzle-orm/sqlite-core'
+import { isFunction } from 'radashi'
+import { getReturningFields } from '../sqlite/internal'
 
 export function execute<T>(session: SQLiteSession<any, any>, query: SQL): T {
   return session.all(query)
@@ -32,6 +35,26 @@ export function limitUpdateOrDelete(
   }
   if (orderBy) {
     query.orderBy(orderBy)
+  }
+}
+
+export function setReturningClauseForUpdateOrDelete(
+  query: { returning(fields: any): any },
+  returningOption:
+    | Record<string, unknown>
+    | ((columns: Record<string, Column>) => Record<string, unknown>)
+    | undefined,
+  columns: Record<string, Column>
+) {
+  const returning = returningOption
+    ? isFunction(returningOption)
+      ? returningOption(columns)
+      : returningOption
+    : undefined
+
+  // Undefined and {} are both ignored.
+  if (returning && Object.keys(returning).length > 0) {
+    query.returning(getReturningFields(returning, columns))
   }
 }
 

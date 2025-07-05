@@ -39,3 +39,4 @@ export function limitUpdateOrDelete(
 // Not needed by MySQL.
 export declare function selectRowsToUpdateOrDelete(...args: any): Subquery[]
 export declare function innerJoinMatchedRows(...args: any): void
+export declare function setReturningClauseForUpdateOrDelete(...args: any): void

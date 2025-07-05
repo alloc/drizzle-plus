@@ -1,11 +1,10 @@
 import {
   getTableColumns,
   RelationsFilter,
-  Table,
   type TableRelationalConfig,
   type TablesRelationalConfig,
 } from 'drizzle-orm'
-import { PgInsertValue, PgUpdateBase } from 'drizzle-orm/pg-core'
+import { PgInsertValue, PgTable, PgUpdateBase } from 'drizzle-orm/pg-core'
 import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
 import {
   AnyRelationsFilter,
@@ -16,10 +15,10 @@ import {
 } from 'drizzle-plus/types'
 import { isFunction } from 'radashi'
 import * as adapter from './adapters/pg'
-import { getContext, getFilterSQL, getReturningFields } from './internal'
+import { ExcludeDialect, getContext, getFilterSQL } from './internal'
 
 export interface DBUpdateManyConfig<
-  TTable extends Table,
+  TTable extends PgTable,
   TReturning extends ReturningClause<TTable> = ReturningClause<TTable>,
   TWhere = AnyRelationsFilter,
 > {
@@ -44,10 +43,11 @@ export interface DBUpdateManyConfig<
    *
    * If left undefined, the query returns the number of rows updated.
    */
-  returning?:
-    | TReturning
-    | ((table: TTable['_']['columns']) => TReturning)
-    | undefined
+  returning?: ExcludeDialect<
+    TTable,
+    'mysql',
+    TReturning | ((table: TTable['_']['columns']) => TReturning) | undefined
+  >
 }
 
 interface UpdateManyQueryPromise<T> extends PromiseLike<T> {
@@ -61,7 +61,7 @@ declare module 'drizzle-orm/pg-core/query-builders/query' {
   > {
     updateMany<TReturning extends ReturningClause<ExtractTable<TFields>> = {}>(
       config: DBUpdateManyConfig<
-        ExtractTable<TFields>,
+        ExtractTable<TFields, PgTable>,
         TReturning,
         RelationsFilter<TFields, TSchema>
       >
@@ -109,15 +109,12 @@ RelationalQueryBuilder.prototype.updateMany = function (
     adapter.limitUpdateOrDelete(table, query, config.limit, config.orderBy)
   }
 
-  const returning = config.returning
-    ? isFunction(config.returning)
-      ? config.returning(columns)
-      : config.returning
-    : undefined
-
-  // Undefined and {} are both ignored.
-  if (returning && Object.keys(returning).length > 0) {
-    query.returning(getReturningFields(returning, columns))
+  if (DIALECT !== 'mysql') {
+    adapter.setReturningClauseForUpdateOrDelete(
+      query,
+      config.returning,
+      columns
+    )
   }
 
   return {
