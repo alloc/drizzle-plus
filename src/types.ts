@@ -1,5 +1,6 @@
 import type {
   AnyColumn,
+  Column,
   OrderByOperators,
   Placeholder,
   QueryPromise,
@@ -189,33 +190,36 @@ export type AnyDialect = {
  * query.
  */
 export type ReturningClause<TTable extends Table> = Partial<
-  Record<
-    keyof TTable['_']['columns'] | (string & {}),
-    boolean | SQL | ((table: TTable) => SQL)
-  >
+  Record<keyof TTable['_']['columns'] | (string & {}), boolean | SQL | Column>
 >
+
+type OneOrMany<TMode extends 'one' | 'many', T> = TMode extends 'one' ? T : T[]
 
 /**
  * Infer the result fields of a `returning` clause.
  */
 export type ReturningResultFields<
+  TMode extends 'one' | 'many',
   TTable extends Table,
   TReturning extends ReturningClause<TTable>,
 > = keyof TReturning extends never
   ? undefined
-  : ReturningClause<TTable> extends TReturning
-    ? SelectResultFields<TTable['_']['columns']>
-    : {
-        [K in keyof TReturning]: TReturning[K] extends infer TValue
-          ? SelectResultField<
-              TValue extends true
-                ? K extends keyof TTable['_']['columns']
-                  ? TTable['_']['columns'][K]
-                  : never
-                : TValue
-            >
-          : never
-      }
+  : OneOrMany<
+      TMode,
+      ReturningClause<TTable> extends TReturning
+        ? SelectResultFields<TTable['_']['columns']>
+        : {
+            [K in keyof TReturning]: TReturning[K] extends infer TValue
+              ? SelectResultField<
+                  TValue extends true
+                    ? K extends keyof TTable['_']['columns']
+                      ? TTable['_']['columns'][K]
+                      : never
+                    : TValue
+                >
+              : never
+          }
+    >
 
 export type ExtractTable<T extends { table: any }> = T extends {
   table: infer TTable extends Table

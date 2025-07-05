@@ -92,16 +92,19 @@ const result = await query
 By default, `upsert` will return all columns of the upserted row. But you can specify a `returning` clause to return only the columns you want. Any SQL expression is allowed in the `returning` clause.
 
 ```ts
+import { upper } from 'drizzle-plus'
+
 const result = await db.query.user.upsert({
   data: {
     id: 42,
     name: 'Chewbacca',
   },
-  returning: {
+  // Pass a function to reference the upserted row, or pass a plain object.
+  returning: user => ({
     id: true,
-    nameUpper: user => sql<string>`upper(${user.name})`,
+    nameUpper: upper(user.name),
     random: sql<number>`random()`,
-  },
+  }),
 })
 // => {
 //   id: 42,

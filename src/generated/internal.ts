@@ -1,4 +1,5 @@
 import {
+  Column,
   RelationsFilter,
   relationsFilterToSQL,
   sql,
@@ -45,6 +46,24 @@ export function getFilterSQL(
     ctx.tableNamesMap,
     ctx.dialect.casing
   )
+}
+
+export function getReturningFields(
+  returning: any,
+  columns: Record<string, Column>
+) {
+  const selectedFields: any = {}
+  for (const key in returning) {
+    switch (returning[key]) {
+      case true:
+        selectedFields[key] = columns[key as string]
+      case false:
+        break
+      default:
+        selectedFields[key] = returning[key]
+    }
+  }
+  return selectedFields
 }
 
 const getTableConfigMemoized = memoByFirstArgument((table: Table) => {

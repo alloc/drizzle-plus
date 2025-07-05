@@ -10,10 +10,10 @@ describe('upsert', () => {
         id: 100,
         name: 'Gregory',
       },
-      returning: {
+      returning: user => ({
         id: true,
-        name: user => sql<string>`upper(${user.name})`,
-      },
+        name: sql<string>`upper(${user.name})`,
+      }),
     })
 
     expect(query.toSQL()).toMatchInlineSnapshot(`

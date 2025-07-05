@@ -15,8 +15,8 @@ import {
   ReturningResultFields,
 } from 'drizzle-plus/types'
 import { getDefinedColumns } from 'drizzle-plus/utils'
-import { isFunction, mapValues, select } from 'radashi'
-import { getContext, getTargetColumns } from './internal'
+import { isFunction, select } from 'radashi'
+import { getContext, getReturningFields, getTargetColumns } from './internal'
 
 export interface DBUpsertConfig<
   TMode extends 'one' | 'many',
@@ -44,7 +44,10 @@ export interface DBUpsertConfig<
    *
    * If left undefined, the query returns all columns of the updated row.
    */
-  returning?: TReturning | undefined
+  returning?:
+    | TReturning
+    | ((table: TTable['_']['columns']) => TReturning)
+    | undefined
 }
 
 interface UpsertQueryPromise<T> extends PromiseLike<T> {
@@ -64,7 +67,7 @@ declare module 'drizzle-orm/pg-core/query-builders/query' {
         RelationsFilter<TFields, TSchema>
       >
     ): UpsertQueryPromise<
-      ReturningResultFields<ExtractTable<TFields>, TReturning>
+      ReturningResultFields<'one', ExtractTable<TFields>, TReturning>
     >
 
     upsert<TReturning extends ReturningClause<ExtractTable<TFields>>>(
@@ -75,7 +78,7 @@ declare module 'drizzle-orm/pg-core/query-builders/query' {
         RelationsFilter<TFields, TSchema>
       >
     ): UpsertQueryPromise<
-      ReturningResultFields<ExtractTable<TFields>, TReturning>[]
+      ReturningResultFields<'many', ExtractTable<TFields>, TReturning>
     >
   }
 }
@@ -137,17 +140,14 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
     query.onConflictDoNothing()
   }
 
-  if (!config.returning || Object.keys(config.returning).length > 0) {
-    query.returning(
-      config.returning &&
-        mapValues(config.returning, (value, key) =>
-          value === true
-            ? columns[key as string]
-            : isFunction(value)
-              ? value(table)
-              : value
-        )
-    )
+  const returning = config.returning
+    ? isFunction(config.returning)
+      ? config.returning(columns)
+      : config.returning
+    : undefined
+
+  if (!returning || Object.keys(returning).length > 0) {
+    query.returning(returning && getReturningFields(returning, columns))
   }
 
   return {
