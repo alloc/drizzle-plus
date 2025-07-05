@@ -374,7 +374,7 @@ These methods add `MATERIALIZED` and `NOT MATERIALIZED` keywords to the CTEs, re
 > [!WARNING]
 > This feature is only available in Postgres.
 
-````ts
+```ts
 import 'drizzle-plus/pg/$withMaterialized'
 
 // Same API as db.$with()
