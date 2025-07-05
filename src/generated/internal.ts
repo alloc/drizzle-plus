@@ -66,12 +66,12 @@ export function getReturningFields(
   return selectedFields
 }
 
-const getTableConfigMemoized = memoByFirstArgument((table: Table) => {
+const getTableConfigMemoized = memoByFirstArgument((table: PgTable) => {
   const { primaryKeys, uniqueConstraints } = getTableConfig(table)
   return { primaryKeys, uniqueConstraints }
 })
 
-export function getTargetColumns(table: Table, columns: PgColumn[]) {
+export function getTargetColumns(table: PgTable, columns: PgColumn[]) {
   // If the primary key is defined, prefer it over any unique constraint.
   const uniqueColumn =
     columns.find(column => column.primary) ||
