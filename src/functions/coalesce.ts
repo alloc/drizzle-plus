@@ -8,6 +8,8 @@ import { SQLValue } from '../types'
  * @param args - The arguments to coalesce.
  * @returns The first non-null value.
  */
-export function coalesce<T>(...args: [...SQLValue<T | null>[], SQLValue<T>]) {
-  return sql<T>`coalesce(${sql.join(args.map(toSQL), sql`, `)})`
+export function coalesce<T, U>(
+  ...args: [...SQLValue<T | null>[], SQLValue<U>]
+) {
+  return sql<T | U>`coalesce(${sql.join(args.map(toSQL), sql`, `)})`
 }
