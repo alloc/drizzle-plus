@@ -7,17 +7,9 @@ import {
   Subquery,
   Table,
 } from 'drizzle-orm'
-import {
-  SQLiteDeleteBase,
-  SQLiteSession,
-  SQLiteUpdateBase,
-} from 'drizzle-orm/sqlite-core'
+import { SQLiteDeleteBase, SQLiteUpdateBase } from 'drizzle-orm/sqlite-core'
 import { isFunction } from 'radashi'
 import { getReturningFields } from '../sqlite/internal'
-
-export function execute<T>(session: SQLiteSession<any, any>, query: SQL): T {
-  return session.all(query)
-}
 
 export function limitUpdateOrDelete(
   table: Table,

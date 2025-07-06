@@ -8,14 +8,9 @@ import {
 } from 'drizzle-orm'
 import {
   MySqlDeleteBase,
-  MySqlSession,
   MySqlTable,
   MySqlUpdateBase,
 } from 'drizzle-orm/mysql-core'
-
-export function execute<T>(session: MySqlSession, query: SQL) {
-  return session.execute<T>(query)
-}
 
 export function limitUpdateOrDelete(
   table: Table,

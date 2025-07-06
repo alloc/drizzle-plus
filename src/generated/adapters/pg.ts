@@ -10,19 +10,10 @@ import {
   Table,
   WithSubquery,
 } from 'drizzle-orm'
-import {
-  PgDeleteBase,
-  PgSelectBase,
-  PgSession,
-  PgUpdateBase,
-} from 'drizzle-orm/pg-core'
+import { PgDeleteBase, PgSelectBase, PgUpdateBase } from 'drizzle-orm/pg-core'
 import { isFunction } from 'radashi'
 import { getContext, getFilterSQL, getReturningFields } from '../pg/internal'
 import { RelationalQueryBuilder } from '../pg/types'
-
-export function execute<T>(session: PgSession, query: SQL) {
-  return session.execute<T>(query)
-}
 
 export function selectRowsToUpdateOrDelete(
   rqb: RelationalQueryBuilder<any, any>,
