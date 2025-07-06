@@ -1,51 +1,47 @@
 import type { SQL, SQLWrapper } from 'drizzle-orm'
-import { AnyDBQueryConfig, AnyRelationsFilter } from './types'
 
-type FilterOperators = {
-  OR?: AnyRelationsFilter[]
-  AND?: AnyRelationsFilter[]
-  NOT?: AnyRelationsFilter
+type MergedOperators = {
+  OR?: object[]
+  AND?: object[]
+  NOT?: object
   RAW?: SQLWrapper | ((table: any, operators: any) => SQL)
 }
 
 export type MergeRelationsFilter<
-  TLeft extends AnyDBQueryConfig['where'],
-  TRight extends AnyDBQueryConfig['where'],
+  TLeft extends MergedOperators | undefined,
+  TRight extends MergedOperators | undefined,
 > =
   // Punt on actually merging these, as it's very complicated and not strictly
   // necessary in most cases. Return a union of the two, so the compiler can at
   // least verify both types are valid (e.g. when passed to `findMany`).
-  TLeft | TRight
+  Exclude<TLeft, undefined> | TRight
 
 /**
- * Merge two `where` filters for Drizzle's Relational API.
+ * Merge two `where` filters for Drizzle's RelationalQueryBuilder API.
  */
 export function mergeRelationsFilter<
-  TLeft extends AnyDBQueryConfig['where'],
-  TRight extends AnyDBQueryConfig['where'],
->(left: TLeft, right: TRight): MergeRelationsFilter<TLeft, TRight> {
+  TLeft extends MergedOperators,
+  TRight extends MergedOperators | undefined,
+>(left: TLeft | undefined, right: TRight): MergeRelationsFilter<TLeft, TRight> {
   if (!left || !right) {
     return (left ?? right) as MergeRelationsFilter<TLeft, TRight>
   }
 
-  const mergedOps: FilterOperators = {}
+  const mergedOps: MergedOperators = {}
 
-  const leftOps = left as FilterOperators
-  const rightOps = right as FilterOperators
-
-  if (leftOps.OR && rightOps.OR) {
-    mergedOps.AND ??= [...(leftOps.AND ?? []), ...(rightOps.AND ?? [])]
-    mergedOps.AND.push({ OR: leftOps.OR }, { OR: rightOps.OR })
+  if (left.OR && right.OR) {
+    mergedOps.AND ??= [...(left.AND ?? []), ...(right.AND ?? [])]
+    mergedOps.AND.push({ OR: left.OR }, { OR: right.OR })
     mergedOps.OR = undefined
   }
-  if (leftOps.RAW && rightOps.RAW) {
-    mergedOps.AND ??= [...(leftOps.AND ?? []), ...(rightOps.AND ?? [])]
-    mergedOps.AND.push({ RAW: leftOps.RAW }, { RAW: rightOps.RAW })
+  if (left.RAW && right.RAW) {
+    mergedOps.AND ??= [...(left.AND ?? []), ...(right.AND ?? [])]
+    mergedOps.AND.push({ RAW: left.RAW }, { RAW: right.RAW })
     mergedOps.RAW = undefined
   }
 
-  if (leftOps.NOT && rightOps.NOT) {
-    mergedOps.NOT = { ...leftOps.NOT, ...rightOps.NOT }
+  if (left.NOT && right.NOT) {
+    mergedOps.NOT = mergeRelationsFilter(left.NOT, right.NOT)
   }
 
   return {
@@ -54,17 +50,3 @@ export function mergeRelationsFilter<
     ...mergedOps,
   } as MergeRelationsFilter<TLeft, TRight>
 }
-
-type MergeProperty<
-  TLeft,
-  TRight,
-  Key extends keyof TLeft | keyof TRight,
-> = Key extends keyof TLeft
-  ? Key extends keyof TRight
-    ? Omit<TRight, Key> extends TRight
-      ? TLeft[Key] | Exclude<TRight[Key], undefined>
-      : TRight[Key]
-    : TLeft[Key]
-  : Key extends keyof TRight
-    ? TRight[Key]
-    : never
