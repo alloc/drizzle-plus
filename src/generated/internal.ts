@@ -83,20 +83,16 @@ export function getTargetColumns(table: PgTable, columns: PgColumn[]) {
   // Find a composite column constraint that matches the columns.
   const { primaryKeys, uniqueConstraints } = getTableConfigMemoized(table)
   if (primaryKeys[0]) {
-    // We can't just use `arrayEquals` here because the `columns` could be in a
-    // different order.
-    const target = select(primaryKeys[0].columns, column =>
-      columns.includes(column) ? column : null
+    const target = select(primaryKeys[0].columns, targetColumn =>
+      columns.find(column => column.name === targetColumn.name)
     )
     if (target.length === primaryKeys[0].columns.length) {
       return target
     }
   }
   for (const uniqueConstraint of uniqueConstraints) {
-    // We can't just use `arrayEquals` here because the `columns` could be in a
-    // different order.
-    const target = select(uniqueConstraint.columns, column =>
-      columns.includes(column) ? column : null
+    const target = select(uniqueConstraint.columns, targetColumn =>
+      columns.find(column => column.name === targetColumn.name)
     )
     if (target.length === uniqueConstraint.columns.length) {
       return target
