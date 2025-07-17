@@ -103,8 +103,6 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
     throw new Error('No matching primary key or unique constraint found')
   }
 
-  const query = new PgInsertBuilder(table, session, dialect).values(config.data)
-
   // Values to use instead of the ones in `data` if the row already exists.
   const update = isFunction(config.update)
     ? config.update(table)
@@ -130,6 +128,14 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
     return [key, sql`excluded.${sql.identifier(name)}`]
   })
 
+  const returning = config.returning
+    ? isFunction(config.returning)
+      ? config.returning(columns)
+      : config.returning
+    : undefined
+
+  const query = new PgInsertBuilder(table, session, dialect).values(config.data)
+
   if (updatedEntries.length > 0) {
     query.onConflictDoUpdate({
       target,
@@ -139,12 +145,6 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
   } else {
     query.onConflictDoNothing()
   }
-
-  const returning = config.returning
-    ? isFunction(config.returning)
-      ? config.returning(columns)
-      : config.returning
-    : undefined
 
   if (!returning || Object.keys(returning).length > 0) {
     query.returning(returning && getReturningFields(returning, columns))
