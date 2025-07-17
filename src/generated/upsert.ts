@@ -134,6 +134,13 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
       : config.returning
     : undefined
 
+  // If a returning clause is defined, ensure a column is updated so that the
+  // result set isn't empty on conflict.
+  if (returning && updatedEntries.length === 0) {
+    const name = dialect.casing.getColumnCasing(target[0])
+    updatedEntries.push([target[0].name, sql`excluded.${sql.identifier(name)}`])
+  }
+
   const query = new PgInsertBuilder(table, session, dialect).values(config.data)
 
   if (updatedEntries.length > 0) {
