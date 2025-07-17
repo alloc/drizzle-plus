@@ -2,6 +2,9 @@ dist
 node_modules
 
 tmp.db
+test/generated
+test/pg/port.json
+test/mysql/port.json
 
 src/generated/mysql
 src/generated/pg
