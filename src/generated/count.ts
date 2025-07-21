@@ -20,6 +20,19 @@ declare module 'drizzle-orm/pg-core/query-builders/query' {
   }
 }
 
+RelationalQueryBuilder.prototype.count = function (
+  filter?: RelationsFilter<any, any>
+): CountQueryPromise {
+  const { table, dialect, session } = getContext(this)
+
+  return new CountQueryPromise(
+    table,
+    filter && getFilterSQL(this, filter),
+    session,
+    dialect
+  )
+}
+
 export class CountQueryPromise extends QueryPromise<number> {
   constructor(
     private table: PgTable,
@@ -55,17 +68,4 @@ export class CountQueryPromise extends QueryPromise<number> {
       selection: [{ key: 'count', field: sql`count(*)`.mapWith(Number) }],
     }
   }
-}
-
-RelationalQueryBuilder.prototype.count = function (
-  filter?: RelationsFilter<any, any>
-): CountQueryPromise {
-  const { table, dialect, session } = getContext(this)
-
-  return new CountQueryPromise(
-    table,
-    filter && getFilterSQL(this, filter),
-    session,
-    dialect
-  )
 }
