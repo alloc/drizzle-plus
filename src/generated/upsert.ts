@@ -135,7 +135,7 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
     : undefined
 
   // If a returning clause is defined, ensure a column is updated so that the
-  // result set isn't empty on conflict.
+  // result set isn’t empty on conflict.
   if (returning && updatedEntries.length === 0) {
     const name = dialect.casing.getColumnCasing(target[0])
     updatedEntries.push([target[0].name, sql`excluded.${sql.identifier(name)}`])
