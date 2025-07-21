@@ -18,7 +18,7 @@ import {
   PgSession,
   PgTable,
 } from 'drizzle-orm/pg-core'
-import { select } from 'radashi'
+import { isFunction, select } from 'radashi'
 import { RelationalQueryBuilder } from './types'
 
 export function getContext(rqb: RelationalQueryBuilder<any, any>) {
@@ -52,17 +52,49 @@ export function getReturningFields(
   returning: any,
   columns: Record<string, Column>
 ) {
-  const selectedFields: any = {}
-  for (const key in returning) {
-    switch (returning[key]) {
-      case true:
-        selectedFields[key] = columns[key as string]
-      case false:
-        break
-      default:
-        selectedFields[key] = returning[key]
+  if (isFunction(returning)) {
+    returning = returning(columns)
+
+    // Fast path for "return all columns" case.
+    if (returning === columns) {
+      return returning
     }
   }
+
+  // Ignore undefined values.
+  const keys = Object.keys(returning).filter(
+    key => returning[key] !== undefined
+  )
+
+  // Empty object means "return nothing".
+  if (!keys.length) {
+    return null
+  }
+
+  const selectedFields: any = {}
+
+  // Check if at least one non-false value exists.
+  if (keys.some(key => returning[key] !== false)) {
+    for (const key of keys) {
+      if (returning[key] === false) {
+        continue
+      }
+      selectedFields[key] =
+        returning[key] === true ? columns[key] : returning[key]
+    }
+  } else {
+    // If only false values exist, return all but the false columns.
+    const omittedKeys = keys
+    for (const key in columns) {
+      if (!omittedKeys.includes(key)) {
+        selectedFields[key] = columns[key]
+      }
+    }
+    if (!Object.keys(selectedFields).length) {
+      return null
+    }
+  }
+
   return selectedFields
 }
 

@@ -8,7 +8,6 @@ import {
   Table,
 } from 'drizzle-orm'
 import { SQLiteDeleteBase, SQLiteUpdateBase } from 'drizzle-orm/sqlite-core'
-import { isFunction } from 'radashi'
 import { getReturningFields } from '../sqlite/internal'
 
 export function limitUpdateOrDelete(
@@ -38,15 +37,9 @@ export function setReturningClauseForUpdateOrDelete(
     | undefined,
   columns: Record<string, Column>
 ) {
-  const returning = returningOption
-    ? isFunction(returningOption)
-      ? returningOption(columns)
-      : returningOption
-    : undefined
-
-  // Undefined and {} are both ignored.
-  if (returning && Object.keys(returning).length > 0) {
-    query.returning(getReturningFields(returning, columns))
+  const returning = getReturningFields(returningOption, columns)
+  if (returning) {
+    query.returning(returning)
   }
 }
 

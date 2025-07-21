@@ -129,10 +129,8 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
   })
 
   const returning = config.returning
-    ? isFunction(config.returning)
-      ? config.returning(columns)
-      : config.returning
-    : undefined
+    ? getReturningFields(config.returning, columns)
+    : columns
 
   // If a returning clause is defined, ensure a column is updated so that the
   // result set isn’t empty on conflict.
@@ -153,8 +151,8 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
     query.onConflictDoNothing()
   }
 
-  if (!returning || Object.keys(returning).length > 0) {
-    query.returning(returning && getReturningFields(returning, columns))
+  if (returning) {
+    query.returning(returning)
   }
 
   return {

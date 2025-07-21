@@ -11,7 +11,6 @@ import {
   WithSubquery,
 } from 'drizzle-orm'
 import { PgDeleteBase, PgSelectBase, PgUpdateBase } from 'drizzle-orm/pg-core'
-import { isFunction } from 'radashi'
 import { getContext, getFilterSQL, getReturningFields } from '../pg/internal'
 import { RelationalQueryBuilder } from '../pg/types'
 
@@ -76,15 +75,9 @@ export function setReturningClauseForUpdateOrDelete(
     | undefined,
   columns: Record<string, Column>
 ) {
-  const returning = returningOption
-    ? isFunction(returningOption)
-      ? returningOption(columns)
-      : returningOption
-    : undefined
-
-  // Undefined and {} are both ignored.
-  if (returning && Object.keys(returning).length > 0) {
-    query.returning(getReturningFields(returning, columns))
+  const returning = getReturningFields(returningOption, columns)
+  if (returning) {
+    query.returning(returning)
   }
 }
 

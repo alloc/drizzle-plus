@@ -17,7 +17,6 @@ import {
   ReturningClause,
   ReturningResultFields,
 } from 'drizzle-plus/types'
-import { isFunction } from 'radashi'
 import { getContext, getReturningFields } from './internal'
 
 export interface DBCreateConfig<
@@ -76,13 +75,9 @@ RelationalQueryBuilder.prototype.create = function (
     query.onConflictDoNothing()
   }
 
-  const returning = isFunction(config.returning)
-    ? config.returning(columns)
-    : config.returning
-
-  // Undefined and {} are both ignored.
-  if (returning && Object.keys(returning).length > 0) {
-    query.returning(getReturningFields(returning, columns))
+  const returning = getReturningFields(config.returning, columns)
+  if (returning) {
+    query.returning(returning)
   }
 
   return query as CreateQueryPromise<any, any, any>
