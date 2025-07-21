@@ -4,6 +4,7 @@
   "editor.codeActionsOnSave": {
     "source.organizeImports": "explicit"
   },
+  "typescript.tsdk": "node_modules/typescript/lib",
   "[typescript][json][markdown]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   }
