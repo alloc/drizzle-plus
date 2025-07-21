@@ -38,17 +38,17 @@ const sessionTypeParams = {
   mysql: '',
 }
 
-// Clear generated files from previous runs.
-if (!process.argv.includes('--no-remove')) {
-  for (const dir of globSync('src/generated/*', { onlyDirectories: true })) {
-    if (dialects.some(dialect => dir.endsWith(dialect))) {
-      fs.rmSync(dir, { recursive: true, force: true })
-    }
-  }
-}
-
 for (const dialect of dialects) {
   const root = path.join('src/generated', dialect)
+
+  // Clear generated files from previous runs.
+  if (!process.argv.includes('--no-remove')) {
+    fs.rmSync(root, {
+      recursive: true,
+      force: true,
+    })
+  }
+
   fs.mkdirSync(root, { recursive: true })
   fs.writeFileSync(
     path.join(root, 'tsconfig.json'),
