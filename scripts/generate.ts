@@ -16,7 +16,7 @@ const pascalMap: Record<DialectExceptPg, string> = {
 }
 
 const unsupportedFeatures: Partial<Record<DialectExceptPg, string[]>> = {
-  mysql: ['upsert', '$withMaterialized'],
+  mysql: ['create', 'upsert', '$withMaterialized'],
   sqlite: ['$withMaterialized'],
 }
 
