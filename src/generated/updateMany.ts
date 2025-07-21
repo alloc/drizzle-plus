@@ -1,5 +1,7 @@
 import {
   getTableColumns,
+  Query,
+  QueryPromise,
   RelationsFilter,
   type TableRelationalConfig,
   type TablesRelationalConfig,
@@ -50,10 +52,6 @@ export interface DBUpdateManyConfig<
   >
 }
 
-interface UpdateManyQueryPromise<T> extends PromiseLike<T> {
-  toSQL: () => { sql: string; params: any[] }
-}
-
 declare module 'drizzle-orm/pg-core/query-builders/query' {
   export interface RelationalQueryBuilder<
     TSchema extends TablesRelationalConfig,
@@ -65,17 +63,13 @@ declare module 'drizzle-orm/pg-core/query-builders/query' {
         TReturning,
         RelationsFilter<TFields, TSchema>
       >
-    ): UpdateManyQueryPromise<
-      keyof TReturning extends never
-        ? number
-        : ReturningResultFields<'many', ExtractTable<TFields>, TReturning>
-    >
+    ): UpdateManyQueryPromise<ExtractTable<TFields, PgTable>, TReturning>
   }
 }
 
 RelationalQueryBuilder.prototype.updateMany = function (
   config: DBUpdateManyConfig<any, any, any>
-): UpdateManyQueryPromise<any> {
+): UpdateManyQueryPromise<any, any> {
   const { table, dialect, session } = getContext(this)
   const columns = getTableColumns(table)
 
@@ -117,10 +111,19 @@ RelationalQueryBuilder.prototype.updateMany = function (
     )
   }
 
-  return {
-    then(onfulfilled, onrejected): any {
-      return query.then(onfulfilled, onrejected)
-    },
-    toSQL: () => query.toSQL(),
-  }
+  return query as UpdateManyQueryPromise<any, any>
+}
+
+export type UpdateManyQueryResult<
+  TTable extends PgTable,
+  TReturning extends ReturningClause<TTable>,
+> = keyof TReturning extends never
+  ? number
+  : ReturningResultFields<'many', TTable, TReturning>
+
+export interface UpdateManyQueryPromise<
+  TTable extends PgTable,
+  TReturning extends ReturningClause<TTable>,
+> extends QueryPromise<UpdateManyQueryResult<TTable, TReturning>> {
+  toSQL(): Query
 }
