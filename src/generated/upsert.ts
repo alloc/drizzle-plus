@@ -133,7 +133,10 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
   if (isFunction(config.data) || config.data instanceof TypedQueryBuilder) {
     query = qb.select(config.data)
     selection = getSelectedFields((query as any).config.select)
-  } else if (config.data instanceof PgRelationalQuery) {
+  } else if (
+    config.data instanceof PgRelationalQuery ||
+    config.data instanceof Subquery
+  ) {
     query = qb.select(getSQL(config.data))
     selection = getSelectedFields(config.data)
   } else {
