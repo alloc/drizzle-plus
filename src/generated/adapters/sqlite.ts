@@ -7,8 +7,20 @@ import {
   Subquery,
   Table,
 } from 'drizzle-orm'
-import { SQLiteDeleteBase, SQLiteUpdateBase } from 'drizzle-orm/sqlite-core'
+import {
+  SQLiteDeleteBase,
+  SQLiteInsertBase,
+  SQLiteUpdateBase,
+} from 'drizzle-orm/sqlite-core'
+import { SQLiteRelationalQuery } from 'drizzle-orm/sqlite-core/query-builders/query'
 import { getReturningFields } from '../sqlite/internal'
+
+export type RelationalQuery<TResult> = SQLiteRelationalQuery<
+  'sync' | 'async',
+  TResult
+>
+
+export type InsertQuery = SQLiteInsertBase<any, any, any>
 
 export function limitUpdateOrDelete(
   table: Table,

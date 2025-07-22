@@ -8,9 +8,19 @@ import {
 } from 'drizzle-orm'
 import {
   MySqlDeleteBase,
+  MySqlInsertBase,
   MySqlTable,
   MySqlUpdateBase,
+  PreparedQueryHKTBase,
 } from 'drizzle-orm/mysql-core'
+import { MySqlRelationalQuery } from 'drizzle-orm/mysql-core/query-builders/query'
+
+export type RelationalQuery<TResult> = MySqlRelationalQuery<
+  PreparedQueryHKTBase,
+  TResult
+>
+
+export type InsertQuery = MySqlInsertBase<any, any, any>
 
 export function limitUpdateOrDelete(
   table: Table,

@@ -10,9 +10,19 @@ import {
   Table,
   WithSubquery,
 } from 'drizzle-orm'
-import { PgDeleteBase, PgSelectBase, PgUpdateBase } from 'drizzle-orm/pg-core'
+import {
+  PgDeleteBase,
+  PgInsertBase,
+  PgSelectBase,
+  PgUpdateBase,
+} from 'drizzle-orm/pg-core'
+import { PgRelationalQuery } from 'drizzle-orm/pg-core/query-builders/query'
 import { getContext, getFilterSQL, getReturningFields } from '../pg/internal'
 import { RelationalQueryBuilder } from '../pg/types'
+
+export type { PgRelationalQuery as RelationalQuery }
+
+export type InsertQuery = PgInsertBase<any, any>
 
 export function selectRowsToUpdateOrDelete(
   rqb: RelationalQueryBuilder<any, any>,

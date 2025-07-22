@@ -21,22 +21,26 @@ const unsupportedFeatures: Partial<Record<DialectExceptPg, string[]>> = {
 }
 
 // RelationalQueryBuilder type parameters.
-const rqbExtraTypeParams = {
+const typeParams = {
   sqlite: {
-    code: `TMode extends 'sync' | 'async'`,
-    count: 1,
+    RelationalQueryBuilder: {
+      code: `TMode extends 'sync' | 'async'`,
+      count: 1,
+    },
+    RelationalQuery: {
+      code: `TType extends 'sync' | 'async'`,
+    },
+    Session: '<any, any>',
   },
   mysql: {
-    code: `TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase`,
-    count: 1,
+    RelationalQueryBuilder: {
+      code: `TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase`,
+      count: 1,
+    },
+    RelationalQuery: undefined,
+    Session: '',
   },
-}
-
-// Database session type parameters.
-const sessionTypeParams = {
-  sqlite: `<any, any>`,
-  mysql: '',
-}
+} as const
 
 for (const dialect of dialects) {
   const root = path.join('src/generated', dialect)
@@ -83,23 +87,31 @@ for (const file of globSync('src/generated/*.ts')) {
         .replace(/\bpg-/g, dialect + '-')
 
         // Update type names.
-        .replace(/: PgSession/g, '$&' + sessionTypeParams[dialect])
+        .replace(/: PgSession/g, '$&' + typeParams[dialect].Session)
         .replace(/\bPg/g, pascalMap[dialect])
 
         // Update type parameters of common types.
         .replace(
           /\binterface RelationalQueryBuilder<(\s*)/gm,
-          '$&' + rqbExtraTypeParams[dialect].code + ',$1'
+          '$&' + typeParams[dialect].RelationalQueryBuilder.code + ',$1'
         )
         .replace(
-          /\b\w+RelationalQuery<(\s*)/gm,
-          '$&' +
-            rqbExtraTypeParams[dialect].code.replace(/ extends .+$/, '') +
-            ',$1'
+          /\b(interface )?\w+RelationalQuery<(\s*)/gm,
+          (match, iface, param) => {
+            let { code }: { code: string } =
+              (iface && typeParams[dialect].RelationalQuery) ||
+              typeParams[dialect].RelationalQueryBuilder
+            if (!iface) {
+              code = code.replace(/ extends .+$/, '')
+            }
+            return match + code + ',' + param
+          }
         )
         .replace(
           /\b(?:extends|:) RelationalQueryBuilder<(\s*)/gm,
-          '$&' + '$1any, '.repeat(rqbExtraTypeParams[dialect].count) + '$1'
+          '$&' +
+            '$1any, '.repeat(typeParams[dialect].RelationalQueryBuilder.count) +
+            '$1'
         )
     }
 

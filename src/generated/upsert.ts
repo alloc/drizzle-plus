@@ -1,20 +1,36 @@
 import {
   getTableColumns,
+  Query,
+  QueryPromise,
   RelationsFilter,
   relationsFilterToSQL,
   Table,
   type TableRelationalConfig,
   type TablesRelationalConfig,
 } from 'drizzle-orm'
-import { PgInsertBuilder, PgInsertValue } from 'drizzle-orm/pg-core'
-import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
+import {
+  PgInsertBuilder,
+  PgInsertSelectQueryBuilder,
+  PgInsertValue,
+  QueryBuilder,
+} from 'drizzle-orm/pg-core'
+import {
+  PgRelationalQuery,
+  RelationalQueryBuilder,
+} from 'drizzle-orm/pg-core/query-builders/query'
+import { TypedQueryBuilder } from 'drizzle-orm/query-builders/query-builder'
 import {
   ExtractTable,
   ReturningClause,
   ReturningResultFields,
 } from 'drizzle-plus/types'
-import { getDefinedColumns } from 'drizzle-plus/utils'
+import {
+  getDefinedColumns,
+  getSelectedFields,
+  getSQL,
+} from 'drizzle-plus/utils'
 import { isFunction, select } from 'radashi'
+import * as adapter from './adapters/pg'
 import {
   excluded,
   getContext,
@@ -22,15 +38,30 @@ import {
   getTargetColumns,
 } from './internal'
 
+/**
+ * Represents a `select` query that will have its result set used as the values
+ * of an `upsert` query.
+ */
+export type PgUpsertSelectQuery<TTable extends Table> =
+  | ((qb: QueryBuilder) => PgInsertSelectQueryBuilder<TTable>)
+  | PgInsertSelectQueryBuilder<TTable>
+  | adapter.RelationalQuery<
+      PgInsertValue<TTable> | PgInsertValue<TTable>[] | undefined
+    >
+
 export interface DBUpsertConfig<
   TMode extends 'one' | 'many',
   TTable extends Table,
   TReturning extends ReturningClause<TTable>,
   TWhere,
 > {
+  /**
+   * One or more rows to insert/update. This can also be a `SELECT` query or a
+   * function that returns one.
+   */
   data: TMode extends 'one'
     ? PgInsertValue<TTable>
-    : readonly PgInsertValue<TTable>[]
+    : readonly PgInsertValue<TTable>[] | PgUpsertSelectQuery<TTable>
   /**
    * This option enables you to partially override `data` with values that are
    * only used when the row already exists.
@@ -54,10 +85,6 @@ export interface DBUpsertConfig<
     | undefined
 }
 
-interface UpsertQueryPromise<T> extends PromiseLike<T> {
-  toSQL: () => { sql: string; params: any[] }
-}
-
 declare module 'drizzle-orm/pg-core/query-builders/query' {
   export interface RelationalQueryBuilder<
     TSchema extends TablesRelationalConfig,
@@ -70,9 +97,7 @@ declare module 'drizzle-orm/pg-core/query-builders/query' {
         TReturning,
         RelationsFilter<TFields, TSchema>
       >
-    ): UpsertQueryPromise<
-      ReturningResultFields<'one', ExtractTable<TFields>, TReturning>
-    >
+    ): UpsertQueryPromise<'one', ExtractTable<TFields>, TReturning>
 
     upsert<TReturning extends ReturningClause<ExtractTable<TFields>>>(
       config: DBUpsertConfig<
@@ -81,9 +106,7 @@ declare module 'drizzle-orm/pg-core/query-builders/query' {
         TReturning,
         RelationsFilter<TFields, TSchema>
       >
-    ): UpsertQueryPromise<
-      ReturningResultFields<'many', ExtractTable<TFields>, TReturning>
-    >
+    ): UpsertQueryPromise<'many', ExtractTable<TFields>, TReturning>
   }
 }
 
@@ -92,14 +115,29 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
   update?: any
   where?: RelationsFilter<any, any>
   returning?: any
-}): UpsertQueryPromise<any> {
+}): UpsertQueryPromise<any, any, any> {
   const { table, dialect, session } = getContext(this)
   const columns = getTableColumns(table)
+
+  const qb = new PgInsertBuilder(table, session, dialect)
+
+  let query: adapter.InsertQuery
+  let selection: Record<string, unknown> | undefined
+
+  if (isFunction(config.data) || config.data instanceof TypedQueryBuilder) {
+    query = qb.select(config.data)
+    selection = getSelectedFields((query as any).config.select)
+  } else if (config.data instanceof PgRelationalQuery) {
+    query = qb.select(getSQL(config.data))
+    selection = getSelectedFields(config.data)
+  } else {
+    query = qb.values(config.data)
+  }
 
   // Columns that *might* be used as a "conflict target" must be defined in the
   // very first object of `data`.
   const targetCandidates = getDefinedColumns(columns, [
-    Array.isArray(config.data) ? config.data[0] : config.data,
+    selection || (Array.isArray(config.data) ? config.data[0] : config.data),
   ])
 
   const target = getTargetColumns(table, Object.values(targetCandidates))
@@ -137,13 +175,11 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
     : columns
 
   // If a returning clause is defined, ensure a column is updated so that the
-  // result set isn’t empty on conflict.
+  // result set isn't empty on conflict.
   if (returning && updatedEntries.length === 0) {
     const name = dialect.casing.getColumnCasing(target[0])
     updatedEntries.push([target[0].name, excluded(name)])
   }
-
-  const query = new PgInsertBuilder(table, session, dialect).values(config.data)
 
   if (updatedEntries.length > 0) {
     query.onConflictDoUpdate({
@@ -159,15 +195,33 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
     query.returning(returning)
   }
 
-  return {
-    then(onfulfilled, onrejected): any {
-      if (Array.isArray(config.data)) {
-        return query.then(onfulfilled, onrejected)
-      }
-      return query
-        .then((results: any) => results[0])
-        .then(onfulfilled, onrejected)
-    },
-    toSQL: () => query.toSQL(),
+  return new UpsertQueryPromise(
+    query,
+    !selection && !Array.isArray(config.data)
+  )
+}
+
+export type UpsertQueryResult<
+  TMode extends 'one' | 'many',
+  TTable extends Table,
+  TReturning extends ReturningClause<TTable>,
+> = ReturningResultFields<TMode, TTable, TReturning>
+
+export class UpsertQueryPromise<
+  TMode extends 'one' | 'many',
+  TTable extends Table,
+  TReturning extends ReturningClause<TTable>,
+> extends QueryPromise<UpsertQueryResult<TMode, TTable, TReturning>> {
+  constructor(
+    private query: QueryPromise<any>,
+    private first: boolean
+  ) {
+    super()
+  }
+  override execute(): Promise<UpsertQueryResult<TMode, TTable, TReturning>> {
+    return this.first ? this.query.then(results => results[0]) : this.query
+  }
+  toSQL(): Query {
+    return (this.query as any).toSQL()
   }
 }
