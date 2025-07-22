@@ -26,11 +26,11 @@ export type SelectionFromAnyObject<T extends Record<string, unknown>> = {} & {
           ? QueryToSQL<TValue, { unwrap: true }>
           : TValue extends object
             ? TValue extends Date
-              ? SQL<string>
+              ? SQL.Aliased<string>
               : TValue extends JSONObjectCodable
-                ? SQL<TValue>
+                ? SQL.Aliased<TValue>
                 : DrizzleTypeError<'Object value must be JSON-serializable'>
-            : SQL<TValue>
+            : SQL.Aliased<TValue>
     : never
 }
 
