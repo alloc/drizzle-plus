@@ -16,7 +16,7 @@ import { AnyQuery, QueryToSQL, SQLExpression } from 'drizzle-plus/types'
 import { JSONObjectCodable } from 'drizzle-plus/types/json'
 import { getSQL } from 'drizzle-plus/utils'
 
-export type SelectionFromAnyObject<T extends Record<string, unknown>> = {
+export type SelectionFromAnyObject<T extends Record<string, unknown>> = {} & {
   [K in keyof T]: T[K] extends infer TValue
     ? TValue extends undefined
       ? never
