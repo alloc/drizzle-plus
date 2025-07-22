@@ -12,7 +12,7 @@ export class SQLCaseWhen<T = never> {
    */
   when<Then>(whenExpr: SQLExpression | undefined, thenExpr: SQLValue<Then>) {
     if (whenExpr) {
-      this.cases.push(sql` WHEN ${whenExpr} THEN ${thenExpr}`)
+      this.cases.push(sql`WHEN ${whenExpr} THEN ${thenExpr}`)
     }
     return this as SQLCaseWhen<T | Then>
   }
@@ -22,7 +22,7 @@ export class SQLCaseWhen<T = never> {
    */
   else<Else>(elseExpr: SQLValue<Else>): SQL<T | Else> {
     if (this.cases.length) {
-      return sql`CASE ${sql.join(this.cases, '')} ELSE ${elseExpr} END`
+      return sql`CASE ${sql.join(this.cases, ' ')} ELSE ${elseExpr} END`
     }
     return sql`${elseExpr}`
   }
@@ -33,7 +33,7 @@ export class SQLCaseWhen<T = never> {
    */
   elseNull(): SQL<T | null> {
     if (this.cases.length) {
-      return sql`CASE ${sql.join(this.cases, '')} END`
+      return sql`CASE ${sql.join(this.cases, ' ')} END`
     }
     return sql`NULL`
   }
