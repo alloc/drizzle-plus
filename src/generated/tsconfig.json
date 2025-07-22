@@ -5,6 +5,7 @@
   "compilerOptions": {
     "paths": {
       "drizzle-plus/types": ["../types.ts"],
+      "drizzle-plus/types/*": ["../types/*.ts"],
       "drizzle-plus/utils": ["../utils.ts"]
     }
   }

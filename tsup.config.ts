@@ -16,6 +16,7 @@ export default defineConfig({
     'src/index.ts',
     'src/utils.ts',
     'src/types.ts',
+    'src/types/json.ts',
     ...['pg', 'mysql', 'sqlite'].flatMap(dialect => {
       const dir = `${generatedSourceRoot}/${dialect}`
       return [

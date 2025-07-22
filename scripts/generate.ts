@@ -23,6 +23,7 @@ const unsupportedFeatures: Partial<Record<DialectExceptPg, string[]>> = {
 // RelationalQueryBuilder type parameters.
 const typeParams = {
   sqlite: {
+    Database: 'BaseSQLiteDatabase',
     RelationalQueryBuilder: {
       code: `TMode extends 'sync' | 'async'`,
       count: 1,
@@ -33,6 +34,7 @@ const typeParams = {
     Session: '<any, any>',
   },
   mysql: {
+    Database: 'MySqlDatabase',
     RelationalQueryBuilder: {
       code: `TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase`,
       count: 1,
@@ -88,6 +90,7 @@ for (const file of globSync('src/generated/*.ts')) {
 
         // Update type names.
         .replace(/: PgSession/g, '$&' + typeParams[dialect].Session)
+        .replace(/\bPgDatabase/g, typeParams[dialect].Database)
         .replace(/\bPg/g, pascalMap[dialect])
 
         // Update type parameters of common types.
@@ -112,6 +115,15 @@ for (const file of globSync('src/generated/*.ts')) {
           '$&' +
             '$1any, '.repeat(typeParams[dialect].RelationalQueryBuilder.count) +
             '$1'
+        )
+
+        // Uncomment dialect-specific code.
+        .replace(/( *)\/\/ (\w+)-insert: (.*?)\n/g, (_, space, apply, code) =>
+          apply === dialect ? space + code + '\n' : ''
+        )
+        .replace(
+          / *\/\/ (\w+)-remove-next-line\n([^\n]*\n)/g,
+          (_, apply, line) => (apply === dialect ? '' : line)
         )
     }
 

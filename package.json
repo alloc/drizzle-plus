@@ -15,6 +15,10 @@
       "types": "./dist/types.d.ts",
       "default": "./dist/types.js"
     },
+    "./types/*": {
+      "types": "./dist/types/*.d.ts",
+      "default": "./dist/types/*.js"
+    },
     "./sqlite": {
       "types": "./dist/generated/sqlite/index.d.ts",
       "default": "./dist/generated/sqlite/index.js"
