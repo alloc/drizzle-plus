@@ -14,10 +14,7 @@ import type {
   View,
 } from 'drizzle-orm'
 import { CasingCache } from 'drizzle-orm/casing'
-import type {
-  SelectResultField,
-  SelectResultFields,
-} from 'drizzle-orm/query-builders/select.types'
+import type { SelectResultFields } from 'drizzle-orm/query-builders/select.types'
 
 export type SQLValue<T> = T | SQLExpression<T>
 
@@ -208,18 +205,14 @@ export type ReturningResultFields<
       TMode,
       ReturningClause<TTable> extends TReturning
         ? SelectResultFields<TTable['_']['columns']>
-        : {
-            [K in keyof TReturning]: TReturning[K] extends infer TValue
-              ? SelectResultField<
-                  TValue extends true
-                    ? K extends keyof TTable['_']['columns']
-                      ? TTable['_']['columns'][K]
-                      : never
-                    : TValue
-                >
-              : never
-          }
+        : AllFalseValues<TReturning> extends TReturning
+          ? SelectResultFields<Omit<TTable['_']['columns'], keyof TReturning>>
+          : SelectResultFields<TReturning>
     >
+
+type AllFalseValues<T extends object> = {
+  [K in keyof T]-?: false
+}
 
 export type ExtractTable<
   T extends { table: any },
