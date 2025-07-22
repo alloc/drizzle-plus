@@ -4,6 +4,7 @@ import {
   QueryPromise,
   RelationsFilter,
   relationsFilterToSQL,
+  Subquery,
   Table,
   type TableRelationalConfig,
   type TablesRelationalConfig,
@@ -55,6 +56,10 @@ export interface DBUpsertConfig<
   TReturning extends ReturningClause<TTable>,
   TWhere,
 > {
+  /**
+   * CTEs to use in the query.
+   */
+  with?: Subquery[]
   /**
    * One or more rows to insert/update. This can also be a `SELECT` query or a
    * function that returns one.
@@ -111,6 +116,7 @@ declare module 'drizzle-orm/pg-core/query-builders/query' {
 }
 
 RelationalQueryBuilder.prototype.upsert = function (config: {
+  with?: Subquery[]
   data: any
   update?: any
   where?: RelationsFilter<any, any>
@@ -119,7 +125,7 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
   const { table, dialect, session } = getContext(this)
   const columns = getTableColumns(table)
 
-  const qb = new PgInsertBuilder(table, session, dialect)
+  const qb = new PgInsertBuilder(table, session, dialect, config.with)
 
   let query: adapter.InsertQuery
   let selection: Record<string, unknown> | undefined
