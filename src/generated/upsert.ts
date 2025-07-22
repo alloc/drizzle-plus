@@ -2,7 +2,6 @@ import {
   getTableColumns,
   RelationsFilter,
   relationsFilterToSQL,
-  sql,
   Table,
   type TableRelationalConfig,
   type TablesRelationalConfig,
@@ -16,7 +15,12 @@ import {
 } from 'drizzle-plus/types'
 import { getDefinedColumns } from 'drizzle-plus/utils'
 import { isFunction, select } from 'radashi'
-import { getContext, getReturningFields, getTargetColumns } from './internal'
+import {
+  excluded,
+  getContext,
+  getReturningFields,
+  getTargetColumns,
+} from './internal'
 
 export interface DBUpsertConfig<
   TMode extends 'one' | 'many',
@@ -125,7 +129,7 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
       return null
     }
     const name = dialect.casing.getColumnCasing(column)
-    return [key, sql`excluded.${sql.identifier(name)}`]
+    return [key, excluded(name)]
   })
 
   const returning = config.returning
@@ -136,7 +140,7 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
   // result set isn’t empty on conflict.
   if (returning && updatedEntries.length === 0) {
     const name = dialect.casing.getColumnCasing(target[0])
-    updatedEntries.push([target[0].name, sql`excluded.${sql.identifier(name)}`])
+    updatedEntries.push([target[0].name, excluded(name)])
   }
 
   const query = new PgInsertBuilder(table, session, dialect).values(config.data)

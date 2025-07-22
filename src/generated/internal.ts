@@ -208,3 +208,7 @@ export type InferDialect<TTable extends Table> =
 
 export type ExcludeDialect<TTable extends Table, TDialect extends string, T> =
   InferDialect<TTable> extends TDialect ? never : T
+
+export function excluded(name: string) {
+  return sql`excluded.${sql.identifier(name)}`
+}
