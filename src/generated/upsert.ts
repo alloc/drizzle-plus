@@ -182,9 +182,9 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
 
   // Filter out values that don't need to be updated.
   const updatedEntries = select(Object.keys(setCandidates), key => {
-    const value = update?.[key]
-    if (value !== undefined) {
-      return [key, value]
+    if (update && key in update) {
+      // An undefined value in `update` means “do not update this column”.
+      return update[key] !== undefined ? [key, update[key]] : null
     }
     const column = columns[key]
     if (target.includes(column)) {
