@@ -17,6 +17,7 @@ import {
   PgDialect,
   PgSession,
   PgTable,
+  SelectedFields,
 } from 'drizzle-orm/pg-core'
 import { isFunction, select } from 'radashi'
 import { RelationalQueryBuilder } from './types'
@@ -214,3 +215,30 @@ export function excluded(name: string) {
 }
 
 export const sqlNull = sql`null`
+
+// A workaround for https://github.com/drizzle-team/drizzle-orm/issues/3971
+export function buildInsertSelect(
+  selectedFields: any,
+  columns: Record<string, PgColumn>,
+  isRelationalQuery?: boolean
+): SelectedFields {
+  const values: any = {}
+  for (const key in columns) {
+    if (selectedFields[key] !== undefined) {
+      values[key] = isRelationalQuery
+        ? sql.identifier(key)
+        : selectedFields[key]
+    } else {
+      const column = columns[key]
+      if (column.hasDefault || column.generated || column.generatedIdentity) {
+        throw new Error(
+          `Column "${key}" cannot be undefined for an INSERT…SELECT query, because of a bug in Drizzle that always includes generated/optional columns in the column list: https://github.com/drizzle-team/drizzle-orm/issues/3971`
+        )
+      }
+      // Set null even if column is non-nullable, because Drizzle includes
+      // every possible column in the INSERT query's column list.
+      values[key] = sqlNull
+    }
+  }
+  return values
+}

@@ -33,6 +33,7 @@ import {
 import { isFunction, select } from 'radashi'
 import * as adapter from './adapters/pg'
 import {
+  buildInsertSelect,
   excluded,
   getContext,
   getReturningFields,
@@ -46,6 +47,7 @@ import {
 export type PgUpsertSelectQuery<TTable extends Table> =
   | ((qb: QueryBuilder) => PgInsertSelectQueryBuilder<TTable>)
   | PgInsertSelectQueryBuilder<TTable>
+  | Subquery<string, PgInsertValue<TTable>>
   | adapter.RelationalQuery<
       PgInsertValue<TTable> | PgInsertValue<TTable>[] | undefined
     >
@@ -127,18 +129,31 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
 
   const qb = new PgInsertBuilder(table, session, dialect, config.with)
 
-  let query: adapter.InsertQuery
   let selection: Record<string, unknown> | undefined
+  let query: adapter.InsertQuery
 
   if (isFunction(config.data) || config.data instanceof TypedQueryBuilder) {
-    query = qb.select(config.data)
-    selection = getSelectedFields((query as any).config.select)
+    const data = isFunction(config.data)
+      ? config.data(new QueryBuilder())
+      : config.data
+
+    selection = data.config.fields
+    data.config.fields = buildInsertSelect(selection, columns)
+
+    // Used by Drizzle to assert all columns exist and are in order.
+    data._.selectedFields = data.config.fields
+
+    query = qb.select(data)
   } else if (
     config.data instanceof PgRelationalQuery ||
     config.data instanceof Subquery
   ) {
-    query = qb.select(getSQL(config.data))
     selection = getSelectedFields(config.data)
+    query = qb.select(qb => {
+      return qb
+        .select(buildInsertSelect(selection, columns, true))
+        .from(getSQL(config.data))
+    })
   } else {
     query = qb.values(config.data)
   }
