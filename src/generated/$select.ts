@@ -12,26 +12,30 @@ import type * as V1 from 'drizzle-orm/_relations'
 import { PgColumn, SelectedFields } from 'drizzle-orm/pg-core'
 import { PgDatabase } from 'drizzle-orm/pg-core/db'
 import { TypedQueryBuilder } from 'drizzle-orm/query-builders/query-builder'
-import { AnyQuery, QueryToSQL, SQLExpression } from 'drizzle-plus/types'
+import { AnyQuery, QueryToResult, SQLExpression } from 'drizzle-plus/types'
 import { JSONObjectCodable } from 'drizzle-plus/types/json'
 import { getSQL } from 'drizzle-plus/utils'
 import { sqlNull } from './internal'
 
 export type SelectionFromAnyObject<T extends Record<string, unknown>> = {} & {
-  [K in keyof T]: T[K] extends infer TValue
-    ? TValue extends undefined
-      ? never
-      : TValue extends SQLExpression<any>
-        ? TValue
+  [K in keyof T]-?: (
+    T[K] extends infer TValue
+      ? TValue extends SQLExpression<infer TResult>
+        ? TResult
         : TValue extends AnyQuery
-          ? QueryToSQL<TValue, { unwrap: true }>
+          ? QueryToResult<TValue, { unwrap: true }>
           : TValue extends object
             ? TValue extends Date
-              ? SQL.Aliased<string>
+              ? string
               : TValue extends JSONObjectCodable
-                ? SQL.Aliased<TValue>
+                ? TValue
                 : DrizzleTypeError<'Object value must be JSON-serializable'>
-            : SQL.Aliased<TValue>
+            : TValue
+      : never
+  ) extends infer TResult
+    ? [Extract<TResult, DrizzleTypeError<string>>] extends [never]
+      ? SQL.Aliased<TResult>
+      : Extract<TResult, DrizzleTypeError<string>>
     : never
 }
 
