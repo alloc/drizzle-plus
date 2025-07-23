@@ -212,3 +212,5 @@ export type ExcludeDialect<TTable extends Table, TDialect extends string, T> =
 export function excluded(name: string) {
   return sql`excluded.${sql.identifier(name)}`
 }
+
+export const sqlNull = sql`null`

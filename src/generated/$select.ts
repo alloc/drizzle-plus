@@ -15,6 +15,7 @@ import { TypedQueryBuilder } from 'drizzle-orm/query-builders/query-builder'
 import { AnyQuery, QueryToSQL, SQLExpression } from 'drizzle-plus/types'
 import { JSONObjectCodable } from 'drizzle-plus/types/json'
 import { getSQL } from 'drizzle-plus/utils'
+import { sqlNull } from './internal'
 
 export type SelectionFromAnyObject<T extends Record<string, unknown>> = {} & {
   [K in keyof T]: T[K] extends infer TValue
@@ -61,8 +62,6 @@ declare module 'drizzle-orm/pg-core/db' {
     ): SelectionFromAnyObject<TFields>
   }
 }
-
-const sqlNull = sql`null`
 
 PgDatabase.prototype.$select = function (fields: Record<string, unknown>) {
   const selection: SelectedFields = {}
