@@ -1,5 +1,11 @@
-import { sql, SQL, WithSubquery } from 'drizzle-orm'
-import { WithSubqueryWithSelection } from 'drizzle-orm/pg-core'
+import { getTableColumns, is, sql, SQL, Table, WithSubquery } from 'drizzle-orm'
+import {
+  PgColumn,
+  PgSelectBuilder,
+  SelectedFields,
+  SelectedFieldsOrdered,
+  WithSubqueryWithSelection,
+} from 'drizzle-orm/pg-core'
 import { PgRelationalQuery } from 'drizzle-orm/pg-core/query-builders/query'
 import { SelectionProxyHandler } from 'drizzle-orm/selection-proxy'
 import { getSelectedFields, getSQL } from 'drizzle-plus/utils'
@@ -45,4 +51,68 @@ PgRelationalQuery.prototype.as = function (
       sqlBehavior: 'error',
     })
   )
+}
+
+declare module 'drizzle-orm/pg-core' {
+  interface PgSelectBuilder<
+    TSelection extends SelectedFields | undefined,
+    TBuilderMode extends 'db' | 'qb',
+  > {
+    as<TAlias extends string>(
+      alias: TAlias
+    ): TSelection extends SelectedFields
+      ? WithSubqueryWithSelection<TSelection, TAlias>
+      : never
+  }
+}
+
+PgSelectBuilder.prototype.as = function (alias) {
+  const {
+    fields,
+    dialect,
+  }: {
+    fields: SelectedFields | undefined
+    dialect: { buildSelection: (fields: SelectedFieldsOrdered) => SQL }
+  } = this as any
+
+  if (!fields) {
+    throw new Error('Cannot alias a select query without a selection')
+  }
+
+  const selection = dialect.buildSelection(orderSelectedFields(fields))
+
+  // https://github.com/drizzle-team/drizzle-orm/blob/109ccd34b549030e10dd9cd27e41641d0878a856/drizzle-orm/src/pg-core/db.ts#L175
+  return new Proxy(
+    new WithSubquery(sql`select ${selection}`, fields, alias, true),
+    new SelectionProxyHandler({
+      alias,
+      sqlAliasedBehavior: 'alias',
+      sqlBehavior: 'error',
+    })
+  )
+}
+
+// https://github.com/drizzle-team/drizzle-orm/blob/109ccd34b549030e10dd9cd27e41641d0878a856/drizzle-orm/src/utils.ts#L74
+function orderSelectedFields(
+  fields: Record<string, unknown>,
+  pathPrefix?: string[]
+) {
+  const result: SelectedFieldsOrdered = []
+  for (const name in fields) {
+    if (!Object.prototype.hasOwnProperty.call(fields, name)) continue
+    if (typeof name !== 'string') continue
+
+    const field = fields[name]
+    const newPath = pathPrefix ? [...pathPrefix, name] : [name]
+    if (is(field, PgColumn) || is(field, SQL) || is(field, SQL.Aliased)) {
+      result.push({ path: newPath, field })
+    } else if (is(field, Table)) {
+      result.push(...orderSelectedFields(getTableColumns(field), newPath))
+    } else {
+      result.push(
+        ...orderSelectedFields(field as Record<string, unknown>, newPath)
+      )
+    }
+  }
+  return result
 }
