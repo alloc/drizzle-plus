@@ -7,6 +7,8 @@ import {
   QueryPromise,
   sql,
   SQL,
+  SQLChunk,
+  StringChunk,
   Table,
   type DBQueryConfig,
   type DriverValueDecoder,
@@ -142,4 +144,13 @@ export function getDefinedColumns<TColumn extends Column>(
     }
   }
   return usedColumns
+}
+
+export function pushStringChunk(chunks: SQLChunk[], sql: string) {
+  const lastChunk = chunks.at(-1)
+  if (lastChunk instanceof StringChunk) {
+    lastChunk.value.push(sql)
+  } else {
+    chunks.push(new StringChunk(sql))
+  }
 }
