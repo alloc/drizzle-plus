@@ -1,17 +1,29 @@
+// mysql-insert: import { PreparedQueryHKTBase } from 'drizzle-orm/mysql-core'
 import { ColumnsSelection } from 'drizzle-orm'
+import type * as V1 from 'drizzle-orm/_relations'
 import {
-  QueryBuilder,
+  PgDatabase,
   WithBuilder,
   WithSubqueryWithSelection,
 } from 'drizzle-orm/pg-core'
-import { TypedQueryBuilder } from 'drizzle-orm/query-builders/query-builder'
+import { AnyRelations, TablesRelationalConfig } from 'drizzle-orm/relations'
 import { valuesList } from 'drizzle-plus'
 import type { SelectionFromAnyObject } from './$select'
 import { createWithSubquery } from './as'
 import { injectWithSubqueryAddons, setWithSubqueryAddons } from './internal'
 
 declare module 'drizzle-orm/pg-core' {
-  interface QueryBuilder {
+  interface PgDatabase<
+    // sqlite-insert: TResultKind extends 'sync' | 'async',
+    // sqlite-insert: TRunResult,
+    // sqlite-remove-next-line
+    TQueryResult extends import('drizzle-orm/pg-core').PgQueryResultHKT,
+    // mysql-insert: TPreparedQueryHKT extends PreparedQueryHKTBase,
+    TFullSchema extends Record<string, unknown>,
+    TRelations extends AnyRelations,
+    TTablesConfig extends TablesRelationalConfig,
+    TSchema extends V1.TablesRelationalConfig,
+  > {
     $withValuesList: {
       <TAlias extends string, TRow extends Record<string, unknown>>(
         alias: TAlias,
@@ -41,7 +53,7 @@ declare module 'drizzle-orm/pg-core' {
   }
 }
 
-QueryBuilder.prototype.$withMaterialized = function (
+PgDatabase.prototype.$withMaterialized = function (
   alias: string,
   selection?: ColumnsSelection
 ) {
@@ -50,7 +62,7 @@ QueryBuilder.prototype.$withMaterialized = function (
   })
 }
 
-QueryBuilder.prototype.$withNotMaterialized = function (
+PgDatabase.prototype.$withNotMaterialized = function (
   alias: string,
   selection?: ColumnsSelection
 ) {
@@ -59,7 +71,7 @@ QueryBuilder.prototype.$withNotMaterialized = function (
   })
 }
 
-QueryBuilder.prototype.$withValuesList = function (
+PgDatabase.prototype.$withValuesList = function (
   alias: string,
   rows: Record<string, unknown>[]
 ): any {
