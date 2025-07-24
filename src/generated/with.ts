@@ -8,7 +8,7 @@ import {
 } from 'drizzle-orm/pg-core'
 import { AnyRelations, TablesRelationalConfig } from 'drizzle-orm/relations'
 import { valuesList } from 'drizzle-plus'
-import type { SelectionFromAnyObject } from './$select'
+import { SelectionFromAnyObject } from 'drizzle-plus/types'
 import { createWithSubquery } from './as'
 import { injectWithSubqueryAddons, setWithSubqueryAddons } from './internal'
 

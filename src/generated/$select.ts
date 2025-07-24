@@ -2,7 +2,6 @@
 import {
   AnyRelations,
   DrizzleError,
-  DrizzleTypeError,
   QueryPromise,
   sql,
   SQL,
@@ -12,32 +11,9 @@ import type * as V1 from 'drizzle-orm/_relations'
 import { PgColumn, SelectedFields } from 'drizzle-orm/pg-core'
 import { PgDatabase } from 'drizzle-orm/pg-core/db'
 import { TypedQueryBuilder } from 'drizzle-orm/query-builders/query-builder'
-import { AnyQuery, QueryToResult, SQLExpression } from 'drizzle-plus/types'
-import { JSONObjectCodable } from 'drizzle-plus/types/json'
+import { SelectionFromAnyObject } from 'drizzle-plus/types'
 import { getSQL } from 'drizzle-plus/utils'
 import { sqlNull } from './internal'
-
-export type SelectionFromAnyObject<T extends Record<string, unknown>> = {} & {
-  [K in keyof T]-?: (
-    T[K] extends infer TValue
-      ? TValue extends SQLExpression<infer TResult>
-        ? TResult
-        : TValue extends AnyQuery
-          ? QueryToResult<TValue, { unwrap: true }>
-          : TValue extends object
-            ? TValue extends Date
-              ? string
-              : TValue extends JSONObjectCodable
-                ? TValue
-                : DrizzleTypeError<'Object value must be JSON-serializable'>
-            : TValue
-      : never
-  ) extends infer TResult
-    ? [Extract<TResult, DrizzleTypeError<string>>] extends [never]
-      ? SQL.Aliased<TResult>
-      : Extract<TResult, DrizzleTypeError<string>>
-    : never
-}
 
 declare module 'drizzle-orm/pg-core/db' {
   interface PgDatabase<

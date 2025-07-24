@@ -1,6 +1,7 @@
 import type {
   AnyColumn,
   Column,
+  DrizzleTypeError,
   OrderByOperators,
   Placeholder,
   QueryPromise,
@@ -15,6 +16,7 @@ import type {
 } from 'drizzle-orm'
 import { CasingCache } from 'drizzle-orm/casing'
 import type { SelectResultFields } from 'drizzle-orm/query-builders/select.types'
+import { JSONObjectCodable } from './types/json'
 
 export type SQLValue<T> = T | SQLExpression<T>
 
@@ -235,3 +237,29 @@ export type OrderByClause<TTable extends Table> =
       table: TTable,
       operators: OrderByOperators
     ) => ValueOrArray<AnyColumn | SQL>)
+
+/**
+ * Attempt to coerce a plain object with JavaScript values to a `db.select()`
+ * selection object. Any objects within must be JSON-serializable.
+ */
+export type SelectionFromAnyObject<T extends Record<string, unknown>> = {} & {
+  [K in keyof T]-?: (
+    T[K] extends infer TValue
+      ? TValue extends SQLExpression<infer TResult>
+        ? TResult
+        : TValue extends AnyQuery
+          ? QueryToResult<TValue, { unwrap: true }>
+          : TValue extends object
+            ? TValue extends Date
+              ? string
+              : TValue extends JSONObjectCodable
+                ? TValue
+                : DrizzleTypeError<'Object value must be JSON-serializable'>
+            : TValue
+      : never
+  ) extends infer TResult
+    ? [Extract<TResult, DrizzleTypeError<string>>] extends [never]
+      ? SQL.Aliased<TResult>
+      : Extract<TResult, DrizzleTypeError<string>>
+    : never
+}
