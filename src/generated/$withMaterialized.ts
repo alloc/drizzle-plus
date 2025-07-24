@@ -1,6 +1,11 @@
 import { ColumnsSelection } from 'drizzle-orm'
-import { QueryBuilder, WithBuilder } from 'drizzle-orm/pg-core'
-import { setWithSubqueryFlags } from './internal'
+import {
+  QueryBuilder,
+  WithBuilder,
+  WithSubqueryWithSelection,
+} from 'drizzle-orm/pg-core'
+import { TypedQueryBuilder } from 'drizzle-orm/query-builders/query-builder'
+import { injectWithSubqueryAddons } from './internal'
 
 declare module 'drizzle-orm/pg-core' {
   interface QueryBuilder {
@@ -31,7 +36,7 @@ QueryBuilder.prototype.$withMaterialized = function (
   alias: string,
   selection?: ColumnsSelection
 ) {
-  return withMaterialized(this.$with(alias, selection!), {
+  return injectWithSubqueryAddons(this.$with(alias, selection!), {
     materialized: true,
   })
 }
@@ -40,20 +45,7 @@ QueryBuilder.prototype.$withNotMaterialized = function (
   alias: string,
   selection?: ColumnsSelection
 ) {
-  return withMaterialized(this.$with(alias, selection!), {
+  return injectWithSubqueryAddons(this.$with(alias, selection!), {
     materialized: false,
   })
-}
-
-function withMaterialized(
-  withBuilder: ReturnType<WithBuilder>,
-  flags: { materialized: boolean }
-) {
-  const originalMethod = withBuilder.as
-  withBuilder.as = function (arg: any) {
-    const subquery = originalMethod(arg)
-    setWithSubqueryFlags(subquery, flags)
-    return subquery
-  }
-  return withBuilder
 }

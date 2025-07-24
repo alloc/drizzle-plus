@@ -1,9 +1,12 @@
 import {
   Column,
+  Name,
   RelationsFilter,
   relationsFilterToSQL,
   sql,
   SQL,
+  SQLChunk,
+  StringChunk,
   Subquery,
   Table,
   TableRelationalConfig,
@@ -18,7 +21,9 @@ import {
   PgSession,
   PgTable,
   SelectedFields,
+  WithBuilder,
 } from 'drizzle-orm/pg-core'
+import { pushStringChunk } from 'drizzle-plus/utils'
 import { isFunction, select } from 'radashi'
 import { RelationalQueryBuilder } from './types'
 
@@ -147,61 +152,65 @@ function memoByFirstArgument<TFunc extends (...args: any[]) => any>(
   }
 }
 
-let withSubqueryFlags:
-  | WeakMap<
-      WithSubquery,
-      {
-        materialized?: boolean
-        recursive?: boolean
+type WithSubqueryAddons = {
+  materialized?: boolean
+}
+
+let withSubqueryAddons: WeakMap<WithSubquery, WithSubqueryAddons> | undefined
+
+function buildWithCTE(queries: Subquery[] | undefined): SQL | undefined {
+  if (!queries?.length) return
+
+  const chunks: SQLChunk[] = [new StringChunk('with ')]
+
+  for (let i = 0; i < queries.length; i++) {
+    const { alias, sql: subquery } = queries[i]._
+
+    chunks.push(new Name(alias))
+    pushStringChunk(chunks, ' as ')
+
+    const addons = withSubqueryAddons!.get(queries[i])
+    if (addons) {
+      if (addons.materialized) {
+        pushStringChunk(chunks, 'materialized ')
+      } else if (addons.materialized === false) {
+        pushStringChunk(chunks, 'not materialized ')
       }
-    >
-  | undefined
+    }
 
-export function setWithSubqueryFlags(
-  withSubquery: WithSubquery,
-  flags: {
-    materialized?: boolean
-    recursive?: boolean
-  }
-) {
-  if (!withSubqueryFlags) {
-    withSubqueryFlags = new WeakMap()
+    pushStringChunk(chunks, '(')
+    chunks.push(subquery)
+    pushStringChunk(chunks, ')')
 
-    // @ts-expect-error: Rewrite internal method
-    PgDialect.prototype.buildWithCTE = function (
-      queries: Subquery[] | undefined
-    ): SQL | undefined {
-      if (!queries?.length) return undefined
-
-      const result = sql.raw('with ')
-      for (const [i, withSubquery] of queries.entries()) {
-        const flags = withSubqueryFlags!.get(withSubquery)
-        const { alias, sql: subquery } =
-          withSubquery._ as typeof withSubquery._ & {
-            materializeFlag?: boolean
-            recursiveFlag?: boolean
-          }
-        result.append(sql`${sql.identifier(alias)} as `)
-        if (flags) {
-          if (flags.recursive) {
-            result.append(sql.raw('recursive '))
-          } else if (flags.materialized) {
-            result.append(sql.raw('materialized '))
-          } else if (flags.materialized === false) {
-            result.append(sql.raw('not materialized '))
-          }
-        }
-        result.append(sql`(${subquery})`)
-        if (i < queries.length - 1) {
-          result.append(sql.raw(', '))
-        }
-      }
-      result.append(sql.raw(' '))
-      return result
+    if (i < queries.length - 1) {
+      pushStringChunk(chunks, ', ')
     }
   }
 
-  withSubqueryFlags.set(withSubquery, flags)
+  pushStringChunk(chunks, ' ')
+  return new SQL(chunks)
+}
+
+export function injectWithSubqueryAddons(
+  withBuilder: ReturnType<WithBuilder>,
+  addons: WithSubqueryAddons,
+  transform?: (arg: any) => any
+) {
+  const originalMethod = withBuilder.as
+  withBuilder.as = function (arg: any) {
+    const withSubquery = originalMethod(transform ? transform(arg) : arg)
+
+    if (!withSubqueryAddons) {
+      withSubqueryAddons = new WeakMap()
+
+      // @ts-expect-error: Rewrite internal method
+      PgDialect.prototype.buildWithCTE = buildWithCTE
+    }
+
+    withSubqueryAddons.set(withSubquery, addons)
+    return withSubquery
+  }
+  return withBuilder
 }
 
 export type InferDialect<TTable extends Table> =
