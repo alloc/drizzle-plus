@@ -14,6 +14,7 @@ const moduleExtensions = globSync('*.ts', { cwd: generatedSourceRoot }).filter(
 export default defineConfig({
   entry: [
     'src/index.ts',
+    'src/orThrow.ts',
     'src/utils.ts',
     'src/types.ts',
     'src/types/json.ts',

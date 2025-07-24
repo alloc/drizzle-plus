@@ -7,6 +7,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./orThrow": {
+      "types": "./dist/orThrow.d.ts",
+      "default": "./dist/orThrow.js"
+    },
     "./utils": {
       "types": "./dist/utils.d.ts",
       "default": "./dist/utils.js"
