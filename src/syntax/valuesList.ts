@@ -1,4 +1,5 @@
 import { DrizzleError, SQL, SQLChunk } from 'drizzle-orm'
+import { SelectionFromAnyObject } from '../types'
 import { pushStringChunk } from '../utils'
 
 /**
@@ -15,7 +16,15 @@ import { pushStringChunk } from '../utils'
  * valuesList([{ a: 1 }, { a: 2 }]) // SQL { "values (1), (2)" }
  * ```
  */
-export function valuesList<T extends object | unknown[]>(rows: T[]): SQL {
+export function valuesList<T extends object>(
+  rows: readonly ReadonlyArray<unknown>[]
+): SQL<T>
+export function valuesList<T extends Record<string, unknown>>(
+  rows: readonly T[]
+): SQL<SelectionFromAnyObject<T>>
+export function valuesList(
+  rows: readonly (object | ReadonlyArray<unknown>)[]
+): SQL {
   if (!rows.length) {
     throw new DrizzleError({ message: 'No rows provided' })
   }
