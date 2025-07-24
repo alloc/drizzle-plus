@@ -91,7 +91,7 @@ function orderSelectedFields(
   return result
 }
 
-function createWithSubquery(
+export function createWithSubquery(
   query: SQL,
   selectedFields: Record<string, unknown>,
   alias: string

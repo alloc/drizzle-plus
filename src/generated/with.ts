@@ -5,10 +5,19 @@ import {
   WithSubqueryWithSelection,
 } from 'drizzle-orm/pg-core'
 import { TypedQueryBuilder } from 'drizzle-orm/query-builders/query-builder'
-import { injectWithSubqueryAddons } from './internal'
+import { valuesList } from 'drizzle-plus'
+import type { SelectionFromAnyObject } from './$select'
+import { createWithSubquery } from './as'
+import { injectWithSubqueryAddons, setWithSubqueryAddons } from './internal'
 
 declare module 'drizzle-orm/pg-core' {
   interface QueryBuilder {
+    $withValuesList: {
+      <TAlias extends string, TRow extends Record<string, unknown>>(
+        alias: TAlias,
+        rows: TRow[]
+      ): WithSubqueryWithSelection<SelectionFromAnyObject<TRow>, string>
+    }
     /**
      * Similar to `$with()` but the CTE is materialized.
      *
@@ -47,5 +56,15 @@ QueryBuilder.prototype.$withNotMaterialized = function (
 ) {
   return injectWithSubqueryAddons(this.$with(alias, selection!), {
     materialized: false,
+  })
+}
+
+QueryBuilder.prototype.$withValuesList = function (
+  alias: string,
+  rows: Record<string, unknown>[]
+): any {
+  const withSubquery = createWithSubquery(valuesList(rows), rows[0], alias)
+  return setWithSubqueryAddons(withSubquery, {
+    columns: Object.keys(rows[0]),
   })
 }

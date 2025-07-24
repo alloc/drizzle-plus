@@ -153,6 +153,7 @@ function memoByFirstArgument<TFunc extends (...args: any[]) => any>(
 }
 
 type WithSubqueryAddons = {
+  columns?: string[]
   materialized?: boolean
 }
 
@@ -167,9 +168,19 @@ function buildWithCTE(queries: Subquery[] | undefined): SQL | undefined {
     const { alias, sql: subquery } = queries[i]._
 
     chunks.push(new Name(alias))
-    pushStringChunk(chunks, ' as ')
 
     const addons = withSubqueryAddons!.get(queries[i])
+    if (addons?.columns) {
+      pushStringChunk(chunks, ' (')
+      for (const column of addons.columns) {
+        chunks.push(new Name(column))
+        pushStringChunk(chunks, ', ')
+      }
+      pushStringChunk(chunks, ')')
+    }
+
+    pushStringChunk(chunks, ' as ')
+
     if (addons) {
       if (addons.materialized) {
         pushStringChunk(chunks, 'materialized ')
@@ -199,18 +210,24 @@ export function injectWithSubqueryAddons(
   const originalMethod = withBuilder.as
   withBuilder.as = function (arg: any) {
     const withSubquery = originalMethod(transform ? transform(arg) : arg)
-
-    if (!withSubqueryAddons) {
-      withSubqueryAddons = new WeakMap()
-
-      // @ts-expect-error: Rewrite internal method
-      PgDialect.prototype.buildWithCTE = buildWithCTE
-    }
-
-    withSubqueryAddons.set(withSubquery, addons)
-    return withSubquery
+    return setWithSubqueryAddons(withSubquery, addons)
   }
   return withBuilder
+}
+
+export function setWithSubqueryAddons(
+  withSubquery: WithSubquery,
+  addons: WithSubqueryAddons
+) {
+  if (!withSubqueryAddons) {
+    withSubqueryAddons = new WeakMap()
+
+    // @ts-expect-error: Rewrite internal method
+    PgDialect.prototype.buildWithCTE = buildWithCTE
+  }
+
+  withSubqueryAddons.set(withSubquery, addons)
+  return withSubquery
 }
 
 export type InferDialect<TTable extends Table> =

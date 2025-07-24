@@ -4,6 +4,7 @@
   "exclude": [],
   "compilerOptions": {
     "paths": {
+      "drizzle-plus": ["../index.ts"],
       "drizzle-plus/types": ["../types.ts"],
       "drizzle-plus/types/*": ["../types/*.ts"],
       "drizzle-plus/utils": ["../utils.ts"]
