@@ -4,7 +4,6 @@ export * from './mergeRelationsFilter'
 export * from './syntax/caseWhen'
 export * from './syntax/nest'
 export * from './syntax/toSQL'
-export * from './syntax/valuesList'
 
 export * from './functions/abs'
 export * from './functions/ceil'

@@ -1,0 +1,65 @@
+diff --git a/sql/sql.js b/sql/sql.js
+index 83247469bd23e4906d3c0e91a0d11f1859c8ccd9..af110b293510bdf75eeda298824ddc0e4dac27d3 100644
+--- a/sql/sql.js
++++ b/sql/sql.js
+@@ -152,12 +152,18 @@ class SQL {
+         if (chunk._.isWith) {
+           return { sql: escapeName(chunk._.alias), params: [] };
+         }
+-        return this.buildQueryFromSourceParams([
+-          new StringChunk("("),
+-          chunk._.sql,
+-          new StringChunk(") "),
+-          new Name(chunk._.alias)
+-        ], config);
++        return this.buildQueryFromSourceParams(
++          [
++            new StringChunk("("),
++            chunk._.sql,
++            new StringChunk(") "),
++            new Name(chunk._.alias),
++            chunk._.columnList
++              ? sql` (${sql.join(chunk._.columnList.map(sql.identifier), new StringChunk(", "))})`
++              : undefined,
++          ],
++          config
++        );
+       }
+       if (isPgEnum(chunk)) {
+         if (chunk.schema) {
+diff --git a/subquery.d.ts b/subquery.d.ts
+index 501fee2c17f03f6f341dfba241c3013f63895ee6..721923ddf816a167e8d384625afe71688c0f60e0 100644
+--- a/subquery.d.ts
++++ b/subquery.d.ts
+@@ -10,8 +10,9 @@ export declare class Subquery<TAlias extends string = string, TSelectedFields ex
+         selectedFields: TSelectedFields;
+         alias: TAlias;
+         isWith: boolean;
++        columnList: string[] | undefined;
+     };
+-    constructor(sql: SQL, selection: Record<string, unknown>, alias: string, isWith?: boolean);
++    constructor(sql: SQL, selection: Record<string, unknown>, alias: string, isWith?: boolean, columnList?: string[]);
+ }
+ export declare class WithSubquery<TAlias extends string = string, TSelection extends Record<string, unknown> = Record<string, unknown>> extends Subquery<TAlias, TSelection> {
+     static readonly [entityKind]: string;
+diff --git a/subquery.js b/subquery.js
+index 3219d90165901caa3baf6d948ced30f0873b04d7..513afcef95cc0e2962c5031c8ac7bc6b79434107 100644
+--- a/subquery.js
++++ b/subquery.js
+@@ -1,13 +1,14 @@
+ import { entityKind } from "./entity.js";
+ class Subquery {
+   static [entityKind] = "Subquery";
+-  constructor(sql, selection, alias, isWith = false) {
++  constructor(sql, selection, alias, isWith = false, columnList) {
+     this._ = {
+       brand: "Subquery",
+       sql,
+       selectedFields: selection,
+       alias,
+-      isWith
++      isWith,
++      columnList
+     };
+   }
+   // getSQL(): SQL<unknown> {

@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  drizzle-orm:
+    hash: e2fa6064524f2e1eb304386cd15fbfd6c5d8e36986833c4daf98d655a2fd8ae6
+    path: patches/drizzle-orm.patch
+
 importers:
 
   .:
@@ -25,7 +30,7 @@ importers:
         version: 1.0.0-beta.1-c0277c0
       drizzle-orm:
         specifier: beta
-        version: 1.0.0-beta.1-c0277c0(@libsql/client@0.15.9)
+        version: 1.0.0-beta.1-c0277c0(patch_hash=e2fa6064524f2e1eb304386cd15fbfd6c5d8e36986833c4daf98d655a2fd8ae6)(@libsql/client@0.15.9)
       drizzle-plus:
         specifier: 'link:'
         version: 'link:'
@@ -1823,7 +1828,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@1.0.0-beta.1-c0277c0(@libsql/client@0.15.9):
+  drizzle-orm@1.0.0-beta.1-c0277c0(patch_hash=e2fa6064524f2e1eb304386cd15fbfd6c5d8e36986833c4daf98d655a2fd8ae6)(@libsql/client@0.15.9):
     optionalDependencies:
       '@libsql/client': 0.15.9
 

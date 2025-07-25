@@ -1,16 +1,9 @@
 // mysql-insert: import { PreparedQueryHKTBase } from 'drizzle-orm/mysql-core'
 import { ColumnsSelection } from 'drizzle-orm'
 import type * as V1 from 'drizzle-orm/_relations'
-import {
-  PgDatabase,
-  WithBuilder,
-  WithSubqueryWithSelection,
-} from 'drizzle-orm/pg-core'
+import { PgDatabase, WithBuilder } from 'drizzle-orm/pg-core'
 import { AnyRelations, TablesRelationalConfig } from 'drizzle-orm/relations'
-import { valuesList } from 'drizzle-plus'
-import { SelectionFromAnyObject } from 'drizzle-plus/types'
-import { createWithSubquery } from './as'
-import { injectWithSubqueryAddons, setWithSubqueryAddons } from './internal'
+import { injectWithSubqueryAddons } from './internal'
 
 declare module 'drizzle-orm/pg-core' {
   interface PgDatabase<
@@ -24,12 +17,6 @@ declare module 'drizzle-orm/pg-core' {
     TTablesConfig extends TablesRelationalConfig,
     TSchema extends V1.TablesRelationalConfig,
   > {
-    $withValuesList: {
-      <TAlias extends string, TRow extends Record<string, unknown>>(
-        alias: TAlias,
-        rows: TRow[]
-      ): WithSubqueryWithSelection<SelectionFromAnyObject<TRow>, string>
-    }
     /**
      * Similar to `$with()` but the CTE is materialized.
      *
@@ -68,19 +55,5 @@ PgDatabase.prototype.$withNotMaterialized = function (
 ) {
   return injectWithSubqueryAddons(this.$with(alias, selection!), {
     materialized: false,
-  })
-}
-
-PgDatabase.prototype.$withValuesList = function (
-  alias: string,
-  rows: Record<string, unknown>[]
-): any {
-  const withSubquery = createWithSubquery(
-    valuesList(rows).getSQL(),
-    rows[0],
-    alias
-  )
-  return setWithSubqueryAddons(withSubquery, {
-    columns: Object.keys(rows[0]),
   })
 }
