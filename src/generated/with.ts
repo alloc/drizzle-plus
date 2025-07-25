@@ -75,7 +75,11 @@ PgDatabase.prototype.$withValuesList = function (
   alias: string,
   rows: Record<string, unknown>[]
 ): any {
-  const withSubquery = createWithSubquery(valuesList(rows), rows[0], alias)
+  const withSubquery = createWithSubquery(
+    valuesList(rows).getSQL(),
+    rows[0],
+    alias
+  )
   return setWithSubqueryAddons(withSubquery, {
     columns: Object.keys(rows[0]),
   })

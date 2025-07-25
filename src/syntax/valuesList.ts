@@ -1,4 +1,5 @@
-import { DrizzleError, SQL, SQLChunk } from 'drizzle-orm'
+import { DrizzleError, SQL, SQLChunk, Subquery } from 'drizzle-orm'
+import { SQLWrapper } from 'drizzle-orm/sql'
 import { SelectionFromAnyObject } from '../types'
 import { pushStringChunk } from '../utils'
 
@@ -11,48 +12,60 @@ import { pushStringChunk } from '../utils'
  *
  * @example
  * ```ts
- * valuesList([[1, 'a'], [2, 'b']]) // SQL { "values (1, 'a'), (2, 'b')" }
- *
- * valuesList([{ a: 1 }, { a: 2 }]) // SQL { "values (1), (2)" }
+ * db.select().from(valuesList([{ a: 1 }, { a: 2 }]).as('my_values'))
  * ```
  */
-export function valuesList<T extends object>(
-  rows: readonly ReadonlyArray<unknown>[]
-): SQL<T>
 export function valuesList<T extends Record<string, unknown>>(
   rows: readonly T[]
-): SQL<SelectionFromAnyObject<T>>
-export function valuesList(
-  rows: readonly (object | ReadonlyArray<unknown>)[]
-): SQL {
+): ValuesList<SelectionFromAnyObject<T>> {
   if (!rows.length) {
     throw new DrizzleError({ message: 'No rows provided' })
   }
+  return new ValuesList(Object.keys(rows[0]), rows)
+}
 
-  const chunks: SQLChunk[] = []
+export class ValuesList<
+  TSelectedFields extends Record<string, unknown> = Record<string, unknown>,
+> implements SQLWrapper<unknown>
+{
+  declare _: {
+    selectedFields: TSelectedFields
+  }
+  constructor(
+    private keys: string[],
+    private rows: readonly object[]
+  ) {}
+  as<TAlias extends string>(alias: TAlias): Subquery<TAlias, TSelectedFields> {
+    return new Subquery(
+      this.getSQL(),
+      this.rows[0] as Record<string, unknown>,
+      alias
+    )
+  }
+  getSQL() {
+    const chunks: SQLChunk[] = []
 
-  pushStringChunk(chunks, 'values ')
+    pushStringChunk(chunks, 'values ')
 
-  const keys = Object.keys(rows[0])
+    for (let rowIndex = 0; rowIndex < this.rows.length; rowIndex++) {
+      pushStringChunk(chunks, '(')
 
-  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
-    pushStringChunk(chunks, '(')
+      let row: any = this.rows[rowIndex]
+      this.keys.forEach((key, keyIndex) => {
+        chunks.push(row[key] as SQLChunk)
 
-    let row: any = rows[rowIndex]
-    keys.forEach((key, keyIndex) => {
-      chunks.push(row[key] as SQLChunk)
+        if (keyIndex < this.keys.length - 1) {
+          pushStringChunk(chunks, ', ')
+        }
+      })
 
-      if (keyIndex < keys.length - 1) {
+      pushStringChunk(chunks, ')')
+
+      if (rowIndex < this.rows.length - 1) {
         pushStringChunk(chunks, ', ')
       }
-    })
-
-    pushStringChunk(chunks, ')')
-
-    if (rowIndex < rows.length - 1) {
-      pushStringChunk(chunks, ', ')
     }
-  }
 
-  return new SQL(chunks)
+    return new SQL(chunks)
+  }
 }
