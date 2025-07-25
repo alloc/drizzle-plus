@@ -32,7 +32,7 @@ export default defineConfig({
   dts: {
     compilerOptions: {
       paths: {
-        'drizzle-plus/*': ['./src/*'],
+        'drizzle-plus/*': ['./src/*', './src/generated/*'],
         'drizzle-plus': ['./src/index.ts'],
       },
     },

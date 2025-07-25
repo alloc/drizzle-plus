@@ -87,6 +87,7 @@ for (const file of globSync('src/generated/*.ts')) {
       content = content
         // Update import specifiers.
         .replace(/\bpg-/g, dialect + '-')
+        .replace(/\/pg\b/g, '/' + dialect)
 
         // Update type names.
         .replace(/: PgSession/g, '$&' + typeParams[dialect].Session)
@@ -137,10 +138,17 @@ for (const dir of globSync('src/functions/*', { onlyDirectories: true })) {
     if (!file.endsWith('.ts')) {
       continue
     }
-    fs.copyFileSync(
-      path.join(dir, file),
-      path.join('src/generated', dialect, file)
-    )
+    if (file === 'types.ts') {
+      fs.appendFileSync(
+        path.join('src/generated', dialect, 'types.ts'),
+        '\n' + fs.readFileSync(path.join(dir, file), 'utf-8')
+      )
+    } else {
+      fs.copyFileSync(
+        path.join(dir, file),
+        path.join('src/generated', dialect, file)
+      )
+    }
     fs.appendFileSync(
       path.join('src/generated', dialect, 'index.ts'),
       `export * from './${path.basename(file, '.ts')}'\n`
