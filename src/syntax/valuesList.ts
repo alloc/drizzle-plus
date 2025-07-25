@@ -31,6 +31,7 @@ export class ValuesList<
   declare _: {
     selectedFields: TSelectedFields
   }
+  private shouldInlineParams = false
   constructor(
     private keys: string[],
     private rows: readonly object[]
@@ -66,6 +67,11 @@ export class ValuesList<
       }
     }
 
-    return new SQL(chunks)
+    const query = new SQL(chunks)
+    return this.shouldInlineParams ? query.inlineParams() : query
+  }
+  inlineParams() {
+    this.shouldInlineParams = true
+    return this
   }
 }
