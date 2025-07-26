@@ -39,7 +39,7 @@ type UndefinedToNull<T> = T extends undefined ? null : T
 
 export type QueryToResult<
   T extends AnyQuery,
-  TOptions extends { unwrap: true } = never,
+  TOptions extends { unwrap?: boolean } = {},
 > = (
   T extends QueryPromise<infer TResult>
     ? TResult
@@ -60,7 +60,7 @@ export type QueryToResult<
 
 export type QueryToSQL<
   T extends AnyQuery,
-  TOptions extends { unwrap: true } = never,
+  TOptions extends { unwrap?: boolean } = {},
 > = QueryToResult<T, TOptions> extends infer TResult ? SQL<TResult> : never
 
 export interface AnyRelationsFilter {
