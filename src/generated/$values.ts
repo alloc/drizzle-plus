@@ -2,18 +2,31 @@
 import {
   AnyRelations,
   DrizzleError,
+  getTableColumns,
+  is,
   SQL,
   SQLChunk,
   Subquery,
   TablesRelationalConfig,
 } from 'drizzle-orm'
 import type * as V1 from 'drizzle-orm/_relations'
-import { PgDatabase, WithSubqueryWithSelection } from 'drizzle-orm/pg-core'
+import {
+  PgColumn,
+  PgDatabase,
+  PgTable,
+  TableConfig,
+  WithSubqueryWithSelection,
+} from 'drizzle-orm/pg-core'
 import { sql, SQLWrapper } from 'drizzle-orm/sql'
+import type { SQLType } from 'drizzle-plus/pg'
 import { SelectionFromAnyObject } from 'drizzle-plus/types'
 import { pushStringChunk } from 'drizzle-plus/utils'
 import { createWithSubquery } from './as'
 import { setWithSubqueryAddons } from './internal'
+
+type PgTableWithTheseColumns<K extends string> = PgTable<
+  Omit<TableConfig, 'columns'> & { columns: Record<K, PgColumn> }
+>
 
 declare module 'drizzle-orm/pg-core' {
   interface PgDatabase<
@@ -39,9 +52,12 @@ declare module 'drizzle-orm/pg-core' {
      * db.select().from(myValues.as('my_values'))
      * ```
      */
-    $values<T extends Record<string, unknown>>(
-      rows: readonly T[]
-    ): ValuesList<T>
+    $values<TRow extends Record<string, unknown>>(
+      rows: readonly TRow[],
+      typings?:
+        | { [K in keyof TRow]?: SQLType }
+        | PgTableWithTheseColumns<string & keyof TRow>
+    ): ValuesList<TRow>
     /**
      * Allows you to declare a values list in a CTE.
      *
@@ -55,7 +71,10 @@ declare module 'drizzle-orm/pg-core' {
     $withValues: {
       <TAlias extends string, TRow extends Record<string, unknown>>(
         alias: TAlias,
-        rows: TRow[]
+        rows: TRow[],
+        typings?:
+          | { [K in keyof TRow]?: SQLType }
+          | PgTableWithTheseColumns<string & keyof TRow>
       ): WithSubqueryWithSelection<SelectionFromAnyObject<TRow>, string>
     }
   }
@@ -74,21 +93,23 @@ declare module 'drizzle-orm/pg-core' {
  * ```
  */
 PgDatabase.prototype.$values = function (
-  rows: readonly Record<string, unknown>[]
+  rows: readonly Record<string, unknown>[],
+  typings?: Partial<Record<string, SQLType>> | PgTable
 ): ValuesList<any> {
   if (!rows.length) {
     throw new DrizzleError({ message: 'No rows provided' })
   }
   const casing = (this as any).dialect.casing
-  return new ValuesList(casing, Object.keys(rows[0]), rows)
+  return new ValuesList(casing, Object.keys(rows[0]), rows, typings)
 }
 
 PgDatabase.prototype.$withValues = function (
   alias: string,
-  rows: Record<string, unknown>[]
+  rows: Record<string, unknown>[],
+  typings?: Partial<Record<string, SQLType>> | PgTable
 ): any {
   const withSubquery = createWithSubquery(
-    this.$values(rows).getSQL(),
+    this.$values(rows, typings).getSQL(),
     rows[0],
     alias
   )
@@ -105,11 +126,16 @@ export class ValuesList<
     selectedFields: TSelectedFields
   }
   private shouldInlineParams = false
+  private typings?: Partial<Record<string, SQLType | PgColumn>>
   constructor(
     private casing: { convert: (key: string) => string },
     private keys: string[],
-    private rows: readonly object[]
-  ) {}
+    private rows: readonly object[],
+    typings?: Partial<Record<string, SQLType>> | PgTable
+  ) {
+    this.typings =
+      typings && (is(typings, PgTable) ? getTableColumns(typings) : typings)
+  }
 
   as<TAlias extends string>(alias: TAlias): Subquery<TAlias, TSelectedFields> {
     const columnList = this.keys.map(key => this.casing.convert(key))
@@ -141,7 +167,22 @@ export class ValuesList<
 
       let row: any = this.rows[rowIndex]
       this.keys.forEach((key, keyIndex) => {
-        chunks.push(row[key] as SQLChunk)
+        let value = row[key] as SQLChunk
+        if (value === undefined) {
+          throw new DrizzleError({
+            message: 'Undefined values are not allowed in a ValuesList.',
+          })
+        }
+
+        // The first row is used to infer the type of the values list.
+        if (rowIndex === 0) {
+          let type = this.typings?.[key]
+          if (type) {
+            value = sql`cast(${value} as ${sql.raw(is(type, PgColumn<any>) ? type.getSQLType() : type)})`
+          }
+        }
+
+        chunks.push(value)
 
         if (keyIndex < this.keys.length - 1) {
           pushStringChunk(chunks, ', ')
