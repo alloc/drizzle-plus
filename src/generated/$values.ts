@@ -118,6 +118,13 @@ PgDatabase.prototype.$withValues = function (
   })
 }
 
+export type ValuesListSubquery<
+  TAlias extends string,
+  TSelectedFields extends Record<string, unknown> = Record<string, unknown>,
+> = Subquery<TAlias, TSelectedFields> & {
+  [K in keyof TSelectedFields]: SQL
+}
+
 export class ValuesList<
   TSelectedFields extends Record<string, unknown> = Record<string, unknown>,
 > implements SQLWrapper<unknown>
@@ -137,7 +144,9 @@ export class ValuesList<
       typings && (is(typings, PgTable) ? getTableColumns(typings) : typings)
   }
 
-  as<TAlias extends string>(alias: TAlias): Subquery<TAlias, TSelectedFields> {
+  as<TAlias extends string>(
+    alias: TAlias
+  ): ValuesListSubquery<TAlias, TSelectedFields> {
     const columnList = this.keys.map(key => this.casing.convert(key))
     const selectedFields: Record<string, unknown> = {}
     this.keys.forEach((key, index) => {
