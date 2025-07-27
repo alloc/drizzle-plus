@@ -1,6 +1,5 @@
 {
   "include": ["src"],
-  "exclude": ["src/generated"],
   "compilerOptions": {
     "strict": true,
     "lib": ["esnext"],
@@ -11,6 +10,15 @@
     "emitDeclarationOnly": true,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
-    "types": []
+    "types": [],
+    "paths": {
+      "drizzle-plus": ["./src/index.ts"],
+      "drizzle-plus/pg": ["./src/functions/pg/types.ts"],
+      "drizzle-plus/mysql": ["./src/functions/mysql/types.ts"],
+      "drizzle-plus/sqlite": ["./src/functions/sqlite/types.ts"],
+      "drizzle-plus/types": ["./src/types.ts"],
+      "drizzle-plus/types/*": ["./src/types/*.ts"],
+      "drizzle-plus/utils": ["./src/utils.ts"]
+    }
   }
 }
