@@ -44,16 +44,29 @@ export function getSelectedFields(query: AnyQuery): Record<string, unknown> {
   return query._.selectedFields
 }
 
+// https://github.com/drizzle-team/drizzle-orm/blob/c0277c07720f3717da8068a65c776fe343cbe2fa/drizzle-orm/src/relations.ts#L786-L794
 export function getDecoder<T>(
   value: SQLExpression<T>
 ): DriverValueDecoder<T, any> {
-  if (is(value, SQL.Aliased)) {
-    return (value.getSQL() as any).decoder
+  let decoder: DriverValueDecoder<T, any>
+  if (is(value, Column)) {
+    decoder = value as any
+  } else if (is(value, SQL)) {
+    decoder = (value as any).decoder
+  } else if (is(value, SQL.Aliased)) {
+    decoder = (value.sql as any).decoder
+  } else {
+    decoder = (value.getSQL() as any).decoder
   }
-  if (is(value, SQL)) {
-    return (value as any).decoder
+  if (
+    'mapFromJsonValue' in decoder &&
+    typeof decoder.mapFromJsonValue === 'function'
+  ) {
+    return {
+      mapFromDriverValue: decoder.mapFromJsonValue.bind(decoder),
+    }
   }
-  return value as any
+  return decoder
 }
 
 export function getSQL(value: AnyQuery): SQL {
