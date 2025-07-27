@@ -21,9 +21,8 @@ import { JSONObjectCodable } from './types/json'
 export type SQLValue<T> = T | SQLExpression<T>
 
 export type SQLExpression<T = unknown> =
-  | SQL<T>
-  | SQL.Aliased<T>
   | AnyColumn<{ data: T; driverParam: any }>
+  | SQLWrapper<T>
 
 export type AnyQuery = AnySelectQuery | QueryPromise<any>
 
