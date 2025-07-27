@@ -85,11 +85,13 @@ export function buildRelationalQuery(value: QueryPromise<any>) {
 export function createJsonArrayDecoder<T>(
   itemDecoder: DriverValueDecoder<T, any>
 ) {
-  return (jsonString: string) => {
-    const data: any[] = JSON.parse(jsonString)
+  return (result: unknown) => {
+    const items: any[] =
+      typeof result === 'string' ? JSON.parse(result) : result
+
     return itemDecoder !== noopDecoder
-      ? data.map(item => itemDecoder.mapFromDriverValue(item))
-      : data
+      ? items.map(item => itemDecoder.mapFromDriverValue(item))
+      : items
   }
 }
 
@@ -134,12 +136,12 @@ export function buildJsonProperties(
 export function createJsonObjectDecoder<T>(
   propertyDecoders: Map<string, DriverValueDecoder<any, any>>
 ) {
-  return (jsonString: string): T => {
-    const data: any = JSON.parse(jsonString)
+  return (result: unknown): T => {
+    const object: any = typeof result === 'string' ? JSON.parse(result) : result
     for (const [key, decoder] of propertyDecoders) {
-      data[key] = decoder.mapFromDriverValue(data[key])
+      object[key] = decoder.mapFromDriverValue(object[key])
     }
-    return data
+    return object
   }
 }
 
