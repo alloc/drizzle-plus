@@ -17,12 +17,15 @@ import {
   TableConfig,
   WithSubqueryWithSelection,
 } from 'drizzle-orm/pg-core'
-import { sql, SQLWrapper } from 'drizzle-orm/sql'
+import { noopDecoder, sql, SQLWrapper } from 'drizzle-orm/sql'
 import type { SQLType } from 'drizzle-plus/pg'
 import { SelectionFromAnyObject } from 'drizzle-plus/types'
 import { pushStringChunk } from 'drizzle-plus/utils'
-import { createWithSubquery } from './as'
-import { setWithSubqueryAddons } from './internal'
+import {
+  createWithSubquery,
+  DecodedFields,
+  setWithSubqueryAddons,
+} from './internal'
 
 type PgTableWithTheseColumns<K extends string> = PgTable<
   Omit<TableConfig, 'columns'> & { columns: Record<K, PgColumn> }
@@ -71,7 +74,7 @@ declare module 'drizzle-orm/pg-core' {
     $withValues: {
       <TAlias extends string, TRow extends Record<string, unknown>>(
         alias: TAlias,
-        rows: TRow[],
+        rows: readonly TRow[],
         typings?:
           | { [K in keyof TRow]?: SQLType }
           | PgTableWithTheseColumns<string & keyof TRow>
@@ -95,7 +98,7 @@ declare module 'drizzle-orm/pg-core' {
 PgDatabase.prototype.$values = function (
   rows: readonly Record<string, unknown>[],
   typings?: Partial<Record<string, SQLType>> | PgTable
-): ValuesList<any> {
+): any {
   if (!rows.length) {
     throw new DrizzleError({ message: 'No rows provided' })
   }
@@ -105,13 +108,16 @@ PgDatabase.prototype.$values = function (
 
 PgDatabase.prototype.$withValues = function (
   alias: string,
-  rows: Record<string, unknown>[],
+  rows: readonly Record<string, unknown>[],
   typings?: Partial<Record<string, SQLType>> | PgTable
 ): any {
   const withSubquery = createWithSubquery(
     this.$values(rows, typings).getSQL(),
-    rows[0],
-    alias
+    alias,
+    new Proxy(rows[0] as DecodedFields, {
+      get: (_, key: string) =>
+        (is(typings, PgTable) && getTableColumns(typings)[key]) || noopDecoder,
+    })
   )
   return setWithSubqueryAddons(withSubquery, {
     columns: Object.keys(rows[0]),
@@ -150,8 +156,13 @@ export class ValuesList<
     const columnList = this.keys.map(key => this.casing.convert(key))
     const selectedFields: Record<string, unknown> = {}
     this.keys.forEach((key, index) => {
-      selectedFields[key] =
-        sql`${sql.identifier(alias)}.${sql.identifier(columnList[index])}`
+      const field = (selectedFields[key] =
+        sql`${sql.identifier(alias)}.${sql.identifier(columnList[index])}`)
+
+      const type = this.typings?.[key]
+      if (is(type, PgColumn)) {
+        field.mapWith(type)
+      }
     })
     return new Proxy(
       new Subquery(this.getSQL(), selectedFields, alias, false, columnList),

@@ -1,5 +1,7 @@
 import {
+  BuildRelationalQueryResult,
   Column,
+  DriverValueDecoder,
   Name,
   RelationsFilter,
   relationsFilterToSQL,
@@ -23,8 +25,10 @@ import {
   SelectedFields,
   WithBuilder,
 } from 'drizzle-orm/pg-core'
+import { SelectionProxyHandler } from 'drizzle-orm/selection-proxy'
 import { pushStringChunk } from 'drizzle-plus/utils'
 import { isFunction, select } from 'radashi'
+import { RelationalQuery } from './adapters/pg'
 import { RelationalQueryBuilder } from './types'
 
 export function getContext(rqb: RelationalQueryBuilder<any, any>) {
@@ -267,4 +271,46 @@ export function buildInsertSelect(
     }
   }
   return values
+}
+
+/**
+ * Hooks into the private `_getQuery` method to retrieve the selection array
+ * used to map the result rows.
+ */
+export function buildRelationalQuery(
+  query: RelationalQuery<any>
+): BuildRelationalQueryResult {
+  return (query as any)._getQuery()
+}
+
+export type DecodedFields = Record<
+  string,
+  | DriverValueDecoder<any, any>
+  | DriverValueDecoder<any, any>['mapFromDriverValue']
+>
+
+export function createWithSubquery(
+  query: SQL,
+  alias: string,
+  decodedFields: DecodedFields
+): Subquery {
+  const selection: Record<string, SQL> = {}
+  for (const name in decodedFields) {
+    // The identifier must be fully-qualified to avoid ambiguity.
+    selection[name] =
+      sql`${sql.identifier(alias)}.${sql.identifier(name)}`.mapWith(
+        decodedFields[name]
+      )
+  }
+
+  // Adapted from https://github.com/drizzle-team/drizzle-orm/blob/109ccd34b549030e10dd9cd27e41641d0878a856/drizzle-orm/src/pg-core/db.ts#L175
+  return new Proxy(
+    new WithSubquery(query, selection, alias, true),
+    new SelectionProxyHandler({
+      alias,
+      // All values of `selection` are SQL objects. This option allows accessing
+      // the SQL object directly by its field name.
+      sqlBehavior: 'sql',
+    })
+  )
 }

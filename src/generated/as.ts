@@ -1,5 +1,12 @@
 // mysql-insert: import { PreparedQueryHKTBase } from 'drizzle-orm/mysql-core'
-import { getTableColumns, is, sql, SQL, Table, WithSubquery } from 'drizzle-orm'
+import {
+  getTableColumns,
+  is,
+  mapRelationalRow,
+  sql,
+  SQL,
+  Table,
+} from 'drizzle-orm'
 import {
   PgColumn,
   PgSelectBuilder,
@@ -8,8 +15,12 @@ import {
   WithSubqueryWithSelection,
 } from 'drizzle-orm/pg-core'
 import { PgRelationalQuery } from 'drizzle-orm/pg-core/query-builders/query'
-import { SelectionProxyHandler } from 'drizzle-orm/selection-proxy'
-import { getSelectedFields, getSQL } from 'drizzle-plus/utils'
+import { getDecoder } from 'drizzle-plus/utils'
+import {
+  buildRelationalQuery,
+  createWithSubquery,
+  DecodedFields,
+} from './internal'
 
 type MapResultToSelection<TResult> = TResult extends undefined
   ? never
@@ -30,8 +41,16 @@ declare module 'drizzle-orm/pg-core/query-builders/query' {
   }
 }
 
-PgRelationalQuery.prototype.as = function (alias: string) {
-  return createWithSubquery(getSQL(this), getSelectedFields(this), alias)
+PgRelationalQuery.prototype.as = function (alias: string): any {
+  const { sql, selection } = buildRelationalQuery(this)
+
+  const decodedFields: DecodedFields = {}
+  for (const item of selection) {
+    decodedFields[item.key] = (value: unknown) =>
+      mapRelationalRow({ [item.key]: value }, [item])[item.key]
+  }
+
+  return createWithSubquery(sql, alias, decodedFields)
 }
 
 declare module 'drizzle-orm/pg-core' {
@@ -49,7 +68,7 @@ declare module 'drizzle-orm/pg-core' {
   }
 }
 
-PgSelectBuilder.prototype.as = function (alias) {
+PgSelectBuilder.prototype.as = function (alias): any {
   const {
     fields,
     dialect,
@@ -62,8 +81,21 @@ PgSelectBuilder.prototype.as = function (alias) {
     throw new Error('Cannot alias a select query without a selection')
   }
 
-  const selection = dialect.buildSelection(orderSelectedFields(fields))
-  return createWithSubquery(sql`select ${selection}`, fields, alias)
+  const orderedFields = orderSelectedFields(fields)
+
+  const decodedFields: DecodedFields = {}
+  for (const { path, field } of orderedFields) {
+    const name = is(field, SQL.Aliased)
+      ? field.fieldAlias
+      : path[path.length - 1]
+    decodedFields[name] = getDecoder(field)
+  }
+
+  return createWithSubquery(
+    sql`select ${dialect.buildSelection(orderedFields)}`,
+    alias,
+    decodedFields
+  )
 }
 
 // Adapted from https://github.com/drizzle-team/drizzle-orm/blob/109ccd34b549030e10dd9cd27e41641d0878a856/drizzle-orm/src/utils.ts#L74
@@ -89,29 +121,4 @@ function orderSelectedFields(
     }
   }
   return result
-}
-
-export function createWithSubquery(
-  query: SQL,
-  selectedFields: Record<string, unknown>,
-  alias: string
-): any {
-  const selection: Record<string, SQL> = {}
-  for (const key in selectedFields) {
-    if (Object.hasOwn(selectedFields, key) && selectedFields[key]) {
-      // The identifier must be fully-qualified to avoid ambiguity.
-      selection[key] = sql`${sql.identifier(alias)}.${sql.identifier(key)}`
-    }
-  }
-
-  // Adapted from https://github.com/drizzle-team/drizzle-orm/blob/109ccd34b549030e10dd9cd27e41641d0878a856/drizzle-orm/src/pg-core/db.ts#L175
-  return new Proxy(
-    new WithSubquery(query, selection, alias, true),
-    new SelectionProxyHandler({
-      alias,
-      // All values of `selection` are SQL objects. This option allows accessing
-      // the SQL object directly by its field name.
-      sqlBehavior: 'sql',
-    })
-  )
 }
