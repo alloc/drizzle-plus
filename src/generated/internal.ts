@@ -59,7 +59,9 @@ export function getFilterSQL(
 }
 
 export function getReturningFields(
-  returning: any,
+  returning:
+    | Record<string, unknown>
+    | ((columns: Record<string, Column>) => Record<string, unknown>),
   columns: Record<string, Column>
 ) {
   if (isFunction(returning)) {

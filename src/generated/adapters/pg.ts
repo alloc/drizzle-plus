@@ -85,7 +85,8 @@ export function setReturningClauseForUpdateOrDelete(
     | undefined,
   columns: Record<string, Column>
 ) {
-  const returning = getReturningFields(returningOption, columns)
+  const returning =
+    returningOption && getReturningFields(returningOption, columns)
   if (returning) {
     query.returning(returning)
   }
