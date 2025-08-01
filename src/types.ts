@@ -262,3 +262,15 @@ export type RawFieldsToSelection<T extends Record<string, unknown>> = {} & {
       : Extract<TResult, DrizzleTypeError<string>>
     : never
 }
+
+/**
+ * Maps an object type (or array of objects) to a subquery's selection type.
+ */
+export type ResultFieldsToSelection<TResult> =
+  | (TResult extends undefined
+      ? never
+      : TResult extends readonly (infer TElement)[]
+        ? { [K in keyof TElement]: SQL<TElement[K]> }
+        : { [K in keyof TResult]: SQL<TResult[K]> })
+  // If the result is only undefined, treat it as an empty selection.
+  | ([TResult] extends [undefined] ? {} : never)

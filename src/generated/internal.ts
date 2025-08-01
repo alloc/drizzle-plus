@@ -2,6 +2,8 @@ import {
   BuildRelationalQueryResult,
   Column,
   DriverValueDecoder,
+  getTableColumns,
+  is,
   Name,
   RelationsFilter,
   relationsFilterToSQL,
@@ -23,10 +25,11 @@ import {
   PgSession,
   PgTable,
   SelectedFields,
+  SelectedFieldsOrdered,
   WithBuilder,
 } from 'drizzle-orm/pg-core'
 import { SelectionProxyHandler } from 'drizzle-orm/selection-proxy'
-import { pushStringChunk } from 'drizzle-plus/utils'
+import { getDecoder, pushStringChunk } from 'drizzle-plus/utils'
 import { isFunction, select } from 'radashi'
 import { RelationalQuery } from './adapters/pg'
 import { RelationalQueryBuilder } from './types'
@@ -315,4 +318,42 @@ export function createWithSubquery(
       sqlBehavior: 'sql',
     })
   )
+}
+
+export function mapSelectedFieldsToDecoders(
+  orderedFields: SelectedFieldsOrdered
+) {
+  const decodedFields: DecodedFields = {}
+  for (const { path, field } of orderedFields) {
+    const name = is(field, SQL.Aliased)
+      ? field.fieldAlias
+      : path[path.length - 1]
+    decodedFields[name] = getDecoder(field)
+  }
+  return decodedFields
+}
+
+// Adapted from https://github.com/drizzle-team/drizzle-orm/blob/109ccd34b549030e10dd9cd27e41641d0878a856/drizzle-orm/src/utils.ts#L74
+export function orderSelectedFields(
+  fields: Record<string, unknown>,
+  pathPrefix?: string[]
+) {
+  const result: SelectedFieldsOrdered = []
+  for (const name in fields) {
+    if (!Object.prototype.hasOwnProperty.call(fields, name)) continue
+    if (typeof name !== 'string') continue
+
+    const field = fields[name]
+    const newPath = pathPrefix ? [...pathPrefix, name] : [name]
+    if (is(field, PgColumn) || is(field, SQL) || is(field, SQL.Aliased)) {
+      result.push({ path: newPath, field })
+    } else if (is(field, Table)) {
+      result.push(...orderSelectedFields(getTableColumns(field), newPath))
+    } else {
+      result.push(
+        ...orderSelectedFields(field as Record<string, unknown>, newPath)
+      )
+    }
+  }
+  return result
 }

@@ -15,6 +15,7 @@ import {
   PgInsertSelectQueryBuilder,
   PgInsertValue,
   QueryBuilder,
+  WithSubqueryWithSelection,
 } from 'drizzle-orm/pg-core'
 import {
   PgRelationalQuery,
@@ -23,6 +24,7 @@ import {
 import { TypedQueryBuilder } from 'drizzle-orm/query-builders/query-builder'
 import {
   ExtractTable,
+  ResultFieldsToSelection,
   ReturningClause,
   ReturningResultFields,
 } from 'drizzle-plus/types'
@@ -35,10 +37,13 @@ import { isFunction, select } from 'radashi'
 import * as adapter from './adapters/pg'
 import {
   buildInsertSelect,
+  createWithSubquery,
   excluded,
   getContext,
   getReturningFields,
   getTargetColumns,
+  mapSelectedFieldsToDecoders,
+  orderSelectedFields,
 } from './internal'
 
 /**
@@ -222,6 +227,7 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
 
   return new UpsertQueryPromise(
     query,
+    returning,
     !selection && !Array.isArray(config.data)
   )
 }
@@ -239,6 +245,7 @@ export class UpsertQueryPromise<
 > extends QueryPromise<UpsertQueryResult<TMode, TTable, TReturning>> {
   constructor(
     private query: QueryPromise<any>,
+    private returning: TReturning,
     private first: boolean
   ) {
     super()
@@ -251,5 +258,19 @@ export class UpsertQueryPromise<
   }
   toSQL(): Query {
     return (this.query as any).toSQL()
+  }
+  as<TAlias extends string>(
+    alias: TAlias
+  ): WithSubqueryWithSelection<
+    ResultFieldsToSelection<ReturningResultFields<TMode, TTable, TReturning>>,
+    TAlias
+  > {
+    const orderedFields = orderSelectedFields(this.returning)
+
+    return createWithSubquery(
+      this.getSQL(),
+      alias,
+      mapSelectedFieldsToDecoders(orderedFields)
+    ) as any
   }
 }
