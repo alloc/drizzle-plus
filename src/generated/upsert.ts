@@ -4,6 +4,7 @@ import {
   QueryPromise,
   RelationsFilter,
   relationsFilterToSQL,
+  SQL,
   Subquery,
   Table,
   type TableRelationalConfig,
@@ -244,6 +245,9 @@ export class UpsertQueryPromise<
   }
   override execute(): Promise<UpsertQueryResult<TMode, TTable, TReturning>> {
     return this.first ? this.query.then(results => results[0]) : this.query
+  }
+  getSQL(): SQL {
+    return (this.query as any).getSQL()
   }
   toSQL(): Query {
     return (this.query as any).toSQL()
