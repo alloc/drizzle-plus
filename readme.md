@@ -17,6 +17,7 @@ A collection of useful utilities and extensions for Drizzle ORM.
 
 #### Highlights
 
+- All features are optional and 🌴 tree-shakable.
 - Support for 🐘 **Postgres**, 🐬 **MySQL**, and 🪶 **SQLite**
 - Added `upsert()` method to `db.query` for “create or update” operations
 - Added `updateMany()` method to `db.query` for updating many rows at once
@@ -56,17 +57,10 @@ A collection of useful utilities and extensions for Drizzle ORM.
 
 Import the `upsert` module to extend the query builder API with a `upsert` method.
 
-> [!WARNING]
-> 🐬 **MySQL** is not supported yet.
-
-The `upsert` method intelligently infers the correct columns to update based on the primary key and unique constraints of the table. This means you're _not_ required to manually specify a `where` clause (as you would in Prisma).
-
 ```ts
 // Choose your dialect
 import 'drizzle-plus/pg/upsert'
-import 'drizzle-plus/sqlite/upsert'
 
-// Now you can use the `upsert` method
 const query = db.query.user.upsert({
   data: {
     id: 42,
@@ -74,170 +68,33 @@ const query = db.query.user.upsert({
   },
 })
 
-query.toSQL()
-// => {
-//   sql: `insert into "user" ("id", "name") values (?, ?) on conflict ("user"."id") do update set "name" = excluded."name" returning "id", "name"`,
-//   params: [42, 'Chewbacca'],
-// }
-
-// Execute the query
 const result = await query
-// => {
-//   id: 42,
-//   name: 'Chewbacca',
-// }
+// => { id: 42, name: 'Chewbacca' }
 ```
 
-#### Returning clause
+Equivalent SQL:
 
-By default, `upsert` will return all columns of the upserted row. But you can specify a `returning` clause to return only the columns you want. Any SQL expression is allowed in the `returning` clause.
-
-```ts
-import { upper } from 'drizzle-plus'
-
-const result = await db.query.user.upsert({
-  data: {
-    id: 42,
-    name: 'Chewbacca',
-  },
-  // Pass a function to reference the upserted row, or pass a plain object.
-  returning: user => ({
-    id: true,
-    nameUpper: upper(user.name),
-    random: sql<number>`random()`,
-  }),
-})
-// => {
-//   id: 42,
-//   nameUpper: 'CHEWBACCA',
-//   random: 0.123456789,
-// }
+```sql
+insert into "user" ("id", "name") values (42, 'Chewbacca') on conflict ("user"."id") do update set "name" = excluded."name" returning "id", "name"
 ```
 
-Set `returning` to an empty object to return nothing.
+- [`Returning clause`](docs/upsert.md#returning-clause): Specify which columns to return after an upsert operation.
+- [`Upserting many rows`](docs/upsert.md#upserting-many-rows): Upsert multiple rows in a single, atomic query.
+- [`Conditional updates`](docs/upsert.md#conditional-updates): Apply updates only if a row matches a specific condition.
+- [`Updating with different data`](docs/upsert.md#updating-with-different-data): Use different data for insert and update operations.
+- [`Upserting relations`](docs/upsert.md#upserting-relations): Guidance on handling related data with transactions.
 
-#### Upserting many rows
-
-You may pass an array of objects to the `data` property to upsert many rows at once. For optimal performance and atomicity guarantees, the rows are upserted in a single query.
-
-```ts
-const rows = await db.query.user.upsert({
-  data: [
-    { id: 42, name: 'Chewbacca' },
-    { id: 43, name: 'Han Solo' },
-  ],
-})
-// => [{ id: 42, name: 'Chewbacca' }, { id: 43, name: 'Han Solo' }]
-```
-
-#### Conditional updates
-
-If a row should only be updated if it matches a certain condition, you can set the `where` option. This accepts the same object as the `where` clause of `db.query#findMany()`.
-
-```ts
-const query = db.query.user.upsert({
-  data: {
-    id: 42,
-    handle: 'chewie',
-  },
-  where: {
-    emailVerified: true,
-  },
-})
-
-query.toSQL()
-// => {
-//   sql: `insert into "user" ("id", "handle") values (?, ?) on conflict ("user"."id") do update set "handle" = excluded."handle" where "user"."email_verified" = true returning "id", "handle"`,
-//   params: [42, 'chewie'],
-// }
-```
-
-#### Updating with different data
-
-If the data you wish to _insert_ with is different from the data you wish to
-_update_ with, try setting the `update` option. This option can either be a function that receives the table as an argument, or a plain object. This feature works with both single and many upserts (e.g. when `data` is an array).
-
-```ts
-const query = db.query.user.upsert({
-  data: {
-    id: 42,
-    loginCount: 0,
-  },
-  update: user => ({
-    // Mutate the existing count if the row already exists.
-    loginCount: sql`${user.loginCount} + 1`,
-  }),
-})
-
-query.toSQL()
-// => {
-//   sql: `insert into "user" ("id", "login_count") values (?, ?) on conflict ("user"."id") do update set "login_count" = "user"."login_count" + 1 returning "id", "login_count"`,
-//   params: [42, 0],
-// }
-```
-
-#### Upserting relations
-
-There are no plans to support Prisma’s `connect` or `connectOrCreate` features. It’s recommended to use `db.transaction()` instead.
-
-> [!NOTE]
-> Depending on the complexity of the relations, it may be possible to utilize
-> _subqueries_ instead of using `db.transaction()`. Do that if you can, since it
-> will avoid the round trip caused by each `await` in the transaction callback.
-
-```ts
-import 'drizzle-plus/pg/upsert'
-import { nest } from 'drizzle-plus'
-
-await db.transaction(async tx => {
-  const { id } = await tx.query.user.upsert({
-    data: {
-      id: 42,
-      name: 'Chewbacca',
-    },
-    returning: {
-      id: true,
-    },
-  })
-  await tx.query.friendship.upsert({
-    data: {
-      userId: id,
-      friendId: nest(
-        tx.query.user.findFirst({
-          where: {
-            name: 'Han Solo',
-          },
-          columns: {
-            id: true,
-          },
-        })
-      ),
-    },
-  })
-})
-```
+For more details, see the [Upsert documentation](docs/upsert.md).
 
 ### Update Many
 
 Import the `updateMany` module to extend the query builder API with a `updateMany` method.
 
-The `updateMany` method has the following options:
-
-- `set`: **(required)** The columns to update. May be a function or a plain object.
-- `where`: A filter to only update rows that match the filter. Same API as `findMany()`.
-- `orderBy`: The order of the rows to update. Same API as `findMany()`.
-- `limit`: The maximum number of rows to update.
-- `returning`: The columns to return. Same API as `upsert()` above.
-
 ```ts
 // Choose your dialect
 import 'drizzle-plus/pg/updateMany'
-import 'drizzle-plus/mysql/updateMany'
-import 'drizzle-plus/sqlite/updateMany'
 
-// Now you can use the `updateMany` method
 const query = db.query.user.updateMany({
-  // Pass a function to reference the updated row, or pass a plain object.
   set: user => ({
     name: sql`upper(${user.name})`,
   }),
@@ -246,14 +103,17 @@ const query = db.query.user.updateMany({
   },
 })
 
-query.toSQL()
-// => {
-//   sql: `update "user" set "name" = upper("user"."name") where "user"."name" = ?`,
-//   params: ['Jeff'],
-// }
+const result = await query
+// => { affectedRows: 1 } (for MySQL/SQLite) or [{ id: ..., name: ... }] (for Postgres with returning)
 ```
 
-If the `returning` option is undefined or an empty object, the query will return the number of rows updated. Otherwise, an array of objects will be returned.
+Equivalent SQL:
+
+```sql
+update "user" set "name" = upper("user"."name") where "user"."name" = 'Jeff'
+```
+
+For more details, see the [Update Many documentation](docs/updateMany.md).
 
 ### Count
 
@@ -262,44 +122,31 @@ Import the `count` module to extend the query builder API with a `count` method.
 ```ts
 // Choose your dialect
 import 'drizzle-plus/pg/count'
-import 'drizzle-plus/mysql/count'
-import 'drizzle-plus/sqlite/count'
 
-// Now you can use the `count` method
-const count = db.query.foo.count()
-//    ^? Promise<number>
-
-// Pass filters to the `count` method
 const countWithFilter = db.query.foo.count({
   id: { gt: 100 },
 })
 
-// Inspect the SQL:
-console.log(countWithFilter.toSQL())
-// {
-//   sql: `select count(*) from "foo" where "foo"."id" > 100`,
-//   params: [],
-// }
-
-// Execute the query
 const result = await countWithFilter
 // => 0
 ```
+
+Equivalent SQL:
+
+```sql
+select count(*) from "foo" where "foo"."id" > 100
+```
+
+For more details, see the [Count documentation](docs/count.md).
 
 ### Find Unique
 
 Import the `findUnique` module to extend the query builder API with a `findUnique` method.
 
-The only thing `findUnique()` does differently from `findFirst()` is that it
-requires the `where` clause to match a primary key or unique constraint. Unfortunately, Drizzle doesn't have type-level tracking of primary keys or unique constraints, so `findUnique()` will only throw at runtime (no compile-time warnings).
-
 ```ts
 // Choose your dialect
 import 'drizzle-plus/pg/findUnique'
-import 'drizzle-plus/mysql/findUnique'
-import 'drizzle-plus/sqlite/findUnique'
 
-// Now you can use the `findUnique` method
 const result = await db.query.user.findUnique({
   where: {
     id: 42,
@@ -308,21 +155,22 @@ const result = await db.query.user.findUnique({
 // => { id: 42, name: 'Chewbacca' }
 ```
 
-If no matching record is found, `findUnique()` will resolve to `undefined`.
+Equivalent SQL:
+
+```sql
+select * from "user" where "user"."id" = 42 limit 1
+```
+
+For more details, see the [Find Unique documentation](docs/findUnique.md).
 
 ### Find Many and Count
 
 Import the `findManyAndCount` module to extend the query builder API with a `findManyAndCount` method.
 
-The `findManyAndCount` method accepts the same arguments as `findMany()`, and returns an object with `data` and `count` properties. The count is the total number of rows that would be returned by the `findMany` query, without any `limit` or `offset` applied.
-
 ```ts
 // Choose your dialect
 import 'drizzle-plus/pg/findManyAndCount'
-import 'drizzle-plus/mysql/findManyAndCount'
-import 'drizzle-plus/sqlite/findManyAndCount'
 
-// Now you can use the `findManyAndCount` method
 const { data, count } = await db.query.foo.findManyAndCount({
   where: {
     age: { gt: 20 },
@@ -334,40 +182,27 @@ const { data, count } = await db.query.foo.findManyAndCount({
     age: true,
   },
 })
-// => {
-//   data: [
-//     { id: 1, name: 'Alice', age: 25 },
-//     { id: 2, name: 'Bob', age: 30 },
-//   ],
-//   count: 10,
-// }
 ```
 
-The two queries (`findMany` and `count`) are executed in parallel.
+Equivalent SQL (simplified for example, actual execution involves two parallel queries):
 
-> [!WARNING]
-> Your database connection _may not_ support parallel queries, in which case this method will execute the queries sequentially.
+```sql
+select "id", "name", "age" from "foo" where "age" > 20 limit 2;
+select count(*) from "foo" where "age" > 20;
+```
+
+For more details, see the [Find Many and Count documentation](docs/findManyAndCount.md).
 
 ### Cursor-Based Pagination
 
 Import the `$cursor` module to extend the query builder API with a `$cursor` method.
 
-With `$cursor()`, you get the peace of mind knowing that TypeScript will catch any errors in your cursor-based pagination. No more forgotten `orderBy` clauses, mismatched cursor objects, or manually-written `where` clauses.
-
-Just give it your desired sort order and the cursor object, and it will generate the correct `where` clause.
-
 ```ts
 // Step 1: Choose your dialect
 import 'drizzle-plus/pg/$cursor'
-import 'drizzle-plus/mysql/$cursor'
-import 'drizzle-plus/sqlite/$cursor'
 
 // Step 2: Use the `$cursor` method
 const cursorParams = db.query.foo.$cursor({ id: 'asc' }, { id: 99 })
-// => {
-//   where: { id: { gt: 99 } },
-//   orderBy: { id: 'asc' },
-// }
 
 // Step 3: Add the cursor parameters to your query
 const results = await db.query.foo.findMany({
@@ -380,214 +215,140 @@ const results = await db.query.foo.findMany({
 })
 ```
 
-- **Arguments:**
-  - The first argument is the “order by” clause. This is used to determine the comparison operator for each column, and it's returned with the generated `where` filter. **Property order is important.**
-  - The second argument is the user-provided cursor object. It can be `null` or `undefined` to indicate the start of the query.
-- **Returns:** The query parameters that you should include in your query. You can spread them into the options passed to `findMany()`, `findFirst()`, etc.
+Equivalent SQL (for the generated `where` clause):
 
-#### Cursors with multiple columns
-
-In addition to type safety and auto-completion, another nice thing about `$cursor()` is its support for multiple columns.
-
-```ts
-const cursorParams = db.query.user.$cursor(
-  { name: 'asc', age: 'desc' },
-  { name: 'John', age: 20 }
-)
-
-cursorParams.where
-// => { name: { gte: 'John' }, age: { lt: 20 } }
-
-cursorParams.orderBy
-// => { name: 'asc', age: 'desc' }
+```sql
+select "id", "name", "age" from "foo" where "id" > 99 order by "id" asc
 ```
 
-> [!NOTE]
-> The order of keys in the first argument to `$cursor()` is **important**, as it helps in determining the comparison operator for each column. All except the last key allow rows with equal values (`gte` or `lte`), while the last key is always either `gt` (for ascending order) or `lt` (for descending order).
+- [`Cursors with multiple columns`](docs/cursor-based-pagination.md#cursors-with-multiple-columns): How to use cursor-based pagination with multiple sort columns.
 
-Also of note, as of June 28 2025, Drizzle doesn't yet provide control over treatment of `NULL` values when using the Relational Query Builder (RQB) API. While this library _could_ implement it ourselves (at least, for the `$cursor` method), we'd prefer to wait for Drizzle to provide a proper solution.
+For more details, see the [Cursor-Based Pagination documentation](docs/cursor-based-pagination.md).
 
 ### Materialized CTEs
 
 Import the `$withMaterialized` module to extend the query builder API with `$withMaterialized()` and `$withNotMaterialized()` methods.
 
-These methods add `MATERIALIZED` and `NOT MATERIALIZED` keywords to the CTEs, respectively, just after the `AS` keyword. You can learn more about materialized CTEs in the [PostgreSQL docs](https://www.postgresql.org/docs/current/queries-with.html#QUERIES-WITH-CTE-MATERIALIZATION).
-
-> [!WARNING]
-> This feature is only available in Postgres.
-
 ```ts
 import 'drizzle-plus/pg/$withMaterialized'
+import { sql } from 'drizzle-orm'
 
-// Same API as db.$with()
-const cte1 = db.$withMaterialized(alias).as(subquery)
-const cte2 = db.$withNotMaterialized(alias).as(subquery)
+const alias = sql`my_cte`
+const subquery = sql`select 1 as value`
+
+const result = await db.select().from(cte1)
+// => [{ value: 1 }]
 ```
 
-### Universal SQL functions
+Equivalent SQL:
 
-These functions are available in all dialects, since they're part of the SQL standard.
+```sql
+WITH my_cte AS MATERIALIZED (select 1 as value)
+SELECT * FROM my_cte;
+```
 
-- **Syntax:**
-  - `caseWhen`
-  - `nest`
-  - `toSQL`
-- **SQL functions:**
-  - `abs`
-  - `ceil`
-  - `coalesce`
-  - `concatWithSeparator`
-  - `currentDate`
-  - `currentTime`
-  - `currentTimestamp`
-  - `floor`
-  - `length`
-  - `lower`
-  - `mod`
-  - `nullif`
-  - `power`
-  - `round`
-  - `sqrt`
-  - `substring`
-  - `trim`
-  - `upper`
+For more details, see the [Materialized CTEs documentation](docs/materialized-ctes.md).
 
-Import them from the `drizzle-plus` module:
+### Universal SQL Functions
+
+These functions are available in all dialects, since they're part of the SQL standard. Here's an example using `caseWhen`:
 
 ```ts
-import { caseWhen } from 'drizzle-plus'
+import { caseWhen, sql } from 'drizzle-orm'
+
+const result = await db
+  .select({
+    status: caseWhen(
+      sql`column_value > 10`,
+      'High',
+      sql`column_value > 5`,
+      'Medium',
+      'Low'
+    ),
+  })
+  .from(myTable)
 ```
 
-### Timestamps
+Equivalent SQL:
 
-Any `drizzle-plus` function that returns a timestamp will return a `SQLTimestamp` object, which extends the `SQL` class. Call the `toDate()` method to instruct Drizzle to parse it into a `Date` object (which is only relevant if the timestamp is used in a `select` or `returning` clause).
-
-```ts
-import { currentTimestamp } from 'drizzle-plus'
-
-const now = currentTimestamp()
-// => SQLTimestamp<string>
-
-now.toDate()
-// => SQL<Date>
+```sql
+SELECT CASE WHEN column_value > 10 THEN 'High' WHEN column_value > 5 THEN 'Medium' ELSE 'Low' END AS status FROM my_table;
 ```
 
-### Dialect-specific SQL functions
+Other universal SQL functions:
 
-These functions have differences between dialects, whether it's the name, the function signature, or its TypeScript definition relies on dialect-specific types.
+- [`nest`](docs/universal-sql-functions.md#syntax): Embed subqueries directly within your main query.
+- [`toSQL`](docs/universal-sql-functions.md#syntax): Inspect the generated SQL query and its parameters.
+- [`abs`](docs/universal-sql-functions.md#sql-functions): Returns the absolute value of a number.
+- [`ceil`](docs/universal-sql-functions.md#sql-functions): Returns the smallest integer greater than or equal to a number.
+- [`coalesce`](docs/universal-sql-functions.md#sql-functions): Returns the first non-null expression among its arguments.
+- [`concatWithSeparator`](docs/universal-sql-functions.md#sql-functions): Concatenates two or more strings with a specified separator.
+- [`currentDate`](docs/universal-sql-functions.md#sql-functions): Returns the current date.
+- [`currentTime`](docs/universal-sql-functions.md#sql-functions): Returns the current time.
+- [`currentTimestamp`](docs/universal-sql-functions.md#sql-functions): Returns the current timestamp.
+- [`floor`](docs/universal-sql-functions.md#sql-functions): Returns the largest integer less than or equal to a number.
+- [`length`](docs/universal-sql-functions.md#sql-functions): Returns the length of a string.
+- [`lower`](docs/universal-sql-functions.md#sql-functions): Converts a string to lowercase.
+- [`mod`](docs/universal-sql-functions.md#sql-functions): Returns the remainder of a division.
+- [`nullif`](docs/universal-sql-functions.md#sql-functions): Returns null if two expressions are equal, otherwise returns the first expression.
+- [`power`](docs/universal-sql-functions.md#sql-functions): Returns the value of a number raised to the power of another number.
+- [`round`](docs/universal-sql-functions.md#sql-functions): Rounds a number to a specified number of decimal places.
+- [`sqrt`](docs/universal-sql-functions.md#sql-functions): Returns the square root of a number.
+- [`substring`](docs/universal-sql-functions.md#sql-functions): Extracts a substring from a string.
+- [`trim`](docs/universal-sql-functions.md#sql-functions): Removes leading and trailing spaces (or other specified characters) from a string.
+- [`upper`](docs/universal-sql-functions.md#sql-functions): Converts a string to uppercase.
 
-- **Postgres:**
-  - `concat`
-  - `jsonAgg`
-  - `jsonBuildObject`
-  - `position`
-  - `uuidv7`
-  - `uuidExtractTimestamp`
-- **MySQL:**
-  - `concat`
-  - `jsonArrayAgg`
-  - `jsonObject`
-  - `position`
-- **SQLite:**
-  - `concat`
-  - `instr`
-  - `jsonGroupArray`
-  - `jsonObject`
+For more details, see the [Universal SQL Functions documentation](docs/universal-sql-functions.md).
+
+### Dialect-Specific SQL Functions
+
+These functions have differences between dialects, whether it's the name, the function signature, or its TypeScript definition relies on dialect-specific types. Here's an example for Postgres `jsonAgg`:
 
 ```ts
 // Postgres imports
 import { jsonAgg } from 'drizzle-plus/pg'
+import { sql } from 'drizzle-orm'
 
-// MySQL imports
-import { jsonArrayAgg } from 'drizzle-plus/mysql'
-
-// SQLite imports
-import { jsonGroupArray } from 'drizzle-plus/sqlite'
+const result = await db
+  .select({
+    data: jsonAgg(sql`users.name`),
+  })
+  .from(users)
 ```
 
-### Utility functions
+Equivalent SQL (Postgres):
 
-The `drizzle-plus` package also has some functions that don't produce SQL expressions, but exist for various use cases.
-
-- `mergeFindManyArgs`
-  _Combines two configs for a `findMany` query._
-- `mergeRelationsFilter`
-  _Combines two `where` filters for the same table._
-
-```ts
-import { mergeFindManyArgs, mergeRelationsFilter } from 'drizzle-plus'
+```sql
+SELECT json_agg(users.name) AS data FROM users;
 ```
 
-### Type-safe query definitions
+Other dialect-specific SQL functions:
 
-Import the `$findMany` module to extend the query builder API with a `$findMany` method.
+- **Postgres:**
+  - `concat`: Concatenates two or more strings.
+  - `jsonBuildObject`: Builds a JSON object from a variadic argument list.
+  - `position`: Returns the starting position of the first occurrence of a substring within a string.
+  - `uuidv7`: Generates a UUID v7.
+  - `uuidExtractTimestamp`: Extracts the timestamp from a UUID.
+- **MySQL:**
+  - `concat`: Concatenates two or more strings.
+  - `jsonArrayAgg`: Aggregates JSON values as a JSON array.
+  - `jsonObject`: Creates a JSON object.
+  - `position`: Returns the starting position of the first occurrence of a substring within a string.
+- **SQLite:**
+  - `concat`: Concatenates two or more strings.
+  - `instr`: Returns the starting position of the first occurrence of a substring within a string.
+  - `jsonGroupArray`: Aggregates JSON values as a JSON array.
+  - `jsonObject`: Creates a JSON object.
 
-The `$findMany()` method is used to define a query config for a `findMany` query in a type-safe way. If you pass two configs, it will merge them. This is useful for **Query Composition**™, which is a technique for building complex queries by composing simpler ones.
+For more details, see the [Dialect-Specific SQL Functions documentation](docs/dialect-specific-sql-functions.md).
 
-> [!NOTE]
-> This method **does not** execute the query. It only returns a query config.
+### Further Documentation
 
-```ts
-// Choose your dialect
-import 'drizzle-plus/pg/$findMany'
-import 'drizzle-plus/mysql/$findMany'
-import 'drizzle-plus/sqlite/$findMany'
-
-// Now you can use the `$findMany` method
-const query = db.query.foo.$findMany({
-  columns: {
-    id: true,
-  },
-})
-
-// The result is strongly-typed!
-query.columns
-//    ^? { readonly id: true }
-
-// You can also pass two configs to merge them
-const query2 = db.query.foo.$findMany(
-  {
-    columns: {
-      id: true,
-    },
-  },
-  {
-    columns: {
-      name: true,
-    },
-  }
-)
-// => {
-//   columns: {
-//     id: true,
-//     name: true,
-//   },
-// }
-```
-
-When you pass two configs to `$findMany()`, it passes them to `mergeFindManyArgs()` and returns the result. Here's how the merging actually works:
-
-- The `columns`, `with`, and `extras` properties are merged one level deep.
-- The `where` property is merged using `mergeRelationsFilter()`.
-- Remaining properties are merged via spread syntax (e.g. `orderBy` is replaced, not merged).
-
-## Types
-
-Here are some useful types that `drizzle-plus` provides:
-
-```ts
-// Universal types
-import {
-  InferWhereFilter,
-  InferFindManyArgs,
-  InferFindFirstArgs,
-} from 'drizzle-plus/types'
-
-// Pass the query builder to the type
-type WhereFilter = InferWhereFilter<typeof db.query.foo>
-type FindManyArgs = InferFindManyArgs<typeof db.query.foo>
-type FindFirstArgs = InferFindFirstArgs<typeof db.query.foo>
-```
+- [Timestamps](docs/timestamps.md)
+- [Utility Functions](docs/utility-functions.md)
+- [Type-Safe Query Definitions](docs/type-safe-query-definitions.md)
+- [Types](docs/types.md)
 
 ## License
 
