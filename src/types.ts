@@ -274,3 +274,15 @@ export type ResultFieldsToSelection<TResult> =
         : { [K in keyof TResult]: SQL<TResult[K]> })
   // If the result is only undefined, treat it as an empty selection.
   | ([TResult] extends [undefined] ? {} : never)
+
+/**
+ * Infer the type of the `insert` or `update` values object.
+ *
+ * This is different from `typeof MyTable.$inferInsert` because it accepts any
+ * `SQLWrapper`, like column references or arbitrary SQL, and those SQL
+ * expressions are strongly typed (e.g. `SQL<number>` instead of
+ * `SQL<unknown>`).
+ */
+export type InsertSelectedFields<TTable extends Table> = {
+  [K in keyof TTable['$inferInsert']]: SQLValue<TTable['$inferInsert'][K]>
+}
