@@ -11,7 +11,7 @@ import type * as V1 from 'drizzle-orm/_relations'
 import { PgColumn, SelectedFields } from 'drizzle-orm/pg-core'
 import { PgDatabase } from 'drizzle-orm/pg-core/db'
 import { TypedQueryBuilder } from 'drizzle-orm/query-builders/query-builder'
-import { SelectionFromAnyObject } from 'drizzle-plus/types'
+import { RawFieldsToSelection } from 'drizzle-plus/types'
 import { getSQL } from 'drizzle-plus/utils'
 import { sqlNull } from './internal'
 
@@ -39,7 +39,7 @@ declare module 'drizzle-orm/pg-core/db' {
      */
     $select<TFields extends Record<string, unknown>>(
       fields: TFields
-    ): SelectionFromAnyObject<TFields>
+    ): RawFieldsToSelection<TFields>
   }
 }
 

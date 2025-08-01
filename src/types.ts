@@ -241,7 +241,7 @@ export type OrderByClause<TTable extends Table> =
  * Attempt to coerce a plain object with JavaScript values to a `db.select()`
  * selection object. Any objects within must be JSON-serializable.
  */
-export type SelectionFromAnyObject<T extends Record<string, unknown>> = {} & {
+export type RawFieldsToSelection<T extends Record<string, unknown>> = {} & {
   [K in keyof T]-?: (
     T[K] extends infer TValue
       ? TValue extends SQLExpression<infer TResult>

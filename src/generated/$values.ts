@@ -19,7 +19,7 @@ import {
 } from 'drizzle-orm/pg-core'
 import { noopDecoder, sql, SQLWrapper } from 'drizzle-orm/sql'
 import type { SQLType } from 'drizzle-plus/pg'
-import { SelectionFromAnyObject } from 'drizzle-plus/types'
+import { RawFieldsToSelection } from 'drizzle-plus/types'
 import { pushStringChunk } from 'drizzle-plus/utils'
 import {
   createWithSubquery,
@@ -78,7 +78,7 @@ declare module 'drizzle-orm/pg-core' {
         typings?:
           | { [K in keyof TRow]?: SQLType }
           | PgTableWithTheseColumns<string & keyof TRow>
-      ): WithSubqueryWithSelection<SelectionFromAnyObject<TRow>, string>
+      ): WithSubqueryWithSelection<RawFieldsToSelection<TRow>, string>
     }
   }
 }
