@@ -232,17 +232,11 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
   )
 }
 
-export type UpsertQueryResult<
-  TMode extends 'one' | 'many',
-  TTable extends Table,
-  TReturning extends ReturningClause<TTable>,
-> = ReturningResultFields<TMode, TTable, TReturning>
-
 export class UpsertQueryPromise<
   TMode extends 'one' | 'many',
   TTable extends Table,
   TReturning extends ReturningClause<TTable>,
-> extends QueryPromise<UpsertQueryResult<TMode, TTable, TReturning>> {
+> extends QueryPromise<ReturningResultFields<TMode, TTable, TReturning>> {
   constructor(
     private query: QueryPromise<any>,
     private returning: TReturning,
@@ -250,7 +244,9 @@ export class UpsertQueryPromise<
   ) {
     super()
   }
-  override execute(): Promise<UpsertQueryResult<TMode, TTable, TReturning>> {
+  override execute(): Promise<
+    ReturningResultFields<TMode, TTable, TReturning>
+  > {
     return this.first ? this.query.then(results => results[0]) : this.query
   }
   getSQL(): SQL {
