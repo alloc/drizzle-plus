@@ -184,30 +184,32 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
     throw new Error('No matching primary key or unique constraint found')
   }
 
+  // Any column that is defined in at least one object of `data` needs to be
+  // included in the `set` clause (unless it's a conflict target).
+  const updateCandidates = Array.isArray(config.data)
+    ? getDefinedColumns(columns, config.data)
+    : targetCandidates
+
   // Values to use instead of the ones in `data` if the row already exists.
   const update =
     config.update &&
     config.update({
       current: columns,
-      excluded: new Proxy(columns, {
+      excluded: new Proxy(updateCandidates, {
         get(_, prop: string) {
-          const column = columns[prop]
-          const name = dialect.casing.getColumnCasing(column)
-          return excluded(name)
+          const column = updateCandidates[prop]
+          if (column) {
+            const name = dialect.casing.getColumnCasing(column)
+            return excluded(name)
+          }
         },
       }),
     })
 
-  // Any column that is defined in at least one object of `data` needs to be
-  // included in the `set` clause (unless it's a conflict target).
-  const setCandidates = Array.isArray(config.data)
-    ? getDefinedColumns(columns, config.data)
-    : targetCandidates
-
   // Filter out values that don't need to be updated.
   const updatedEntries = update
     ? Object.entries(update).filter(([_, value]) => value !== undefined)
-    : select(Object.keys(setCandidates), key => {
+    : select(Object.keys(updateCandidates), key => {
         const column = columns[key]
         if (target.includes(column)) {
           return null
