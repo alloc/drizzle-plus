@@ -2,6 +2,7 @@
 import {
   AnyRelations,
   DrizzleError,
+  is,
   QueryPromise,
   sql,
   SQL,
@@ -13,6 +14,7 @@ import { PgDatabase } from 'drizzle-orm/pg-core/db'
 import { TypedQueryBuilder } from 'drizzle-orm/query-builders/query-builder'
 import { RawFieldsToSelection } from 'drizzle-plus/types'
 import { getSQL } from 'drizzle-plus/utils'
+import { isDate } from 'radashi'
 import { sqlNull } from './internal'
 
 declare module 'drizzle-orm/pg-core/db' {
@@ -51,36 +53,34 @@ PgDatabase.prototype.$select = function (fields: Record<string, unknown>) {
       continue
     }
     if (value === null) {
-      selection[key] = sqlNull
+      selection[key] = sqlNull.as(key)
       continue
     }
     const type = typeof value
-    if (type !== 'object') {
-      if (type === 'function') {
-        throw new DrizzleError({
-          message: 'Function values are not allowed in selection',
-        })
-      }
-      selection[key] =
-        type === 'number' || type === 'boolean'
-          ? sql.raw(String(value))
-          : sql`${value}`
-    } else if (
-      value instanceof SQL ||
-      value instanceof PgColumn ||
-      value instanceof SQL.Aliased
-    ) {
+    if (type === 'object' && (is(value, PgColumn) || is(value, SQL.Aliased))) {
       selection[key] = value
-    } else if (
-      value instanceof QueryPromise ||
-      value instanceof TypedQueryBuilder
-    ) {
-      selection[key] = getSQL(value)
-    } else if (value instanceof Date) {
-      selection[key] = sql.raw(value.toISOString())
-    } else {
-      selection[key] = sql`${JSON.stringify(value)}`
+      continue
     }
+    if (type === 'function') {
+      throw new DrizzleError({
+        message: 'Function values are not allowed in selection',
+      })
+    }
+
+    const sqlValue: SQL =
+      type === 'number' || type === 'boolean'
+        ? sql.raw(String(value))
+        : type !== 'object'
+          ? new SQL([value as any])
+          : is(value, SQL)
+            ? value
+            : is(value, QueryPromise) || is(value, TypedQueryBuilder<any>)
+              ? getSQL(value)
+              : isDate(value)
+                ? sql.raw(`'${value.toISOString()}'`)
+                : new SQL([JSON.stringify(value) as any])
+
+    selection[key] = sqlValue.as(key)
   }
   return selection as any
 }
