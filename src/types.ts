@@ -211,8 +211,26 @@ export type ReturningResultFields<
         ? SelectResultFields<TTable['_']['columns']>
         : AllFalseValues<TReturning> extends TReturning
           ? SelectResultFields<Omit<TTable['_']['columns'], keyof TReturning>>
-          : SelectResultFields<TReturning>
+          : SelectResultFields<
+              OmitNevers<{
+                [K in keyof TReturning]: TReturning[K] extends infer TValue
+                  ? TValue extends true
+                    ? TTable['_']['columns'][Extract<
+                        K,
+                        keyof TTable['_']['columns']
+                      >]
+                    : TValue extends false | undefined
+                      ? never
+                      : TValue
+                  : never
+              }>
+            >
     >
+
+type OmitNevers<T extends object> = Omit<
+  T,
+  { [K in keyof T]: T[K] extends never ? K : never }[keyof T]
+>
 
 type AllFalseValues<T extends object> = {
   [K in keyof T]-?: false
