@@ -128,7 +128,7 @@ export type ValuesListSubquery<
   TAlias extends string,
   TSelectedFields extends Record<string, unknown> = Record<string, unknown>,
 > = Subquery<TAlias, TSelectedFields> & {
-  [K in keyof TSelectedFields]: SQL
+  [K in keyof TSelectedFields]: SQL<Exclude<TSelectedFields[K], undefined>>
 }
 
 export class ValuesList<
