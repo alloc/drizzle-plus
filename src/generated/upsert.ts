@@ -58,6 +58,11 @@ export type PgUpsertSelectQuery<TTable extends Table> =
       PgInsertValue<TTable> | PgInsertValue<TTable>[] | undefined
     >
 
+type DBUpsertUpdateFn<TTable extends Table> = (tables: {
+  current: TTable['_']['columns']
+  excluded: TTable['_']['columns']
+}) => Partial<PgInsertValue<TTable>>
+
 export interface DBUpsertConfig<
   TMode extends 'one' | 'many',
   TTable extends Table,
@@ -76,13 +81,16 @@ export interface DBUpsertConfig<
     ? PgInsertValue<TTable>
     : readonly PgInsertValue<TTable>[] | PgUpsertSelectQuery<TTable>
   /**
-   * This option enables you to partially override `data` with values that are
-   * only used when the row already exists.
+   * When defined, the `data` option is ignored for updates, and the result of
+   * this `update` function is used instead.
+   *
+   * - The `current` argument can be used to reference the data of the existing
+   * row.
+   * - The `excluded` argument can be used to reference the data that failed to
+   * insert. You're free to “spread” the `excluded` object into the `update`
+   * result.
    */
-  update?:
-    | Partial<PgInsertValue<TTable>>
-    | ((table: TTable['_']['columns']) => Partial<PgInsertValue<TTable>>)
-    | undefined
+  update?: DBUpsertUpdateFn<TTable> | undefined
   /**
    * Specify a filter to only update rows that match the filter.
    */
@@ -126,10 +134,10 @@ declare module 'drizzle-orm/pg-core/query-builders/query' {
 RelationalQueryBuilder.prototype.upsert = function (config: {
   with?: Subquery[]
   data: any
-  update?: any
+  update?: DBUpsertUpdateFn<any>
   where?: RelationsFilter<any, any>
   returning?: any
-}): UpsertQueryPromise<any, any, any> {
+}): any {
   const { table, dialect, session } = getContext(this)
   const columns = getTableColumns(table)
 
@@ -176,9 +184,18 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
   }
 
   // Values to use instead of the ones in `data` if the row already exists.
-  const update = isFunction(config.update)
-    ? config.update(table)
-    : config.update
+  const update =
+    config.update &&
+    config.update({
+      current: columns,
+      excluded: new Proxy(columns, {
+        get(_, prop: string) {
+          const column = columns[prop]
+          const name = dialect.casing.getColumnCasing(column)
+          return excluded(name)
+        },
+      }),
+    })
 
   // Any column that is defined in at least one object of `data` needs to be
   // included in the `set` clause (unless it's a conflict target).
@@ -187,18 +204,16 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
     : targetCandidates
 
   // Filter out values that don't need to be updated.
-  const updatedEntries = select(Object.keys(setCandidates), key => {
-    if (update && key in update) {
-      // An undefined value in `update` means “do not update this column”.
-      return update[key] !== undefined ? [key, update[key]] : null
-    }
-    const column = columns[key]
-    if (target.includes(column)) {
-      return null
-    }
-    const name = dialect.casing.getColumnCasing(column)
-    return [key, excluded(name)]
-  })
+  const updatedEntries = update
+    ? Object.entries(update).filter(([_, value]) => value !== undefined)
+    : select(Object.keys(setCandidates), key => {
+        const column = columns[key]
+        if (target.includes(column)) {
+          return null
+        }
+        const name = dialect.casing.getColumnCasing(column)
+        return [key, excluded(name)]
+      })
 
   const returning = config.returning
     ? getReturningFields(config.returning, columns)
