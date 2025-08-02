@@ -80,8 +80,8 @@ export interface DBUpsertConfig<
    * only used when the row already exists.
    */
   update?:
-    | PgInsertValue<TTable>
-    | ((table: TTable['_']['columns']) => PgInsertValue<TTable>)
+    | Partial<PgInsertValue<TTable>>
+    | ((table: TTable['_']['columns']) => Partial<PgInsertValue<TTable>>)
     | undefined
   /**
    * Specify a filter to only update rows that match the filter.
