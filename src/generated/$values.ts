@@ -124,19 +124,25 @@ PgDatabase.prototype.$withValues = function (
   })
 }
 
-export type ValuesListSubquery<
-  TAlias extends string,
-  TSelectedFields extends Record<string, unknown> = Record<string, unknown>,
-> = Subquery<TAlias, TSelectedFields> & {
-  [K in keyof TSelectedFields]: SQL<Exclude<TSelectedFields[K], undefined>>
+type ValuesListSelectedFields<TValues extends Record<string, unknown>> = {
+  [K in keyof TValues]: SQL.Aliased<Exclude<TValues[K], undefined>>
 }
 
+export type ValuesListSubquery<
+  TAlias extends string,
+  TValues extends Record<string, unknown>,
+> =
+  ValuesListSelectedFields<TValues> extends infer TSelectedFields
+    ? Subquery<TAlias, TSelectedFields & Record<string, unknown>> &
+        TSelectedFields
+    : never
+
 export class ValuesList<
-  TSelectedFields extends Record<string, unknown> = Record<string, unknown>,
+  TValues extends Record<string, unknown> = Record<string, unknown>,
 > implements SQLWrapper<unknown>
 {
   declare _: {
-    selectedFields: TSelectedFields
+    selectedFields: ValuesListSelectedFields<TValues>
   }
   private shouldInlineParams = false
   private typings?: Partial<Record<string, SQLType | PgColumn>>
@@ -152,7 +158,7 @@ export class ValuesList<
 
   as<TAlias extends string>(
     alias: TAlias
-  ): ValuesListSubquery<TAlias, TSelectedFields> {
+  ): ValuesListSubquery<TAlias, TValues> {
     const columnList = this.keys.map(key => this.casing.convert(key))
     const selectedFields: Record<string, unknown> = {}
     this.keys.forEach((key, index) => {
