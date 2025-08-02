@@ -14,6 +14,7 @@ import {
   PgInsertBuilder,
   PgInsertSelectQueryBuilder,
   PgInsertValue,
+  PgUpdateSetSource,
   QueryBuilder,
   WithSubqueryWithSelection,
 } from 'drizzle-orm/pg-core'
@@ -61,7 +62,7 @@ export type PgUpsertSelectQuery<TTable extends Table> =
 type DBUpsertUpdateFn<TTable extends Table> = (tables: {
   current: TTable['_']['columns']
   excluded: TTable['_']['columns']
-}) => Partial<PgInsertValue<TTable>>
+}) => Partial<PgUpdateSetSource<TTable>>
 
 export interface DBUpsertConfig<
   TMode extends 'one' | 'many',
