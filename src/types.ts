@@ -262,8 +262,8 @@ export type OrderByClause<TTable extends Table> =
 export type RawFieldsToSelection<T extends Record<string, unknown>> = {} & {
   [K in keyof T]-?: (
     T[K] extends infer TValue
-      ? TValue extends SQLExpression<infer TResult>
-        ? TResult
+      ? TValue extends SQLExpression<infer TExpression>
+        ? TExpression
         : TValue extends AnyQuery
           ? QueryToResult<TValue, { unwrap: true }>
           : TValue extends object
@@ -276,7 +276,7 @@ export type RawFieldsToSelection<T extends Record<string, unknown>> = {} & {
       : never
   ) extends infer TResult
     ? [Extract<TResult, DrizzleTypeError<string>>] extends [never]
-      ? SQL.Aliased<TResult>
+      ? SQL.Aliased<Exclude<TResult, undefined>>
       : Extract<TResult, DrizzleTypeError<string>>
     : never
 }
