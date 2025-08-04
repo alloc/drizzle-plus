@@ -24,7 +24,7 @@ import { getSQL } from '../utils'
  */
 export function toSelection<T extends Record<string, unknown>>(
   fields: T,
-  options?: { addAliases?: boolean; wrapColumns?: boolean }
+  options?: { addAliases?: boolean }
 ): RawFieldsToSelection<T> {
   const selection: ColumnsSelection = {}
   for (const key in fields) {
@@ -43,16 +43,8 @@ export function toSelection<T extends Record<string, unknown>>(
         })
       }
       value = new SQL([value as FakePrimitiveParam])
-    } else if (is(value, Column)) {
-      // Note: This allows columns from any dialect.
-      if (options?.wrapColumns) {
-        value = new SQL([value])
-      } else {
-        selection[key] = value
-        continue // Skip aliasing.
-      }
     } else if (!is(value, SQL)) {
-      if (is(value, SQL.Aliased)) {
+      if (is(value, Column) || is(value, SQL.Aliased)) {
         selection[key] = value
         continue // Already aliased.
       }

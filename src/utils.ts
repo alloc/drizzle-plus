@@ -108,9 +108,7 @@ export function buildJsonProperties(
   let fields: Record<string, unknown>
   let alias: string | undefined
   if (isPlainObject(input)) {
-    fields = toSelection(input as Record<string, unknown>, {
-      wrapColumns: true,
-    })
+    fields = toSelection(input as Record<string, unknown>)
   } else {
     fields = getSelectedFields(subquery as AnySelectQuery)
     alias = (subquery as AnySelectQuery)._.alias
@@ -124,7 +122,9 @@ export function buildJsonProperties(
     const sanitizedField = field.replace(/[^a-z0-9_-]/gi, '')
     properties.append(sql.raw(`'${sanitizedField}', `))
 
-    if (!alias) {
+    if (is(value, Column)) {
+      properties.append(new SQL([value]))
+    } else if (!alias) {
       properties.append(value as SQL)
     } else {
       properties.append(
