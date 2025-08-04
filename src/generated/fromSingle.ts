@@ -1,4 +1,4 @@
-// mysql-insert: import { PreparedQueryHKTBase } from 'drizzle-orm/mysql-core'
+// mysql-insert: import type { PreparedQueryHKTBase } from 'drizzle-orm/mysql-core'
 import { DrizzleError, sql } from 'drizzle-orm'
 import {
   PgSelectBuilder,

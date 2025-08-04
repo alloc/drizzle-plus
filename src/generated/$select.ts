@@ -1,4 +1,4 @@
-// mysql-insert: import { PreparedQueryHKTBase } from 'drizzle-orm/mysql-core'
+// mysql-insert: import type { PreparedQueryHKTBase } from 'drizzle-orm/mysql-core'
 import { AnyRelations, TablesRelationalConfig } from 'drizzle-orm'
 import type * as V1 from 'drizzle-orm/_relations'
 import { PgDatabase } from 'drizzle-orm/pg-core/db'
