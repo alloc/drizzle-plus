@@ -3,6 +3,7 @@ export * from './mergeRelationsFilter'
 
 export * from './syntax/caseWhen'
 export * from './syntax/nest'
+export * from './syntax/toSelection'
 export * from './syntax/toSQL'
 
 export * from './functions/abs'

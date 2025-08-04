@@ -14,6 +14,7 @@ import {
   type DriverValueDecoder,
 } from 'drizzle-orm'
 import { isPlainObject } from 'radashi'
+import { toSelection } from './syntax/toSelection'
 import type {
   AnyDialect,
   AnyQuery,
@@ -95,37 +96,42 @@ export function createJsonArrayDecoder<T>(
   }
 }
 
-function isRawSelection(
-  arg: AnySelectQuery | Record<string, unknown>
-): arg is Record<string, unknown> {
-  return isPlainObject(arg)
-}
-
 export function buildJsonProperties(
-  subquery: AnySelectQuery | Record<string, unknown>,
+  input: AnySelectQuery | Record<string, unknown>,
   decoders?: Map<string, DriverValueDecoder<any, any>>
 ): SQL {
+  const subquery = isPlainObject(input) ? null : (input as AnySelectQuery)
   const properties = sql.empty()
 
-  Object.entries(
-    isRawSelection(subquery) ? subquery : getSelectedFields(subquery)
-  ).forEach(([key, column], index) => {
+  let fields: Record<string, unknown>
+  let alias: string | undefined
+  if (isPlainObject(input)) {
+    fields = toSelection(input as Record<string, unknown>)
+  } else {
+    fields = getSelectedFields(subquery as AnySelectQuery)
+    alias = (subquery as AnySelectQuery)._.alias
+  }
+
+  Object.entries(fields).forEach(([field, value], index) => {
     if (index > 0) {
       properties.append(sql.raw(','))
     }
-    properties.append(sql.raw(`'${key.replace(/'/g, "''")}'`))
-    properties.append(sql.raw(','))
-    if (isRawSelection(subquery) || !subquery._.alias) {
-      properties.append(sql`${column}`)
+
+    const sanitizedField = field.replace(/[^a-z0-9_-]/gi, '')
+    properties.append(sql.raw(`'${sanitizedField}', `))
+
+    if (!alias) {
+      properties.append(value as SQL)
     } else {
       properties.append(
-        sql`${sql.identifier(subquery._.alias)}.${sql.identifier(key.replace(/"/g, '""'))}`
+        sql`${sql.identifier(alias)}.${sql.identifier(sanitizedField)}`
       )
     }
+
     if (decoders) {
-      const decoder = getDecoder(column as SQLExpression<any>)
+      const decoder = getDecoder(value as SQLExpression<any>)
       if (decoder !== noopDecoder) {
-        decoders.set(key, decoder)
+        decoders.set(field, decoder)
       }
     }
   })
