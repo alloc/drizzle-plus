@@ -1,20 +1,19 @@
 // mysql-insert: import type { PreparedQueryHKTBase } from 'drizzle-orm/mysql-core'
 import { mapRelationalRow, sql, SQL } from 'drizzle-orm'
 import {
+  PgColumn,
   PgSelectBuilder,
   SelectedFields,
   SelectedFieldsOrdered,
   WithSubqueryWithSelection,
 } from 'drizzle-orm/pg-core'
 import { PgRelationalQuery } from 'drizzle-orm/pg-core/query-builders/query'
-import { ResultFieldsToSelection } from 'drizzle-plus/types'
+import { DecodedFields, ResultFieldsToSelection } from 'drizzle-plus/types'
 import {
-  buildRelationalQuery,
-  createWithSubquery,
-  DecodedFields,
   mapSelectedFieldsToDecoders,
   orderSelectedFields,
-} from './internal'
+} from 'drizzle-plus/utils'
+import { buildRelationalQuery, createWithSubquery } from './internal'
 
 export type PgRelationalSubquery<
   TResult,
@@ -34,8 +33,11 @@ PgRelationalQuery.prototype.as = function (alias: string): any {
 
   const decodedFields: DecodedFields = {}
   for (const item of selection) {
-    decodedFields[item.key] = (value: unknown) =>
-      mapRelationalRow({ [item.key]: value }, [item])[item.key]
+    decodedFields[item.key] = {
+      mapFromDriverValue(value: unknown) {
+        return mapRelationalRow({ [item.key]: value }, [item])[item.key]
+      },
+    }
   }
 
   return createWithSubquery(sql, alias, decodedFields)
@@ -69,7 +71,7 @@ PgSelectBuilder.prototype.as = function (alias): any {
     throw new Error('Cannot alias a select query without a selection')
   }
 
-  const orderedFields = orderSelectedFields(fields)
+  const orderedFields = orderSelectedFields<PgColumn>(fields)
 
   return createWithSubquery(
     sql`select ${dialect.buildSelection(orderedFields)}`,

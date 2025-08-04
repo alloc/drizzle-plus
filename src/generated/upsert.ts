@@ -11,6 +11,7 @@ import {
   type TablesRelationalConfig,
 } from 'drizzle-orm'
 import {
+  PgColumn,
   PgInsertBuilder,
   PgInsertSelectQueryBuilder,
   PgInsertValue,
@@ -33,6 +34,8 @@ import {
   getDefinedColumns,
   getSelectedFields,
   getSQL,
+  mapSelectedFieldsToDecoders,
+  orderSelectedFields,
 } from 'drizzle-plus/utils'
 import { isFunction, select } from 'radashi'
 import * as adapter from './adapters/pg'
@@ -43,8 +46,6 @@ import {
   getContext,
   getReturningFields,
   getTargetColumns,
-  mapSelectedFieldsToDecoders,
-  orderSelectedFields,
 } from './internal'
 
 /**
@@ -279,7 +280,7 @@ export class UpsertQueryPromise<
     ResultFieldsToSelection<ReturningResultFields<TMode, TTable, TReturning>>,
     TAlias
   > {
-    const orderedFields = orderSelectedFields(this.returning)
+    const orderedFields = orderSelectedFields<PgColumn>(this.returning)
 
     return createWithSubquery(
       this.getSQL(),

@@ -6,7 +6,7 @@ import {
   Subquery,
   Table,
 } from 'drizzle-orm'
-import {
+import type {
   MySqlDeleteBase,
   MySqlInsertBase,
   MySqlTable,

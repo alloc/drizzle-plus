@@ -5,6 +5,7 @@ import {
   is,
   noopDecoder,
   QueryPromise,
+  SelectedFieldsOrdered,
   sql,
   SQL,
   SQLChunk,
@@ -19,6 +20,7 @@ import type {
   AnyDialect,
   AnyQuery,
   AnySelectQuery,
+  DecodedFields,
   SQLExpression,
 } from './types'
 
@@ -174,4 +176,48 @@ export function pushStringChunk(chunks: SQLChunk[], sql: string) {
   } else {
     chunks.push(new StringChunk(sql))
   }
+}
+
+// Adapted from https://github.com/drizzle-team/drizzle-orm/blob/109ccd34b549030e10dd9cd27e41641d0878a856/drizzle-orm/src/utils.ts#L74
+export function orderSelectedFields<TColumn extends Column>(
+  fields: Record<string, unknown>,
+  pathPrefix?: string[]
+) {
+  const result: SelectedFieldsOrdered<Column> = []
+  for (const name in fields) {
+    if (!Object.prototype.hasOwnProperty.call(fields, name)) continue
+    if (typeof name !== 'string') continue
+
+    const field = fields[name]
+    const newPath = pathPrefix ? [...pathPrefix, name] : [name]
+    if (is(field, Column) || is(field, SQL) || is(field, SQL.Aliased)) {
+      result.push({ path: newPath, field })
+    } else {
+      const orderedFields = orderSelectedFields(
+        is(field, Table)
+          ? getTableColumns(field)
+          : isPlainObject(field)
+            ? (field as Record<string, unknown>)
+            : {},
+        newPath
+      )
+      for (const field of orderedFields) {
+        result.push(field)
+      }
+    }
+  }
+  return result as SelectedFieldsOrdered<TColumn>
+}
+
+export function mapSelectedFieldsToDecoders<TColumn extends Column>(
+  orderedFields: SelectedFieldsOrdered<TColumn>
+) {
+  const decodedFields: DecodedFields = Object.create(null)
+  for (const { path, field } of orderedFields) {
+    const name = is(field, SQL.Aliased)
+      ? field.fieldAlias
+      : path[path.length - 1]
+    decodedFields[name] = getDecoder(field)
+  }
+  return decodedFields
 }

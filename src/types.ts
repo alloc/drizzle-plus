@@ -1,6 +1,7 @@
 import type {
   AnyColumn,
   Column,
+  DriverValueDecoder,
   DrizzleTypeError,
   OrderByOperators,
   Placeholder,
@@ -10,11 +11,13 @@ import type {
   SQL,
   SQLOperator,
   SQLWrapper,
+  Subquery,
   Table,
   ValueOrArray,
   View,
 } from 'drizzle-orm'
 import { CasingCache } from 'drizzle-orm/casing'
+import { TypedQueryBuilder } from 'drizzle-orm/query-builders/query-builder'
 import type { SelectResultFields } from 'drizzle-orm/query-builders/select.types'
 import { JSONObjectCodable } from './types/json'
 
@@ -36,9 +39,19 @@ export interface AnySelectQuery {
 
 type UndefinedToNull<T> = T extends undefined ? null : T
 
+type QueryToResultOptions = {
+  unwrap?: boolean
+  /**
+   * Add `null` to the resulting type if the query outputs an array.
+   *
+   * This option is only used when `unwrap: true` is also used.
+   */
+  possiblyEmpty?: boolean
+}
+
 export type QueryToResult<
   T extends AnyQuery,
-  TOptions extends { unwrap?: boolean } = {},
+  TOptions extends QueryToResultOptions = {},
 > = (
   T extends QueryPromise<infer TResult>
     ? TResult
@@ -47,9 +60,9 @@ export type QueryToResult<
   ? UndefinedToNull<
       TOptions extends { unwrap: true }
         ? TResult extends readonly (infer TElement)[]
-          ? TElement extends object
-            ? TElement[keyof TElement]
-            : TElement
+          ?
+              | (TElement extends object ? TElement[keyof TElement] : TElement)
+              | (TOptions extends { possiblyEmpty: true } ? null : never)
           : TResult extends object
             ? TResult[keyof TResult]
             : TResult
@@ -59,7 +72,7 @@ export type QueryToResult<
 
 export type QueryToSQL<
   T extends AnyQuery,
-  TOptions extends { unwrap?: boolean } = {},
+  TOptions extends QueryToResultOptions = {},
 > = QueryToResult<T, TOptions> extends infer TResult ? SQL<TResult> : never
 
 export interface AnyRelationsFilter {
@@ -304,3 +317,15 @@ export type ResultFieldsToSelection<TResult> =
 export type InsertSelectedFields<TTable extends Table> = {
   [K in keyof TTable['$inferInsert']]: SQLValue<TTable['$inferInsert'][K]>
 }
+
+export type DecodedFields = Record<string, DriverValueDecoder<any, any>>
+
+export type AnyResultSet = TypedQueryBuilder<any> | Subquery | Table
+
+export type RowToJson<T extends AnyResultSet | SQLWrapper> = T extends Table
+  ? SelectResultFields<T['_']['columns']>
+  : T extends AnySelectQuery
+    ? QueryToResult<T, { unwrap: true; possiblyEmpty: true }>
+    : T extends SQLWrapper<infer TResult>
+      ? TResult
+      : never

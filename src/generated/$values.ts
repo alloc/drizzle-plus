@@ -19,13 +19,9 @@ import {
 } from 'drizzle-orm/pg-core'
 import { noopDecoder, sql, SQLWrapper } from 'drizzle-orm/sql'
 import type { SQLType } from 'drizzle-plus/pg'
-import { RawFieldsToSelection } from 'drizzle-plus/types'
+import { DecodedFields, RawFieldsToSelection } from 'drizzle-plus/types'
 import { pushStringChunk } from 'drizzle-plus/utils'
-import {
-  createWithSubquery,
-  DecodedFields,
-  setWithSubqueryAddons,
-} from './internal'
+import { createWithSubquery, setWithSubqueryAddons } from './internal'
 
 type PgTableWithTheseColumns<K extends string> = PgTable<
   Omit<TableConfig, 'columns'> & { columns: Record<K, PgColumn> }
