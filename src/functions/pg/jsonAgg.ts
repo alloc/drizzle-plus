@@ -5,7 +5,9 @@ import { createJsonArrayDecoder, getDecoder } from 'drizzle-plus/utils'
 /**
  * Create a `json_agg()` expression from a given value.
  */
-export function jsonAgg<T>(value: SQLExpression<T>): SQL<T[]> {
+export function jsonAgg<T>(
+  value: SQLExpression<T>
+): SQL<Exclude<T, null>[] | null> {
   return sql`json_agg(${value})`.mapWith(
     createJsonArrayDecoder(getDecoder(value))
   )
