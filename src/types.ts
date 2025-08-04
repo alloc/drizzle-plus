@@ -268,17 +268,23 @@ export type OrderByClause<TTable extends Table> =
 export type RawFieldsToSelection<T extends Record<string, unknown>> = {} & {
   [K in keyof T]-?: (
     T[K] extends infer TValue
-      ? TValue extends SQLExpression<infer TExpression>
-        ? TExpression
-        : TValue extends AnyQuery
-          ? QueryToResult<TValue, { unwrap: true }>
-          : TValue extends object
-            ? TValue extends Date
-              ? string
-              : TValue extends JSONObjectCodable
-                ? TValue
-                : DrizzleTypeError<'Object value must be JSON-serializable'>
-            : TValue
+      ? TValue extends AnyColumn<{
+          data: infer TColumnData
+          driverParam: any
+          notNull?: infer TNotNull extends boolean
+        }>
+        ? TColumnData | (TNotNull extends false ? null : never)
+        : TValue extends SQLExpression<infer TExpression>
+          ? TExpression
+          : TValue extends AnyQuery
+            ? QueryToResult<TValue, { unwrap: true }>
+            : TValue extends object
+              ? TValue extends Date
+                ? string
+                : TValue extends JSONObjectCodable
+                  ? TValue
+                  : DrizzleTypeError<'Object value must be JSON-serializable'>
+              : TValue
       : never
   ) extends infer TResult
     ? [Extract<TResult, DrizzleTypeError<string>>] extends [never]
