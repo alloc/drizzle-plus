@@ -108,7 +108,9 @@ export function buildJsonProperties(
   let fields: Record<string, unknown>
   let alias: string | undefined
   if (isPlainObject(input)) {
-    fields = toSelection(input as Record<string, unknown>)
+    fields = toSelection(input as Record<string, unknown>, {
+      wrapColumns: true,
+    })
   } else {
     fields = getSelectedFields(subquery as AnySelectQuery)
     alias = (subquery as AnySelectQuery)._.alias
