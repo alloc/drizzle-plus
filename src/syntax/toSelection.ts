@@ -46,7 +46,7 @@ export function toSelection<T extends Record<string, unknown>>(
     } else if (!is(value, SQL)) {
       if (is(value, Column) || is(value, SQL.Aliased)) {
         // Note: This allows columns from any dialect.
-        selection[key] = value as any
+        selection[key] = value
         continue // Skip aliasing.
       }
       if (is(value, QueryPromise) || is(value, TypedQueryBuilder<any>)) {
