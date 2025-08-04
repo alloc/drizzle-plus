@@ -24,7 +24,11 @@ import { JSONObjectCodable } from './types/json'
 export type SQLValue<T> = T | SQLExpression<T>
 
 export type SQLExpression<T = unknown> =
-  | AnyColumn<{ data: T; driverParam: any }>
+  | AnyColumn<{
+      data: Exclude<T, null>
+      driverParam: any
+      notNull: T | null extends T ? false : true
+    }>
   | SQLWrapper<T>
 
 export type AnyQuery = AnySelectQuery | QueryPromise<any>
