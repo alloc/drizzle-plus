@@ -33,5 +33,5 @@ declare module 'drizzle-orm/pg-core/db' {
   }
 }
 
-PgDatabase.prototype.$select = (fields: Record<string, unknown>) =>
+PgDatabase.prototype.$select = <T extends Record<string, unknown>>(fields: T) =>
   toSelection(fields, { addAliases: true })
