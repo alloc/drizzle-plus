@@ -18,19 +18,6 @@ const dialectEntries = ['pg', 'mysql', 'sqlite'].flatMap(dialect => {
   ]
 })
 
-console.log({ dialectEntries })
-
-function mapToOutputFiles(srcFiles: string[]) {
-  return srcFiles.reduce(
-    (out, file) => {
-      const outFile = file.replace('src/', '').replace('.ts', '')
-      out[outFile] = file
-      return out
-    },
-    {} as Record<string, string>
-  )
-}
-
 export default defineConfig({
   input: mapToOutputFiles([
     'src/index.ts',
@@ -60,3 +47,14 @@ export default defineConfig({
   ],
   external: ['drizzle-plus', 'drizzle-orm'],
 })
+
+function mapToOutputFiles(srcFiles: string[]) {
+  return srcFiles.reduce(
+    (out, file) => {
+      const outFile = file.replace('src/', '').replace('.ts', '')
+      out[outFile] = file
+      return out
+    },
+    {} as Record<string, string>
+  )
+}
