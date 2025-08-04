@@ -59,7 +59,7 @@ for (const dialect of dialects) {
   fs.writeFileSync(
     path.join(root, 'tsconfig.json'),
     JSON.stringify({
-      extends: '../tsconfig.json',
+      extends: '../../../tsconfig.json',
       include: ['./'],
     })
   )
