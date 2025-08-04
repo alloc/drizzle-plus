@@ -7,7 +7,7 @@ import {
   Subquery,
   Table,
 } from 'drizzle-orm'
-import {
+import type {
   SQLiteDeleteBase,
   SQLiteInsertBase,
   SQLiteUpdateBase,

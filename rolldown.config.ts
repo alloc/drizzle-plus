@@ -45,7 +45,8 @@ export default defineConfig({
       },
     }),
   ],
-  external: ['drizzle-plus', 'drizzle-orm'],
+  platform: 'node',
+  external: ['drizzle-plus', /drizzle-orm/i],
 })
 
 function mapToOutputFiles(srcFiles: string[]) {
