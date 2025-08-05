@@ -1,5 +1,6 @@
 import { DrizzleTypeError } from 'drizzle-orm'
 import { SQL, sql } from 'drizzle-orm/sql'
+import { SQLValue } from 'drizzle-plus/types'
 import type { InferCastResult, SQLType } from './types'
 
 /**
@@ -8,12 +9,17 @@ import type { InferCastResult, SQLType } from './types'
  * ⚠️ Never pass user input as the `type` argument unless you've thoroughly
  * validated it.
  */
-export function cast<const T extends SQLType | (string & {})>(
-  value: unknown,
-  type: (T | SQLType) &
-    (string extends NoInfer<T>
+export function cast<
+  const TData,
+  const TDataType extends SQLType | (string & {}),
+>(
+  value: SQLValue<TData>,
+  type: (TDataType | SQLType) &
+    (string extends NoInfer<TDataType>
       ? DrizzleTypeError<'DANGER: Do not pass user input as the type argument of the cast() function.'>
       : unknown)
-): SQL<InferCastResult<T>> {
+): InferCastResult<TDataType> extends infer TResult
+  ? SQL<TData extends TResult ? TData : TResult>
+  : never {
   return sql`cast(${value} as ${sql.raw(type)})` as any
 }
