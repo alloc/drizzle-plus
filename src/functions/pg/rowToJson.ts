@@ -20,9 +20,15 @@ import {
  * Convert a single row to a JSON object using PostgreSQL's `row_to_json`
  * function.
  *
- * If the input is an empty result set, the output will be `null`. If the input
- * is a result set of potentially multiple rows, you should use
- * `jsonAgg(rowToJson(subquery))` instead.
+ * If the input is an empty result set, the output will be `null`. Notably, the
+ * `drizzle-plus` implementation doesn't include `null` in the return type, for
+ * convenience. You should wrap `rowToJson` calls with a `coalesce` or
+ * `caseWhen` call to handle the null case explicitly. If you're confident the
+ * result set cannot be empty, then you can skip this step.
+ *
+ * If the input is a result set of potentially multiple rows, you should use
+ * `jsonAgg(rowToJson(subquery))` instead. Otherwise, you'll get a database
+ * error when this happens.
  */
 export function rowToJson<T extends AnyResultSet | SQLWrapper>(
   subquery: T

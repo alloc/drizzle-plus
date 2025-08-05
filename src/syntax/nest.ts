@@ -16,7 +16,7 @@ export function nest<T extends AnyQuery>(subquery: T) {
 
       return sql`(${builtQuery.sql})`.mapWith(result => {
         return getDecoder(field as SQLExpression).mapFromDriverValue(result)
-      }) as QueryToSQL<T, { unwrap: true }>
+      }) as QueryToSQL<T, { scalar: true }>
     }
   } else {
     const { selectedFields } = subquery._
@@ -27,7 +27,7 @@ export function nest<T extends AnyQuery>(subquery: T) {
 
       return sql`(${getSQL(subquery)})`.mapWith(result => {
         return getDecoder(field as SQLExpression).mapFromDriverValue(result)
-      }) as QueryToSQL<T, { unwrap: true }>
+      }) as QueryToSQL<T, { scalar: true }>
     }
   }
 

@@ -44,13 +44,22 @@ export interface AnySelectQuery {
 type UndefinedToNull<T> = T extends undefined ? null : T
 
 type QueryToResultOptions = {
-  unwrap?: boolean
   /**
-   * Add `null` to the resulting type if the query outputs an array.
-   *
-   * This option is only used when `unwrap: true` is also used.
+   * If true, the resulting type will never be an array.
    */
-  possiblyEmpty?: boolean
+  single?: boolean
+  /**
+   * If true, the resulting type will be the first column of the query's row
+   * type. This is used by the `nest()` function.
+   */
+  scalar?: boolean
+  /**
+   * Prevent `null` from being added to the resulting type.
+   *
+   * This option is only used when `single: true` or `scalar: true` is also
+   * used.
+   */
+  notNull?: boolean
 }
 
 export type QueryToResult<
@@ -62,13 +71,19 @@ export type QueryToResult<
     : SelectResultFields<Extract<T, AnySelectQuery>['_']['selectedFields']>
 ) extends infer TResult
   ? UndefinedToNull<
-      TOptions extends { unwrap: true }
+      TOptions extends { single: true } | { scalar: true }
         ? TResult extends readonly (infer TElement)[]
           ?
-              | (TElement extends object ? TElement[keyof TElement] : TElement)
-              | (TOptions extends { possiblyEmpty: true } ? null : never)
-          : TResult extends object
-            ? TResult[keyof TResult]
+              | (TOptions extends { scalar: true }
+                  ? TElement extends object
+                    ? TElement[keyof TElement]
+                    : TElement
+                  : TElement)
+              | (TOptions extends { notNull: true } ? never : null) // Result set might be empty.
+          : TOptions extends { scalar: true }
+            ? TResult extends object
+              ? TResult[keyof TResult]
+              : TResult
             : TResult
         : TResult
     >
@@ -281,7 +296,7 @@ export type RawFieldsToSelection<T extends Record<string, unknown>> = {} & {
         : TValue extends SQLExpression<infer TExpression>
           ? TExpression
           : TValue extends AnyQuery
-            ? QueryToResult<TValue, { unwrap: true }>
+            ? QueryToResult<TValue, { scalar: true }>
             : TValue extends object
               ? TValue extends Date
                 ? string
@@ -339,7 +354,7 @@ export type AnyResultSet = TypedQueryBuilder<any> | Subquery | Table
 export type RowToJson<T extends AnyResultSet | SQLWrapper> = T extends Table
   ? SelectResultFields<T['_']['columns']>
   : T extends AnySelectQuery
-    ? QueryToResult<T, { unwrap: true; possiblyEmpty: true }>
+    ? QueryToResult<T, { single: true; notNull: true }>
     : T extends SQLWrapper<infer TResult>
       ? TResult
       : never
