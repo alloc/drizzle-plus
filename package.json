@@ -23,13 +23,69 @@
       "types": "./dist/types/*.d.ts",
       "default": "./dist/types/*.js"
     },
+    "./sqlite/$cursor": {
+      "types": "./dist/generated/sqlite/_cursor.d.ts",
+      "default": "./dist/generated/sqlite/_cursor.js"
+    },
+    "./sqlite/$findMany": {
+      "types": "./dist/generated/sqlite/_findMany.d.ts",
+      "default": "./dist/generated/sqlite/_findMany.js"
+    },
+    "./sqlite/$select": {
+      "types": "./dist/generated/sqlite/_select.d.ts",
+      "default": "./dist/generated/sqlite/_select.js"
+    },
+    "./sqlite/$values": {
+      "types": "./dist/generated/sqlite/_values.d.ts",
+      "default": "./dist/generated/sqlite/_values.js"
+    },
+    "./sqlite/$without": {
+      "types": "./dist/generated/sqlite/_without.d.ts",
+      "default": "./dist/generated/sqlite/_without.js"
+    },
+    "./mysql/$cursor": {
+      "types": "./dist/generated/mysql/_cursor.d.ts",
+      "default": "./dist/generated/mysql/_cursor.js"
+    },
+    "./mysql/$findMany": {
+      "types": "./dist/generated/mysql/_findMany.d.ts",
+      "default": "./dist/generated/mysql/_findMany.js"
+    },
+    "./mysql/$select": {
+      "types": "./dist/generated/mysql/_select.d.ts",
+      "default": "./dist/generated/mysql/_select.js"
+    },
+    "./mysql/$values": {
+      "types": "./dist/generated/mysql/_values.d.ts",
+      "default": "./dist/generated/mysql/_values.js"
+    },
+    "./mysql/$without": {
+      "types": "./dist/generated/mysql/_without.d.ts",
+      "default": "./dist/generated/mysql/_without.js"
+    },
+    "./pg/$cursor": {
+      "types": "./dist/generated/pg/_cursor.d.ts",
+      "default": "./dist/generated/pg/_cursor.js"
+    },
+    "./pg/$findMany": {
+      "types": "./dist/generated/pg/_findMany.d.ts",
+      "default": "./dist/generated/pg/_findMany.js"
+    },
+    "./pg/$select": {
+      "types": "./dist/generated/pg/_select.d.ts",
+      "default": "./dist/generated/pg/_select.js"
+    },
+    "./pg/$values": {
+      "types": "./dist/generated/pg/_values.d.ts",
+      "default": "./dist/generated/pg/_values.js"
+    },
+    "./pg/$without": {
+      "types": "./dist/generated/pg/_without.d.ts",
+      "default": "./dist/generated/pg/_without.js"
+    },
     "./sqlite": {
       "types": "./dist/generated/sqlite/index.d.ts",
       "default": "./dist/generated/sqlite/index.js"
-    },
-    "./sqlite/$*": {
-      "types": "./dist/generated/sqlite/_*.d.ts",
-      "default": "./dist/generated/sqlite/_*.js"
     },
     "./sqlite/*": {
       "types": "./dist/generated/sqlite/*.d.ts",
@@ -39,10 +95,6 @@
       "types": "./dist/generated/mysql/index.d.ts",
       "default": "./dist/generated/mysql/index.js"
     },
-    "./mysql/$*": {
-      "types": "./dist/generated/mysql/_*.d.ts",
-      "default": "./dist/generated/mysql/_*.js"
-    },
     "./mysql/*": {
       "types": "./dist/generated/mysql/*.d.ts",
       "default": "./dist/generated/mysql/*.js"
@@ -50,10 +102,6 @@
     "./pg": {
       "types": "./dist/generated/pg/index.d.ts",
       "default": "./dist/generated/pg/index.js"
-    },
-    "./pg/$*": {
-      "types": "./dist/generated/pg/_*.d.ts",
-      "default": "./dist/generated/pg/_*.js"
     },
     "./pg/*": {
       "types": "./dist/generated/pg/*.d.ts",
