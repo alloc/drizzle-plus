@@ -167,7 +167,7 @@ export class ValuesList<
       }
     })
     return new Proxy(
-      new Subquery(this.getSQL(), selectedFields, alias, false, columnList),
+      new Subquery(this.getSQL(), selectedFields, alias, false, [], columnList),
       {
         get: (target: any, key: string) => {
           if (key in selectedFields) {
