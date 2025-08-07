@@ -17,7 +17,6 @@ import type {
   View,
 } from 'drizzle-orm'
 import { CasingCache } from 'drizzle-orm/casing'
-import { TypedQueryBuilder } from 'drizzle-orm/query-builders/query-builder'
 import type { SelectResultFields } from 'drizzle-orm/query-builders/select.types'
 import { JSONObjectCodable } from './types/json'
 
@@ -349,12 +348,11 @@ export type InsertSelectedFields<TTable extends Table> = {
 
 export type DecodedFields = Record<string, DriverValueDecoder<any, any>>
 
-export type AnyResultSet = TypedQueryBuilder<any> | Subquery | Table
-
-export type RowToJson<T extends AnyResultSet | SQLWrapper> = T extends Table
-  ? SelectResultFields<T['_']['columns']>
-  : T extends AnySelectQuery
-    ? QueryToResult<T, { single: true; notNull: true }>
-    : T extends SQLWrapper<infer TResult>
-      ? TResult
-      : never
+export type RowToJson<T extends Subquery | Table | View | SQLWrapper> =
+  T extends Table
+    ? SelectResultFields<T['_']['columns']>
+    : T extends AnySelectQuery
+      ? QueryToResult<T, { single: true; notNull: true }>
+      : T extends SQLWrapper<infer TResult>
+        ? TResult
+        : never

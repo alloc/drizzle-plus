@@ -1,15 +1,18 @@
 import {
   DriverValueDecoder,
+  DrizzleError,
   getTableColumns,
   is,
   SQL,
   sql,
   SQLWrapper,
   Subquery,
+  Table,
+  View,
 } from 'drizzle-orm'
 import { PgTable } from 'drizzle-orm/pg-core'
-import { TypedQueryBuilder } from 'drizzle-orm/query-builders/query-builder'
-import type { AnyResultSet, RowToJson } from 'drizzle-plus/types'
+import { PgViewBase } from 'drizzle-orm/pg-core/view-base'
+import type { RowToJson } from 'drizzle-plus/types'
 import {
   getDecoder,
   mapSelectedFieldsToDecoders,
@@ -30,26 +33,26 @@ import {
  * `jsonAgg(rowToJson(subquery))` instead. Otherwise, you'll get a database
  * error when this happens.
  */
-export function rowToJson<T extends AnyResultSet | SQLWrapper>(
-  subquery: T
+export function rowToJson<T extends Subquery | Table | View | SQLWrapper>(
+  subquery: T | SQLWrapper
 ): SQL<RowToJson<T>> {
-  let row: SQLWrapper
   let fields: Record<string, unknown> | undefined
   let decoder:
     | DriverValueDecoder<unknown, Record<string, unknown> | null>
     | undefined
 
   if (is(subquery, PgTable)) {
-    row = subquery
     fields = getTableColumns(subquery)
-  } else if (is(subquery, TypedQueryBuilder<any>) || is(subquery, Subquery)) {
-    row =
-      is(subquery, Subquery) && subquery._.alias
-        ? new SQL([sql.identifier(subquery._.alias)])
-        : sql`(${subquery})`
+  } else if (is(subquery, Subquery)) {
+    if (!subquery._.alias) {
+      throw new DrizzleError({
+        message: 'Subquery must have an alias.',
+      })
+    }
     fields = subquery._.selectedFields
-  } else {
-    row = subquery
+    subquery = new SQL([sql.identifier(subquery._.alias)]) as SQLWrapper
+  } else if (is(subquery, PgViewBase)) {
+    fields = subquery._.selectedFields
   }
 
   if (fields) {
@@ -66,8 +69,8 @@ export function rowToJson<T extends AnyResultSet | SQLWrapper>(
       },
     }
   } else {
-    decoder = getDecoder(row)
+    decoder = getDecoder(subquery)
   }
 
-  return sql`row_to_json(${row})`.mapWith(decoder) as RowToJson<T>
+  return sql`row_to_json(${subquery})`.mapWith(decoder) as SQL<RowToJson<T>>
 }
