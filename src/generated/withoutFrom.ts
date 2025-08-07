@@ -1,9 +1,20 @@
 // mysql-insert: import type { PreparedQueryHKTBase } from 'drizzle-orm/mysql-core'
-import { DrizzleError, SQL, sql } from 'drizzle-orm'
+import {
+  ColumnsSelection,
+  DrizzleError,
+  QueryPromise,
+  SQL,
+  sql,
+  SQLWrapper,
+  Subquery,
+} from 'drizzle-orm'
 import {
   PgColumn,
   PgDialect,
+  PgSelectBase,
   PgSelectBuilder,
+  PgSelectConfig,
+  PgSession,
   PgSetOperatorWithResult,
   SelectedFields,
   SelectedFieldsOrdered,
@@ -25,6 +36,14 @@ declare module 'drizzle-orm/pg-core' {
   }
 }
 
+type PgSelectBuilderPrivate = {
+  fields: ColumnsSelection
+  session?: PgSession
+  dialect: PgDialect
+  withList: Subquery[]
+  distinct?: boolean | { on: (PgColumn | SQLWrapper)[] }
+}
+
 export class PgSelectWithoutFrom<TSelection extends SelectedFields>
   extends TypedQueryBuilder<TSelection, SelectResultFields<TSelection>[]>
   implements PgSetOperatorWithResult<SelectResultFields<TSelection>[]>
@@ -40,32 +59,68 @@ export class PgSelectWithoutFrom<TSelection extends SelectedFields>
     readonly result: SelectResultFields<TSelection>[]
     readonly selectedFields: TSelection
   }
-  constructor(
-    selectedFields: SelectedFields,
-    private readonly dialect: PgDialect
-  ) {
+
+  declare private config: {
+    fields: PgSelectConfig['fields']
+    withList?: PgSelectConfig['withList']
+  }
+
+  declare private joinsNotNullableMap: Record<string, boolean>
+  declare private session: PgSession | undefined
+  declare private dialect: PgDialect
+  declare private usedTables: Set<string>
+
+  constructor(select: PgSelectBuilderPrivate, selectedFields: TSelection) {
     super()
-    this._ = {
-      // This is used by TypedQueryBuilder#getSelectedFields
-      selectedFields,
-    } as any // Everything else is just for type safety?
+
+    // Any property required by PgSelectBase#_prepare must be here.
+    this.config = { fields: { ...selectedFields }, withList: select.withList }
+    this.joinsNotNullableMap = {}
+    this.session = select.session
+    this.dialect = select.dialect
+    this.usedTables = new Set()
+
+    // This is required by TypedQueryBuilder#getSelectedFields
+    this._ = { selectedFields } as any
   }
   getSQL() {
     const dialect = this.dialect as unknown as {
       buildSelection: (fields: SelectedFieldsOrdered) => SQL
+      buildWithCTE: (withList: Subquery[] | undefined) => SQL | undefined
     }
     const orderedFields = orderSelectedFields<PgColumn>(this._.selectedFields)
-    return sql`select ${dialect.buildSelection(orderedFields)}`
+    const withSql = dialect.buildWithCTE(this.config.withList)
+    return sql`${withSql}select ${dialect.buildSelection(orderedFields)}`
+  }
+  execute(placeholderValues?: Record<string, unknown>) {
+    return this._prepare().execute(placeholderValues)
+  }
+  // Inherited from PgSelectBase.
+  declare private _prepare: () => {
+    execute: (
+      placeholderValues?: Record<string, unknown>
+    ) => Promise<SelectResultFields<TSelection>[]>
   }
 }
 
+export interface PgSelectWithoutFrom<TSelection extends SelectedFields>
+  extends QueryPromise<SelectResultFields<TSelection>[]> {
+  execute(): Promise<SelectResultFields<TSelection>[]>
+}
+
+Object.defineProperties(PgSelectWithoutFrom.prototype, {
+  ...Object.getOwnPropertyDescriptors(PgSelectBase.prototype),
+  constructor: {
+    value: PgSelectWithoutFrom,
+  },
+})
+
 PgSelectBuilder.prototype.withoutFrom = function (): any {
-  const { fields, dialect } = this as unknown as {
+  const { fields } = this as unknown as {
     fields: SelectedFields | undefined
-    dialect: PgDialect
   }
   if (!fields) {
     throw new DrizzleError({ message: 'Selection is required' })
   }
-  return new PgSelectWithoutFrom(fields, dialect)
+  return new PgSelectWithoutFrom(this as any, fields)
 }
