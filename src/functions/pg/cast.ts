@@ -19,7 +19,7 @@ export function cast<
       ? DrizzleTypeError<'DANGER: Do not pass user input as the type argument of the cast() function.'>
       : unknown)
 ): InferCastResult<TDataType> extends infer TResult
-  ? SQL<TData extends TResult ? TData : TResult>
+  ? SQL<TData extends null ? null : TData extends TResult ? TData : TResult>
   : never {
   return sql`cast(${value} as ${sql.raw(type)})` as any
 }
