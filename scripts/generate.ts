@@ -61,6 +61,7 @@ for (const dialect of dialects) {
     JSON.stringify({
       extends: '../../../tsconfig.json',
       include: ['./'],
+      exclude: [],
     })
   )
 }

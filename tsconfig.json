@@ -1,5 +1,6 @@
 {
   "include": ["src"],
+  "exclude": ["src/generated"],
   "compilerOptions": {
     "strict": true,
     "lib": ["esnext"],
