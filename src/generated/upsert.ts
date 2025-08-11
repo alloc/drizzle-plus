@@ -15,6 +15,7 @@ import {
   PgInsertBuilder,
   PgInsertSelectQueryBuilder,
   PgInsertValue,
+  PgTable,
   PgUpdateSetSource,
   QueryBuilder,
   WithSubqueryWithSelection,
@@ -52,7 +53,7 @@ import {
  * Represents a `select` query that will have its result set used as the values
  * of an `upsert` query.
  */
-export type PgUpsertSelectQuery<TTable extends Table> =
+export type PgUpsertSelectQuery<TTable extends PgTable> =
   | ((qb: QueryBuilder) => PgInsertSelectQueryBuilder<TTable>)
   | PgInsertSelectQueryBuilder<TTable>
   | Subquery<string, PgInsertValue<TTable>>
@@ -60,14 +61,14 @@ export type PgUpsertSelectQuery<TTable extends Table> =
       PgInsertValue<TTable> | PgInsertValue<TTable>[] | undefined
     >
 
-type DBUpsertUpdateFn<TTable extends Table> = (tables: {
+type DBUpsertUpdateFn<TTable extends PgTable> = (tables: {
   current: TTable['_']['columns']
   excluded: TTable['_']['columns']
 }) => Partial<PgUpdateSetSource<TTable>>
 
 export interface DBUpsertConfig<
   TMode extends 'one' | 'many',
-  TTable extends Table,
+  TTable extends PgTable,
   TReturning extends ReturningClause<TTable>,
   TWhere,
 > {
@@ -116,7 +117,7 @@ declare module 'drizzle-orm/pg-core/query-builders/query' {
     upsert<TReturning extends ReturningClause<ExtractTable<TFields>>>(
       config: DBUpsertConfig<
         'one',
-        ExtractTable<TFields>,
+        ExtractTable<TFields, PgTable>,
         TReturning,
         RelationsFilter<TFields, TSchema>
       >
@@ -125,7 +126,7 @@ declare module 'drizzle-orm/pg-core/query-builders/query' {
     upsert<TReturning extends ReturningClause<ExtractTable<TFields>>>(
       config: DBUpsertConfig<
         'many',
-        ExtractTable<TFields>,
+        ExtractTable<TFields, PgTable>,
         TReturning,
         RelationsFilter<TFields, TSchema>
       >
