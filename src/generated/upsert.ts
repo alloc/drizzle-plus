@@ -97,7 +97,7 @@ export interface DBUpsertConfig<
   /**
    * Specify a filter to only update rows that match the filter.
    */
-  where?: TWhere | undefined
+  updateWhere?: TWhere | undefined
   /**
    * Specify which columns to return. An empty object means “return nothing”.
    *
@@ -138,7 +138,7 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
   with?: Subquery[]
   data: any
   update?: DBUpsertUpdateFn<any>
-  where?: RelationsFilter<any, any>
+  updateWhere?: RelationsFilter<any, any>
   returning?: any
 }): any {
   const { table, dialect, session } = getContext(this)
@@ -235,7 +235,8 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
     query.onConflictDoUpdate({
       target,
       set: Object.fromEntries(updatedEntries),
-      setWhere: config.where && relationsFilterToSQL(table, config.where),
+      setWhere:
+        config.updateWhere && relationsFilterToSQL(table, config.updateWhere),
     })
   } else {
     query.onConflictDoNothing()
