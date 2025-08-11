@@ -84,6 +84,17 @@ export interface DBUpsertConfig<
     ? PgInsertValue<TTable>
     : readonly PgInsertValue<TTable>[] | PgUpsertSelectQuery<TTable>
   /**
+   * Explicitly specify the columns to target for the `ON CONFLICT DO UPDATE`
+   * clause.
+   *
+   * By default, `upsert` will infer the target columns from the inserted data.
+   * Sometimes, this can lead to undesirable behavior. For example, if you
+   * generate a UUID for the primary key while deduplicating rows using a
+   * different unique column, you'll want to target that column instead of the
+   * primary key column.
+   */
+  target?: readonly (keyof TTable['_']['columns'])[]
+  /**
    * When defined, the `data` option is ignored for updates, and the result of
    * this `update` function is used instead.
    *
@@ -137,6 +148,7 @@ declare module 'drizzle-orm/pg-core/query-builders/query' {
 RelationalQueryBuilder.prototype.upsert = function (config: {
   with?: Subquery[]
   data: any
+  target?: readonly string[]
   update?: DBUpsertUpdateFn<any>
   updateWhere?: RelationsFilter<any, any>
   returning?: any
@@ -181,9 +193,12 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
     selection || (Array.isArray(config.data) ? config.data[0] : config.data),
   ])
 
-  const target = getTargetColumns(table, Object.values(targetCandidates))
+  let target = config.target?.map(column => columns[column])
   if (!target) {
-    throw new Error('No matching primary key or unique constraint found')
+    target = getTargetColumns(table, Object.values(targetCandidates))
+    if (!target) {
+      throw new Error('No matching primary key or unique constraint found')
+    }
   }
 
   // Any column that is defined in at least one object of `data` needs to be
