@@ -38,7 +38,7 @@ declare module 'drizzle-orm/pg-core/query-builders/query' {
     TFields extends TableRelationalConfig,
   > {
     $cursor<
-      TOrderBy extends InferOrderBy<this>,
+      TOrderBy extends Exclude<InferOrderBy<this>, Function>,
       TCursor extends
         | KnownKeysOnly<InferCursor<this>, TOrderBy>
         | null
