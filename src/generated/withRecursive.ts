@@ -22,7 +22,13 @@ declare module 'drizzle-orm/pg-core' {
      * `WITH RECURSIVE` syntax. A recursive CTE is often referred to as a
      * recursive query.
      */
-    withRecursive: typeof this.with
+    withRecursive: PgDatabase<
+      TQueryResult,
+      TFullSchema,
+      TRelations,
+      TTablesConfig,
+      TSchema
+    >['with']
   }
 }
 
