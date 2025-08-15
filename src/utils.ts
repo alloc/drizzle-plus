@@ -122,14 +122,14 @@ export function buildJsonProperties(
     const sanitizedField = field.replace(/[^a-z0-9_-]/gi, '')
     properties.append(sql.raw(`'${sanitizedField}', `))
 
-    if (is(value, Column)) {
+    if (is(value, Column) || is(value, SQL.Aliased)) {
       properties.append(new SQL([value]))
-    } else if (!alias) {
-      properties.append(value as SQL)
-    } else {
+    } else if (alias) {
       properties.append(
         sql`${sql.identifier(alias)}.${sql.identifier(sanitizedField)}`
       )
+    } else {
+      properties.append(value as SQL)
     }
 
     if (decoders) {
