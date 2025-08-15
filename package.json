@@ -91,6 +91,10 @@
       "types": "./dist/generated/sqlite/_without.d.ts",
       "default": "./dist/generated/sqlite/_without.js"
     },
+    "./sqlite/$withRecursive": {
+      "types": "./dist/generated/sqlite/_withRecursive.d.ts",
+      "default": "./dist/generated/sqlite/_withRecursive.js"
+    },
     "./mysql/$cursor": {
       "types": "./dist/generated/mysql/_cursor.d.ts",
       "default": "./dist/generated/mysql/_cursor.js"
@@ -115,6 +119,10 @@
       "types": "./dist/generated/mysql/_without.d.ts",
       "default": "./dist/generated/mysql/_without.js"
     },
+    "./mysql/$withRecursive": {
+      "types": "./dist/generated/mysql/_withRecursive.d.ts",
+      "default": "./dist/generated/mysql/_withRecursive.js"
+    },
     "./pg/$cursor": {
       "types": "./dist/generated/pg/_cursor.d.ts",
       "default": "./dist/generated/pg/_cursor.js"
@@ -138,6 +146,10 @@
     "./pg/$without": {
       "types": "./dist/generated/pg/_without.d.ts",
       "default": "./dist/generated/pg/_without.js"
+    },
+    "./pg/$withRecursive": {
+      "types": "./dist/generated/pg/_withRecursive.d.ts",
+      "default": "./dist/generated/pg/_withRecursive.js"
     },
     "./sqlite": {
       "types": "./dist/generated/sqlite/index.d.ts",
