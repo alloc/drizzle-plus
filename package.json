@@ -83,6 +83,10 @@
       "types": "./dist/generated/sqlite/_values.d.ts",
       "default": "./dist/generated/sqlite/_values.js"
     },
+    "./sqlite/$withMaterialized": {
+      "types": "./dist/generated/sqlite/_withMaterialized.d.ts",
+      "default": "./dist/generated/sqlite/_withMaterialized.js"
+    },
     "./sqlite/$without": {
       "types": "./dist/generated/sqlite/_without.d.ts",
       "default": "./dist/generated/sqlite/_without.js"
@@ -103,6 +107,10 @@
       "types": "./dist/generated/mysql/_values.d.ts",
       "default": "./dist/generated/mysql/_values.js"
     },
+    "./mysql/$withMaterialized": {
+      "types": "./dist/generated/mysql/_withMaterialized.d.ts",
+      "default": "./dist/generated/mysql/_withMaterialized.js"
+    },
     "./mysql/$without": {
       "types": "./dist/generated/mysql/_without.d.ts",
       "default": "./dist/generated/mysql/_without.js"
@@ -122,6 +130,10 @@
     "./pg/$values": {
       "types": "./dist/generated/pg/_values.d.ts",
       "default": "./dist/generated/pg/_values.js"
+    },
+    "./pg/$withMaterialized": {
+      "types": "./dist/generated/pg/_withMaterialized.d.ts",
+      "default": "./dist/generated/pg/_withMaterialized.js"
     },
     "./pg/$without": {
       "types": "./dist/generated/pg/_without.d.ts",
