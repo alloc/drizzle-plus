@@ -174,7 +174,7 @@ function buildWithCTE(queries: Subquery[] | undefined): SQL | undefined {
 
   const chunks: SQLChunk[] = [new StringChunk('with ')]
 
-  if (getWithSubqueryAddons(queries[0]).recursive) {
+  if (queries.some(query => getWithSubqueryAddons(query).recursive)) {
     chunks.push(new StringChunk('recursive '))
   }
 
