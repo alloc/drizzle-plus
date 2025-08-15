@@ -1,6 +1,6 @@
 import {
   KnownKeysOnly,
-  type RelationsFilter,
+  RelationFieldsFilterInternals,
   type TableRelationalConfig,
   type TablesRelationalConfig,
 } from 'drizzle-orm'
@@ -21,11 +21,13 @@ export type InferCursor<T extends RelationalQueryBuilder<any, any>> = Partial<
 export interface RelationalQueryCursor<
   TOrderBy extends object,
   TCursor extends object | null | undefined,
-  TSchema extends TablesRelationalConfig,
-  TFields extends TableRelationalConfig,
 > {
   where: TCursor extends object
-    ? KnownKeysOnly<RelationsFilter<TFields, TSchema>, TCursor>
+    ? {
+        [K in keyof TCursor]?: RelationFieldsFilterInternals<
+          Exclude<TCursor[K], undefined>
+        >
+      }
     : TCursor extends null | undefined
       ? undefined
       : never
@@ -46,14 +48,14 @@ declare module 'drizzle-orm/pg-core/query-builders/query' {
     >(
       orderBy: TOrderBy,
       cursor: TCursor
-    ): RelationalQueryCursor<TOrderBy, TCursor, TSchema, TFields>
+    ): RelationalQueryCursor<TOrderBy, TCursor>
   }
 }
 
 RelationalQueryBuilder.prototype.$cursor = function (
   orderBy: any,
   cursor: any
-): RelationalQueryCursor<any, any, any, any> {
+): RelationalQueryCursor<any, any> {
   if (!cursor) {
     return { where: undefined, orderBy }
   }
