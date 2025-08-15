@@ -26,7 +26,7 @@ export type SQLExpression<T = unknown> =
   | AnyColumn<{
       data: Exclude<T, null>
       driverParam: any
-      notNull: T | null extends T ? false : true
+      notNull: T extends null ? false : true
     }>
   | SQLWrapper<T>
 
