@@ -161,22 +161,30 @@ function memoByFirstArgument<TFunc extends (...args: any[]) => any>(
 type WithSubqueryAddons = {
   columns?: string[]
   materialized?: boolean
+  recursive?: boolean
 }
 
 let withSubqueryAddons: WeakMap<WithSubquery, WithSubqueryAddons> | undefined
+
+const getWithSubqueryAddons = (withSubquery: WithSubquery) =>
+  withSubqueryAddons!.get(withSubquery) || {}
 
 function buildWithCTE(queries: Subquery[] | undefined): SQL | undefined {
   if (!queries?.length) return
 
   const chunks: SQLChunk[] = [new StringChunk('with ')]
 
+  if (getWithSubqueryAddons(queries[0]).recursive) {
+    chunks.push(new StringChunk('recursive '))
+  }
+
   for (let i = 0; i < queries.length; i++) {
     const { alias, sql: subquery } = queries[i]._
 
     chunks.push(new Name(alias))
 
-    const addons = withSubqueryAddons!.get(queries[i])
-    if (addons?.columns) {
+    const addons = getWithSubqueryAddons(queries[i])
+    if (addons.columns) {
       pushStringChunk(chunks, ' (')
       for (const column of addons.columns) {
         chunks.push(new Name(column))
@@ -187,12 +195,10 @@ function buildWithCTE(queries: Subquery[] | undefined): SQL | undefined {
 
     pushStringChunk(chunks, ' as ')
 
-    if (addons) {
-      if (addons.materialized) {
-        pushStringChunk(chunks, 'materialized ')
-      } else if (addons.materialized === false) {
-        pushStringChunk(chunks, 'not materialized ')
-      }
+    if (addons.materialized) {
+      pushStringChunk(chunks, 'materialized ')
+    } else if (addons.materialized === false) {
+      pushStringChunk(chunks, 'not materialized ')
     }
 
     pushStringChunk(chunks, '(')
@@ -205,6 +211,7 @@ function buildWithCTE(queries: Subquery[] | undefined): SQL | undefined {
   }
 
   pushStringChunk(chunks, ' ')
+
   return new SQL(chunks)
 }
 
