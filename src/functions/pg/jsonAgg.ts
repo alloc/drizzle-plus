@@ -14,7 +14,7 @@ export function jsonAgg<T>(
   value: SQLExpression<T>,
   options?: JsonAggOptions
 ): SQL<Exclude<T, null>[] | null> {
-  return sql`json_agg(${value}${options?.orderBy && sql` order by ${options.orderBy}`})`.mapWith(
+  return sql`jsonb_agg(${value}${options?.orderBy && sql` order by ${options.orderBy}`})`.mapWith(
     createJsonArrayDecoder(getDecoder(value))
   )
 }

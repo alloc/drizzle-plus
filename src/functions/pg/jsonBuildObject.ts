@@ -15,7 +15,7 @@ export function jsonBuildObject<
 >(subquery: T) {
   const decoders = new Map<string, DriverValueDecoder<any, any>>()
   const properties = buildJsonProperties(subquery, decoders)
-  return sql`json_build_object(${properties})`.mapWith(
+  return sql`jsonb_build_object(${properties})`.mapWith(
     createJsonObjectDecoder(decoders)
   ) as ToJsonObject<T>
 }
