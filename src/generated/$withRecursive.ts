@@ -1,5 +1,5 @@
 // mysql-insert: import type { PreparedQueryHKTBase } from 'drizzle-orm/mysql-core'
-import { ColumnsSelection, Name, sql } from 'drizzle-orm'
+import { ColumnsSelection, Name, SQL, StringChunk, Subquery } from 'drizzle-orm'
 import type * as V1 from 'drizzle-orm/_relations'
 import {
   PgColumn,
@@ -81,10 +81,13 @@ function createRecursiveSelection(
   decoder: (value: unknown, prop: string) => unknown
 ): any {
   const aliasName = new Name(alias)
-  return new Proxy(aliasName, {
-    get(_, prop: string) {
-      return sql`${aliasName}.${sql.identifier(prop)}`.mapWith(value =>
-        decoder(value, prop)
+  return new Proxy(new Subquery(new SQL([aliasName]), {}, alias, true), {
+    get(subquery, prop: string) {
+      if (prop === '_') {
+        return subquery[prop]
+      }
+      return new SQL([aliasName, new StringChunk('.'), new Name(prop)]).mapWith(
+        value => decoder(value, prop)
       )
     },
   })
