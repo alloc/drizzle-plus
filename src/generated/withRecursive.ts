@@ -1,7 +1,8 @@
 // mysql-insert: import type { PreparedQueryHKTBase } from 'drizzle-orm/mysql-core'
-import { WithSubquery } from 'drizzle-orm'
+import { ColumnsSelection, WithSubquery } from 'drizzle-orm'
 import type * as V1 from 'drizzle-orm/_relations'
-import { PgDatabase } from 'drizzle-orm/pg-core'
+import { PgDatabase, WithSubqueryWithSelection } from 'drizzle-orm/pg-core'
+import { TypedQueryBuilder } from 'drizzle-orm/query-builders/query-builder'
 import { AnyRelations, TablesRelationalConfig } from 'drizzle-orm/relations'
 import { setWithSubqueryAddons } from './internal'
 
@@ -17,6 +18,20 @@ declare module 'drizzle-orm/pg-core' {
     TTablesConfig extends TablesRelationalConfig,
     TSchema extends V1.TablesRelationalConfig,
   > {
+    /**
+     * Use this instead of `$with()` to create a subquery that can reference
+     * itself. If TypeScript is failing, it may help to declare the selection
+     * type explicitly at the `.as<{…}>()` call.
+     */
+    $withRecursive<TAlias extends string>(
+      alias: TAlias
+    ): {
+      as<TSelection extends ColumnsSelection>(
+        callback: (
+          self: WithSubqueryWithSelection<NoInfer<TSelection>, TAlias>
+        ) => TypedQueryBuilder<TSelection>
+      ): WithSubqueryWithSelection<TSelection, TAlias>
+    }
     /**
      * A recursive CTE allows you to perform recursion within a query using the
      * `WITH RECURSIVE` syntax. A recursive CTE is often referred to as a
