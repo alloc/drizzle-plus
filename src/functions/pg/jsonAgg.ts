@@ -1,6 +1,6 @@
 import { SQL, sql } from 'drizzle-orm'
 import { coalesce } from 'drizzle-plus'
-import type { SQLExpression } from 'drizzle-plus/types'
+import type { SQLExpression, SQLResult } from 'drizzle-plus/types'
 import { createJsonArrayDecoder, getDecoder } from 'drizzle-plus/utils'
 
 export type JsonAggOptions = {
@@ -10,10 +10,10 @@ export type JsonAggOptions = {
 /**
  * Create a `json_agg()` expression from a given value.
  */
-export function jsonAgg<T>(
-  value: SQLExpression<T>,
+export function jsonAgg<T extends SQLExpression>(
+  value: T,
   options?: JsonAggOptions
-): SQL<Exclude<T, null>[] | null> {
+): SQL<SQLResult<T>[] | null> {
   return sql`jsonb_agg(${value}${options?.orderBy && sql` order by ${options.orderBy}`})`.mapWith(
     createJsonArrayDecoder(getDecoder(value))
   )
@@ -23,9 +23,9 @@ export function jsonAgg<T>(
  * Create a `json_agg()` expression that returns an empty array if the result
  * set is empty, rather than `null`.
  */
-export function jsonAggNotNull<T>(
-  value: SQLExpression<T>,
+export function jsonAggNotNull<T extends SQLExpression>(
+  value: T,
   options?: JsonAggOptions
-): SQL<Exclude<T, null>[]> {
-  return coalesce(jsonAgg(value, options), sql`'[]'::json`)
+): SQL<SQLResult<T>[]> {
+  return coalesce(jsonAgg(value, options), sql<any>`'[]'::json`)
 }

@@ -1,14 +1,15 @@
 import { SQL, sql } from 'drizzle-orm'
-import { SQLExpression } from '../types'
+import { SQLExpression, SQLResult } from '../types'
+
+type UppercaseOrNull<T extends string | null> = T extends string
+  ? Uppercase<T>
+  : null
 
 /**
  * Converts a string to uppercase.
- *
- * @param value - The string to convert to uppercase.
- * @returns The uppercase string.
  */
-export function upper<T extends string | null>(
-  value: SQLExpression<T>
-): SQL<Uppercase<Exclude<T, null>> | Extract<T, null>> {
+export function upper<T extends SQLExpression<string | null>>(
+  value: T
+): SQL<UppercaseOrNull<SQLResult<T>>> {
   return sql`upper(${value})`
 }

@@ -1,22 +1,18 @@
 import { SQL, sql } from 'drizzle-orm'
-import { SQLValue } from '../types'
+import { InferSQLNull, SQLValue } from '../types'
 
 /**
- * Extracts a substring from a string.
- *
- * @param value - The string to extract from.
- * @param start - The starting position (1-based).
- * @param length - The length of the substring (optional).
- * @returns The extracted substring.
+ * Extracts a substring from a string. The start position is 1-based. If no length
+ * is specified, the substring extends to the end of the string.
  */
 export function substring<
-  TInput extends string | null,
-  TPosition extends number | null,
+  TInput extends SQLValue<string | null>,
+  TPosition extends SQLValue<number | null>,
 >(
-  value: SQLValue<TInput>,
-  start: SQLValue<TPosition>,
-  length?: SQLValue<TPosition>
-): SQL<string | Extract<TInput | TPosition, null>> {
+  value: TInput,
+  start: TPosition,
+  length?: TPosition
+): SQL<string | InferSQLNull<TInput | TPosition>> {
   return length !== undefined
     ? sql`substring(${value} from ${start} for ${length})`
     : sql`substring(${value} from ${start})`

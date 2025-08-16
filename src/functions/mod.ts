@@ -1,16 +1,15 @@
 import { SQL, sql } from 'drizzle-orm'
-import { SQLValue } from '../types'
+import { InferSQLNull, SQLValue } from '../types'
 
 /**
  * Returns the remainder of a division operation.
- *
- * @param dividend - The number to be divided.
- * @param divisor - The number to divide by.
- * @returns The remainder.
  */
-export function mod<T extends number | null>(
-  dividend: SQLValue<T>,
-  divisor: SQLValue<T>
-): SQL<number | Extract<T, null>> {
+export function mod<
+  TDividend extends SQLValue<number | null>,
+  TDivisor extends SQLValue<number | null>,
+>(
+  dividend: TDividend,
+  divisor: TDivisor
+): SQL<number | InferSQLNull<TDividend | TDivisor>> {
   return sql`mod(${dividend}, ${divisor})`
 }

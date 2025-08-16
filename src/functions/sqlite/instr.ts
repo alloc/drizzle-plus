@@ -1,5 +1,5 @@
 import { sql, SQL } from 'drizzle-orm'
-import { SQLValue } from 'drizzle-plus/types'
+import { InferSQLNull, SQLValue } from 'drizzle-plus/types'
 
 /**
  * Performs a **case-sensitive** search for the first occurrence of a substring
@@ -10,9 +10,12 @@ import { SQLValue } from 'drizzle-plus/types'
  * @returns The 1-based offset of the first occurrence of the substring in the
  * string, or `0` if the substring is not found.
  */
-export function instr<T extends string | null>(
-  string: SQLValue<T>,
-  substring: SQLValue<T>
-): SQL<number | Extract<T, null>> {
+export function instr<
+  TString extends SQLValue<string | null>,
+  TSubstring extends SQLValue<string | null>,
+>(
+  string: TString,
+  substring: TSubstring
+): SQL<number | InferSQLNull<TString | TSubstring>> {
   return sql`instr(${string}, ${substring})`
 }

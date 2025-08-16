@@ -1,16 +1,15 @@
 import { SQL, sql } from 'drizzle-orm'
-import { SQLValue } from '../types'
+import { InferSQLNull, SQLValue } from '../types'
 
 /**
  * Raises a number to the power of another.
- *
- * @param base - The base number.
- * @param exponent - The exponent number.
- * @returns The result of the power calculation.
  */
-export function power<T extends number | null>(
-  base: SQLValue<T>,
-  exponent: SQLValue<T>
-): SQL<number | Extract<T, null>> {
+export function power<
+  TBase extends SQLValue<number | null>,
+  TExponent extends SQLValue<number | null>,
+>(
+  base: TBase,
+  exponent: TExponent
+): SQL<number | InferSQLNull<TBase | TExponent>> {
   return sql`power(${base}, ${exponent})`
 }
