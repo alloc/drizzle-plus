@@ -30,6 +30,22 @@ export type SQLExpression<T = unknown> =
       driverParam: any
     }>
 
+/**
+ * The result type of a SQL expression.
+ */
+export type SQLResult<T> = T extends any
+  ? T extends AnyColumn<{
+      data: infer TData
+      notNull: infer TNotNull extends boolean
+    }>
+    ? TData | (TNotNull extends true ? never : null)
+    : T extends SQLWrapper<infer TData>
+      ? TData
+      : T
+  : never
+
+export type InferSQLNull<T> = Extract<SQLResult<T>, null>
+
 export type AnyQuery = AnySelectQuery | QueryPromise<any>
 
 export interface AnySelectQuery {
