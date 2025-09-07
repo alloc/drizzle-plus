@@ -8,7 +8,7 @@ export type JsonAggOptions = {
 }
 
 /**
- * Create a `json_agg()` expression from a given value.
+ * Create a `jsonb_agg()` expression from a given value.
  */
 export function jsonAgg<T extends SQLExpression>(
   value: T,
@@ -20,12 +20,12 @@ export function jsonAgg<T extends SQLExpression>(
 }
 
 /**
- * Create a `json_agg()` expression that returns an empty array if the result
+ * Create a `jsonb_agg()` expression that returns an empty array if the result
  * set is empty, rather than `null`.
  */
 export function jsonAggNotNull<T extends SQLExpression>(
   value: T,
   options?: JsonAggOptions
 ): SQL<SQLResult<T>[]> {
-  return coalesce(jsonAgg(value, options), sql<any>`'[]'::json`)
+  return coalesce(jsonAgg(value, options), sql<any>`'[]'::jsonb`)
 }
