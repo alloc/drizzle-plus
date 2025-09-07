@@ -2,8 +2,8 @@ import { SQL, sql } from 'drizzle-orm'
 import { InferSQLNull, SQLValue } from '../types'
 
 /**
- * Extracts a substring from a string. The start position is 1-based. If no length
- * is specified, the substring extends to the end of the string.
+ * Extracts a substring from a string. The start position is 1-based. If no
+ * length is specified, the substring extends to the end of the string.
  */
 export function substring<
   TInput extends SQLValue<string | null>,
