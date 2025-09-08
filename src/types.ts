@@ -358,7 +358,11 @@ export type ResultFieldsToSelection<TResult> =
  * expressions are strongly typed (e.g. `SQL<number>` instead of
  * `SQL<unknown>`).
  */
-export type InsertSelectedFields<TTable extends Table> = {
+export type InsertSelectedFields<
+  TTable extends Table & {
+    $inferInsert: Record<string, unknown>
+  },
+> = {
   [K in keyof TTable['$inferInsert']]: SQLValue<TTable['$inferInsert'][K]>
 }
 

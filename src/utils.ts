@@ -29,7 +29,7 @@ import type {
  */
 export function getOriginalTableName<T extends Table>(
   table: T
-): T['_']['config']['name'] {
+): T['_']['name'] {
   return (table as any)[Symbol.for('drizzle:OriginalName')]
 }
 
