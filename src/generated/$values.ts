@@ -120,15 +120,11 @@ PgDatabase.prototype.$withValues = function (
   })
 }
 
-type ValuesListSelectedFields<TValues extends Record<string, unknown>> = {
-  [K in keyof TValues]: SQL.Aliased<Exclude<TValues[K], undefined>>
-}
-
 export type ValuesListSubquery<
   TAlias extends string,
   TValues extends Record<string, unknown>,
 > =
-  ValuesListSelectedFields<TValues> extends infer TSelectedFields
+  RawFieldsToSelection<TValues> extends infer TSelectedFields
     ? Subquery<TAlias, TSelectedFields & Record<string, unknown>> &
         TSelectedFields
     : never
@@ -138,7 +134,7 @@ export class ValuesList<
 > implements SQLWrapper<unknown>
 {
   declare _: {
-    selectedFields: ValuesListSelectedFields<TValues>
+    selectedFields: RawFieldsToSelection<TValues>
   }
   private shouldInlineParams = false
   private typings?: Partial<Record<string, SQLType | PgColumn>>
