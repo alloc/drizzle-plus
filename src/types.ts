@@ -350,6 +350,15 @@ export type ResultFieldsToSelection<TResult> =
   // If the result is only undefined, treat it as an empty selection.
   | ([TResult] extends [undefined] ? {} : never)
 
+export type SQLFields<T extends object> = {
+  [K in keyof T]: SQLValue<T[K]>
+}
+
+// Similar to `Required<T>` but undefined values are forbidden.
+type StrictRequired<T extends object> = {
+  [K in keyof T]-?: Exclude<T[K], undefined>
+}
+
 /**
  * Infer the type of the `insert` or `update` values object.
  *
@@ -358,9 +367,12 @@ export type ResultFieldsToSelection<TResult> =
  * expressions are strongly typed (e.g. `SQL<number>` instead of
  * `SQL<unknown>`).
  */
-export type InsertSelectedFields<TTable extends Table> = {
-  [K in keyof TTable['$inferInsert']]: SQLValue<TTable['$inferInsert'][K]>
-}
+export type InsertSelectedFields<
+  TTable extends Table,
+  Strict extends boolean = false,
+> = Strict extends true
+  ? SQLFields<StrictRequired<TTable['$inferInsert']>>
+  : SQLFields<TTable['$inferInsert']>
 
 export type DecodedFields = Record<string, DriverValueDecoder<any, any>>
 
