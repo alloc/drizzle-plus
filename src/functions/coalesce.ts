@@ -7,6 +7,6 @@ import { InferSQLNull, SQLResult } from '../types'
  */
 export function coalesce<T extends unknown[], U>(
   ...args: [...T, U]
-): SQL<SQLResult<T | U> | InferSQLNull<U>> {
+): SQL<SQLResult<T[number] | U> | InferSQLNull<U>> {
   return sql`coalesce(${sql.join(args.map(toSQL), sql`, `)})`
 }
