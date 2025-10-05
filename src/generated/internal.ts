@@ -186,9 +186,12 @@ function buildWithCTE(queries: Subquery[] | undefined): SQL | undefined {
     const addons = getWithSubqueryAddons(queries[i])
     if (addons.columns) {
       pushStringChunk(chunks, ' (')
-      for (const column of addons.columns) {
+      for (let i = 0; i < addons.columns.length; i++) {
+        const column = addons.columns[i]
+        if (i > 0) {
+          pushStringChunk(chunks, ', ')
+        }
         chunks.push(new Name(column))
-        pushStringChunk(chunks, ', ')
       }
       pushStringChunk(chunks, ')')
     }
