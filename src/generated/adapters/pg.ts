@@ -10,9 +10,9 @@ import {
   Table,
   WithSubquery,
 } from 'drizzle-orm'
-import type {
-  PgDeleteBase,
-  PgInsertBase,
+import {
+  type PgDeleteBase,
+  type PgInsertBase,
   PgSelectBase,
   PgUpdateBase,
 } from 'drizzle-orm/pg-core'
