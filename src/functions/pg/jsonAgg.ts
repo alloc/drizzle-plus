@@ -5,6 +5,7 @@ import { createJsonArrayDecoder, getDecoder } from 'drizzle-plus/utils'
 
 export type JsonAggOptions = {
   orderBy?: SQLExpression
+  where?: SQL
 }
 
 /**
@@ -14,7 +15,7 @@ export function jsonAgg<T extends SQLExpression>(
   value: T,
   options?: JsonAggOptions
 ): SQL<SQLResult<T>[] | null> {
-  return sql`jsonb_agg(${value}${options?.orderBy && sql` order by ${options.orderBy}`})`.mapWith(
+  return sql`jsonb_agg(${value}${options?.orderBy && sql` order by ${options.orderBy}`})${options?.where && sql` filter (where ${options.where})`}`.mapWith(
     createJsonArrayDecoder(getDecoder(value))
   )
 }
