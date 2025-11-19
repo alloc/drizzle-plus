@@ -111,8 +111,10 @@ export function getReturningFields(
 }
 
 const getTableConfigMemoized = memoByFirstArgument((table: PgTable) => {
-  const { primaryKeys, uniqueConstraints } = getTableConfig(table)
-  return { primaryKeys, uniqueConstraints }
+  const { primaryKeys, uniqueConstraints, indexes } = getTableConfig(table)
+  const uniqueIndexes = indexes.filter(index => index.config.unique)
+
+  return { primaryKeys, uniqueConstraints, uniqueIndexes }
 })
 
 export function getTargetColumns(table: PgTable, columns: PgColumn[]) {
@@ -125,7 +127,8 @@ export function getTargetColumns(table: PgTable, columns: PgColumn[]) {
   }
 
   // Find a composite column constraint that matches the columns.
-  const { primaryKeys, uniqueConstraints } = getTableConfigMemoized(table)
+  const { primaryKeys, uniqueConstraints, uniqueIndexes } =
+    getTableConfigMemoized(table)
   if (primaryKeys[0]) {
     const target = select(primaryKeys[0].columns, targetColumn =>
       columns.find(column => column.name === targetColumn.name)
@@ -139,6 +142,16 @@ export function getTargetColumns(table: PgTable, columns: PgColumn[]) {
       columns.find(column => column.name === targetColumn.name)
     )
     if (target.length === uniqueConstraint.columns.length) {
+      return target
+    }
+  }
+  for (const uniqueIndex of uniqueIndexes) {
+    const target = select(uniqueIndex.config.columns, targetColumn =>
+      'name' in targetColumn
+        ? columns.find(column => column.name === targetColumn.name)
+        : undefined
+    )
+    if (target.length === uniqueIndex.config.columns.length) {
       return target
     }
   }
