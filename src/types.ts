@@ -3,6 +3,7 @@ import type {
   Column,
   DriverValueDecoder,
   DrizzleTypeError,
+  InferInsertModel,
   OrderByOperators,
   Placeholder,
   QueryPromise,
@@ -371,8 +372,8 @@ export type InsertSelectedFields<
   TTable extends Table,
   Strict extends boolean = false,
 > = Strict extends true
-  ? SQLFields<StrictRequired<TTable['$inferInsert']>>
-  : SQLFields<TTable['$inferInsert']>
+  ? SQLFields<StrictRequired<InferInsertModel<TTable>>>
+  : SQLFields<InferInsertModel<TTable>>
 
 export type DecodedFields = Record<string, DriverValueDecoder<any, any>>
 
