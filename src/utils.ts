@@ -1,7 +1,7 @@
 import {
   BuildRelationalQueryResult,
   Column,
-  getTableColumns,
+  getColumns,
   is,
   noopDecoder,
   QueryPromise,
@@ -39,7 +39,7 @@ export function getSelectedFields(query: AnyQuery): Record<string, unknown> {
       query as any
 
     return {
-      ...(config.columns || getTableColumns(table)),
+      ...(config.columns || getColumns(table)),
       ...config.with,
       ...config.extras,
     }
@@ -197,7 +197,7 @@ export function orderSelectedFields<TColumn extends Column>(
     } else {
       const orderedFields = orderSelectedFields(
         is(field, Table)
-          ? getTableColumns(field)
+          ? getColumns(field)
           : isPlainObject(field)
             ? (field as Record<string, unknown>)
             : {},

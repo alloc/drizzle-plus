@@ -1,7 +1,7 @@
 import {
   DriverValueDecoder,
   DrizzleError,
-  getTableColumns,
+  getColumns,
   is,
   SQL,
   sql,
@@ -42,7 +42,7 @@ export function rowToJson<T extends Subquery | Table | View | SQLWrapper>(
     | undefined
 
   if (is(subquery, PgTable)) {
-    fields = getTableColumns(subquery)
+    fields = getColumns(subquery)
   } else if (is(subquery, Subquery)) {
     if (!subquery._.alias) {
       throw new DrizzleError({

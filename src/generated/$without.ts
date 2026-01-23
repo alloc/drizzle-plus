@@ -1,4 +1,4 @@
-import { getTableColumns } from 'drizzle-orm'
+import { getColumns } from 'drizzle-orm'
 import { PgTable, TableConfig } from 'drizzle-orm/pg-core'
 
 declare module 'drizzle-orm/pg-core' {
@@ -10,7 +10,7 @@ declare module 'drizzle-orm/pg-core' {
 }
 
 PgTable.prototype.$without = function (...fields) {
-  const columns = { ...getTableColumns(this) }
+  const columns = { ...getColumns(this) }
   for (const field of fields) {
     delete columns[field]
   }

@@ -1,5 +1,5 @@
 import {
-  getTableColumns,
+  getColumns,
   Query,
   QueryPromise,
   type TableRelationalConfig,
@@ -62,7 +62,7 @@ RelationalQueryBuilder.prototype.create = function (
   config: DBCreateConfig<any, any, any>
 ): CreateQueryPromise<any, any, any> {
   const { table, dialect, session } = getContext(this)
-  const columns = getTableColumns(table)
+  const columns = getColumns(table)
 
   const query = new PgInsertBase(
     table,

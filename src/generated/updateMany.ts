@@ -1,5 +1,5 @@
 import {
-  getTableColumns,
+  getColumns,
   Query,
   QueryPromise,
   RelationsFilter,
@@ -71,7 +71,7 @@ RelationalQueryBuilder.prototype.updateMany = function (
   config: DBUpdateManyConfig<any, any, any>
 ): UpdateManyQueryPromise<any, any> {
   const { table, dialect, session } = getContext(this)
-  const columns = getTableColumns(table)
+  const columns = getColumns(table)
 
   // Since Postgres doesn't support LIMIT in UPDATE queries, we need to use a
   // CTE that selects the rows to update.

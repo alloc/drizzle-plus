@@ -1,7 +1,7 @@
 import {
   BuildQueryResult,
   DBQueryConfig,
-  getTableColumns,
+  getColumns,
   KnownKeysOnly,
   type TableRelationalConfig,
   type TablesRelationalConfig,
@@ -46,7 +46,7 @@ RelationalQueryBuilder.prototype.findUnique = function (
 ): any {
   const { table } = getContext(this)
 
-  const columns = getTableColumns(table)
+  const columns = getColumns(table)
   const usedColumns: PgColumn[] = []
   for (const key in config.where) {
     if (key in columns) {

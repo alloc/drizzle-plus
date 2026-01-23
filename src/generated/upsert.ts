@@ -1,5 +1,5 @@
 import {
-  getTableColumns,
+  getColumns,
   Query,
   QueryPromise,
   RelationsFilter,
@@ -153,7 +153,7 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
   returning?: any
 }): any {
   const { table, dialect, session } = getContext(this)
-  const columns = getTableColumns(table)
+  const columns = getColumns(table)
 
   const qb = new PgInsertBuilder(table, session, dialect, config.with)
 

@@ -2,7 +2,7 @@
 import {
   AnyRelations,
   DrizzleError,
-  getTableColumns,
+  getColumns,
   is,
   SQL,
   SQLChunk,
@@ -12,7 +12,6 @@ import {
 import type * as V1 from 'drizzle-orm/_relations'
 import {
   PgColumn,
-  PgDatabase,
   PgTable,
   TableConfig,
   WithSubqueryWithSelection,
@@ -112,7 +111,7 @@ PgDatabase.prototype.$withValues = function (
     alias,
     new Proxy(rows[0] as DecodedFields, {
       get: (_, key: string) =>
-        (is(typings, PgTable) && getTableColumns(typings)[key]) || noopDecoder,
+        (is(typings, PgTable) && getColumns(typings)[key]) || noopDecoder,
     })
   )
   return setWithSubqueryAddons(withSubquery, {
@@ -131,8 +130,7 @@ export type ValuesListSubquery<
 
 export class ValuesList<
   TValues extends Record<string, unknown> = Record<string, unknown>,
-> implements SQLWrapper<unknown>
-{
+> implements SQLWrapper<unknown> {
   declare _: {
     selectedFields: RawFieldsToSelection<TValues>
   }
@@ -145,7 +143,7 @@ export class ValuesList<
     typings?: Partial<Record<string, SQLType>> | PgTable
   ) {
     this.typings =
-      typings && (is(typings, PgTable) ? getTableColumns(typings) : typings)
+      typings && (is(typings, PgTable) ? getColumns(typings) : typings)
   }
 
   as<TAlias extends string>(

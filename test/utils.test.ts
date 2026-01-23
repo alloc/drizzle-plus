@@ -1,4 +1,4 @@
-import { getTableColumns, noopDecoder, sql, SQL } from 'drizzle-orm'
+import { getColumns, noopDecoder, sql, SQL } from 'drizzle-orm'
 import { getDecoder, getSelectedFields, getSQL } from 'drizzle-plus/utils'
 import { db } from './config/client'
 import * as schema from './config/schema'
@@ -6,7 +6,7 @@ import * as schema from './config/schema'
 describe('getSelectedFields', () => {
   test('with a db.select() query', () => {
     const query1 = db.select().from(schema.user)
-    expect(getSelectedFields(query1)).toEqual(getTableColumns(schema.user))
+    expect(getSelectedFields(query1)).toEqual(getColumns(schema.user))
 
     const query2 = db.select({ id: schema.user.id }).from(schema.user)
     expect(getSelectedFields(query2)).toEqual({ id: schema.user.id })
