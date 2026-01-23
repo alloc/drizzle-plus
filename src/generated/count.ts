@@ -45,7 +45,7 @@ export class CountQueryPromise extends QueryPromise<number> {
 
   async execute() {
     const query = this.getSQL()
-    const [result] = await this.session.all<any>(query)
+    const [result] = (await this.session.all(query)) as [any]
     return Number(result.count)
   }
 
