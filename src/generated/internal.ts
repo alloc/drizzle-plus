@@ -53,7 +53,6 @@ export function getFilterSQL(
     filter,
     ctx.tableConfig.relations,
     ctx.schema,
-    ctx.tableNamesMap,
     ctx.dialect.casing
   )
 }
