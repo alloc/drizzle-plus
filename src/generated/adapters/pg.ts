@@ -22,7 +22,7 @@ import { RelationalQueryBuilder } from '../pg/types'
 
 export type { PgRelationalQuery as RelationalQuery }
 
-export type InsertQuery = PgInsertBase<any, any>
+export type InsertQuery = PgInsertBase<any, any, any>
 
 export function selectRowsToUpdateOrDelete(
   rqb: RelationalQueryBuilder<any, any>,
@@ -32,17 +32,27 @@ export function selectRowsToUpdateOrDelete(
 ): Subquery[] {
   const ctx = getContext(rqb)
 
-  const selection = new PgSelectBase({
+  const builder = new PgSelectBase({
     fields: {
-      ctid: sql.raw('ctid'),
+      ctid: sql.raw('ctid') as any,
     },
-    table: ctx.table,
     dialect: ctx.dialect,
     session: ctx.session,
     distinct: undefined,
-    isPartialSelect: false,
     withList: [],
-  })
+  }) as PgSelectBase<
+    any,
+    any,
+    any,
+    any,
+    any,
+    true, // TDynamic (This is ridiculous.)
+    any,
+    any,
+    any
+  >
+
+  const selection = builder
     .for('update')
     .where(where && getFilterSQL(rqb, where))
     .limit(limit)
@@ -66,7 +76,7 @@ export function selectRowsToUpdateOrDelete(
 
 export function innerJoinMatchedRows(
   table: Table,
-  query: PgUpdateBase<any, any> | PgDeleteBase<any, any>
+  query: PgUpdateBase<any, any, any> | PgDeleteBase<any, any, any>
 ) {
   if (query instanceof PgUpdateBase) {
     query.from(sql`matched_rows`).where(sql`${table}.ctid = matched_rows.ctid`)
