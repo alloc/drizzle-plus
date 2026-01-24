@@ -301,7 +301,7 @@ export function buildInsertSelect(
  * used to map the result rows.
  */
 export function buildRelationalQuery(
-  query: RelationalQuery<any>
+  query: RelationalQuery<any, any>
 ): BuildRelationalQueryResult {
   return (query as any)._getQuery()
 }
