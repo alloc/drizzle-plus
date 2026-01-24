@@ -3,7 +3,6 @@ import {
   Query,
   QueryPromise,
   RelationsFilter,
-  relationsFilterToSQL,
   SQL,
   Subquery,
   Table,
@@ -44,6 +43,7 @@ import {
   createWithSubquery,
   excluded,
   getContext,
+  getFilterSQL,
   getReturningFields,
   getTargetColumns,
 } from './internal'
@@ -249,8 +249,7 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
     query.onConflictDoUpdate({
       target,
       set: Object.fromEntries(updatedEntries),
-      setWhere:
-        config.updateWhere && relationsFilterToSQL(table, config.updateWhere),
+      setWhere: config.updateWhere && getFilterSQL(this, config.updateWhere),
     })
   } else {
     query.onConflictDoNothing()
