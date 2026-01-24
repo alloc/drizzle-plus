@@ -258,8 +258,7 @@ export function setWithSubqueryAddons(
   return withSubquery
 }
 
-export type InferDialect<TTable extends Table> =
-  TTable['_']['config']['dialect']
+export type InferDialect<TTable extends Table> = TTable['_']['dialect']
 
 export type ExcludeDialect<TTable extends Table, TDialect extends string, T> =
   InferDialect<TTable> extends TDialect ? never : T
