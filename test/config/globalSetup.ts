@@ -2,7 +2,11 @@ import path from 'node:path'
 import $ from 'picospawn'
 
 export async function setup() {
-  await $('pnpm -s drizzle-kit push', {
+  const drizzleKit = path.resolve(
+    __dirname,
+    '../../node_modules/drizzle-kit/bin.cjs'
+  )
+  await $(`node ${drizzleKit} push`, {
     stdio: 'inherit',
     cwd: path.resolve(__dirname, '../..'),
   })

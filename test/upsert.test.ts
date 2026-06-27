@@ -129,7 +129,7 @@ describe('upsert', () => {
         "params": [
           100,
         ],
-        "sql": "insert into "user" ("id", "name", "age", "handle") values (?, null, null, null) on conflict do nothing returning "id", "name", "age", "handle"",
+        "sql": "insert into "user" ("id", "name", "age", "handle") values (?, null, null, null) on conflict ("user"."id") do update set "id" = excluded."id" returning "id", "name", "age", "handle"",
       }
     `)
   })
@@ -162,9 +162,9 @@ describe('upsert', () => {
         id: 100,
         name: 'Gregory',
       },
-      update: {
+      update: () => ({
         name: 'John',
-      },
+      }),
     })
 
     expect(query.toSQL()).toMatchInlineSnapshot(`
@@ -185,7 +185,7 @@ describe('upsert', () => {
         { id: 101, name: 'John' },
       ],
       update: user => ({
-        name: upper(user.name),
+        name: upper(user.current.name),
       }),
     })
 
@@ -209,7 +209,7 @@ describe('upsert', () => {
         id: 100,
         name: 'Gregory',
       },
-      where: {
+      updateWhere: {
         name: { isNull: true },
       },
     })
@@ -220,7 +220,7 @@ describe('upsert', () => {
           100,
           "Gregory",
         ],
-        "sql": "insert into "user" ("id", "name", "age", "handle") values (?, ?, null, null) on conflict ("user"."id") do update set "name" = excluded."name" where "user"."name" is null returning "id", "name", "age", "handle"",
+        "sql": "insert into "user" ("id", "name", "age", "handle") values (?, ?, null, null) on conflict ("user"."id") do update set "name" = excluded."name" where ("user"."name" is null) returning "id", "name", "age", "handle"",
       }
     `)
   })

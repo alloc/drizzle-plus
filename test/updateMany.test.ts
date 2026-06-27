@@ -110,7 +110,7 @@ describe('updateMany', () => {
         "params": [
           "",
         ],
-        "sql": "update "user" set "handle" = ? where exists (select * from "user_email" as "f0" where ("user"."id" = "f0"."userId" and "f0"."label" is not null) limit 1)",
+        "sql": "update "user" set "handle" = ? where exists (select * from "user_email" as "f0" where ("user"."id" = "f0"."userId" and ("f0"."label" is not null)) limit 1)",
       }
     `)
   })
