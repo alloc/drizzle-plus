@@ -1,0 +1,126 @@
+// @ts-nocheck
+import type { PreparedQueryHKTBase } from 'drizzle-orm/mysql-core'
+import {
+  ColumnsSelection,
+  DrizzleError,
+  QueryPromise,
+  SQL,
+  sql,
+  SQLWrapper,
+  Subquery,
+} from 'drizzle-orm'
+import {
+  MySqlColumn,
+  MySqlDialect,
+  MySqlSelectBase,
+  MySqlSelectBuilder,
+  MySqlSelectConfig,
+  MySqlSession,
+  MySqlSetOperatorWithResult,
+  SelectedFields,
+  SelectedFieldsOrdered,
+} from 'drizzle-orm/mysql-core'
+import { TypedQueryBuilder } from 'drizzle-orm/query-builders/query-builder'
+import { SelectResultFields } from 'drizzle-orm/query-builders/select.types'
+import { orderSelectedFields } from 'drizzle-plus/utils'
+
+declare module 'drizzle-orm/mysql-core' {
+  interface MySqlSelectBuilder<
+    TSelection extends SelectedFields | undefined,
+    TPreparedQueryHKT extends PreparedQueryHKTBase,
+    TBuilderMode extends 'db' | 'qb',
+  > {
+    withoutFrom(): TSelection extends SelectedFields
+      ? MySqlSelectWithoutFrom<TSelection>
+      : never
+  }
+}
+
+type MySqlSelectBuilderPrivate = {
+  fields: ColumnsSelection
+  session?: MySqlSession
+  dialect: MySqlDialect
+  withList: Subquery[]
+  distinct?: boolean | { on: (MySqlColumn | SQLWrapper)[] }
+}
+
+export class MySqlSelectWithoutFrom<TSelection extends SelectedFields>
+  extends TypedQueryBuilder<TSelection, SelectResultFields<TSelection>[]>
+  implements MySqlSetOperatorWithResult<SelectResultFields<TSelection>[]>
+{
+  _: {
+    readonly hkt: any
+    readonly tableName: any
+    readonly selection: any
+    readonly selectMode: any
+    readonly nullabilityMap: any
+    readonly dynamic: any
+    readonly excludedMethods: any
+    readonly result: SelectResultFields<TSelection>[]
+    readonly selectedFields: TSelection
+  }
+
+  declare private config: {
+    fields: MySqlSelectConfig['fields']
+    withList?: MySqlSelectConfig['withList']
+  }
+
+  declare private joinsNotNullableMap: Record<string, boolean>
+  declare private session: MySqlSession | undefined
+  declare private dialect: MySqlDialect
+  declare private usedTables: Set<string>
+
+  constructor(select: MySqlSelectBuilderPrivate, selectedFields: TSelection) {
+    super()
+
+    // Any property required by MySqlSelectBase#_prepare must be here.
+    this.config = { fields: { ...selectedFields }, withList: select.withList }
+    this.joinsNotNullableMap = {}
+    this.session = select.session
+    this.dialect = select.dialect
+    this.usedTables = new Set()
+
+    // This is required by TypedQueryBuilder#getSelectedFields
+    this._ = { selectedFields } as any
+  }
+  getSQL() {
+    const dialect = this.dialect as unknown as {
+      buildSelection: (fields: SelectedFieldsOrdered) => SQL
+      buildWithCTE: (withList: Subquery[] | undefined) => SQL | undefined
+    }
+    const orderedFields = orderSelectedFields<MySqlColumn>(this._.selectedFields)
+    const withSql = dialect.buildWithCTE(this.config.withList)
+    return sql`${withSql}select ${dialect.buildSelection(orderedFields)}`
+  }
+  execute(placeholderValues?: Record<string, unknown>) {
+    return this._prepare().execute(placeholderValues)
+  }
+  // Inherited from MySqlSelectBase.
+  declare private _prepare: () => {
+    execute: (
+      placeholderValues?: Record<string, unknown>
+    ) => Promise<SelectResultFields<TSelection>[]>
+  }
+}
+
+export interface MySqlSelectWithoutFrom<TSelection extends SelectedFields>
+  extends QueryPromise<SelectResultFields<TSelection>[]> {
+  execute(): Promise<SelectResultFields<TSelection>[]>
+}
+
+Object.defineProperties(MySqlSelectWithoutFrom.prototype, {
+  ...Object.getOwnPropertyDescriptors(MySqlSelectBase.prototype),
+  constructor: {
+    value: MySqlSelectWithoutFrom,
+  },
+})
+
+MySqlSelectBuilder.prototype.withoutFrom = function (): any {
+  const { fields } = this as unknown as {
+    fields: SelectedFields | undefined
+  }
+  if (!fields) {
+    throw new DrizzleError({ message: 'Selection is required' })
+  }
+  return new MySqlSelectWithoutFrom(this as any, fields)
+}
