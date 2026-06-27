@@ -43,12 +43,11 @@ That creates a few structural problems:
 
 ## Rewrite Shape
 
-Build the new generated system from four source-of-truth areas.
+Build the new generated system from these source-of-truth areas.
 
 ### 1. Dialect Registry
 
-Create `src/codegen/dialects/registry.ts` as the canonical model of each
-dialect.
+Create `src/codegen/registry.ts` as the canonical model of each dialect.
 
 It should describe:
 
@@ -64,18 +63,59 @@ It should describe:
 This replaces `pascalMap`, `unsupportedFeatures`, `typeParams`, `DIALECT`, and
 the comment-marker replacement scheme.
 
-### 2. Runtime Adapter Layer
+### 2. Placeholder Dialect Module
 
-Create dialect runtime adapters under `src/codegen/dialects`:
+Shared feature source should import dialect-dependent types and helpers from a
+placeholder module. Use short, natural names because the file is already being
+compiled in a dialect context.
+
+Example source import:
+
+```ts
+import type {
+  Column,
+  Database,
+  InsertBuilder,
+  InsertValue,
+  RelationalQuery,
+  RelationalQueryBuilder,
+  Session,
+  Table,
+  UpdateBase,
+  UpdateSetSource,
+} from '#dialect'
+```
+
+Generated PostgreSQL output should rewrite that placeholder import into direct
+imports from `drizzle-orm/pg-core` and related PostgreSQL entrypoints. MySQL
+and SQLite output should do the same for their dialect entrypoints.
+
+Rules:
+
+- use simple placeholder names like `Database`, `Table`, `Column`, and
+  `RelationalQueryBuilder`
+- do not use `Dialect*` prefixes for placeholder types
+- if a feature also needs a base Drizzle type named `Table` or `Column`, import
+  it explicitly with a local alias such as `BaseTable` or `AnyColumn`
+- rewrite only known placeholder imports/types/functions
+- fail generation on unknown placeholders
+- keep placeholder replacement out of arbitrary implementation expressions
+
+This gives feature source a small dialect vocabulary while keeping generated
+`.d.ts` files anchored to real Drizzle dialect types.
+
+### 3. Runtime Adapter Layer
+
+Create runtime adapters under `src/internal/dialects`:
 
 ```text
-src/codegen/dialects/
+src/internal/dialects/
   pg.ts
   mysql.ts
   sqlite.ts
 ```
 
-Expose a common adapter contract from `src/codegen/core/adapter.ts`.
+Expose a common adapter contract from `src/internal/adapter.ts`.
 
 The adapter should cover only real runtime differences used by this package:
 
@@ -90,15 +130,15 @@ Feature code should ask the adapter to do dialect-specific work. It should not
 branch on string dialect names unless the branch represents package-level
 feature availability.
 
-### 3. Core Type/Runtime Facade
+### 4. Core Type/Runtime Facade
 
-Create `src/codegen/core` for shared behavior that feature implementations can
+Create `src/internal` for shared behavior that feature implementations can
 use directly.
 
 Initial modules:
 
 ```text
-src/codegen/core/
+src/internal/
   adapter.ts
   context.ts
   returning.ts
@@ -131,14 +171,15 @@ This layer is where private Drizzle assumptions should live. Feature modules
 should import private Drizzle classes directly only when there is no reasonable
 facade boundary.
 
-### 4. Feature Implementations
+### 5. Feature Implementations
 
-Move feature source out of `src/generated` and into `src/codegen/features`.
+Move feature source out of `src/generated` and into a normal runtime source
+folder. These are package feature implementations, not generator internals.
 
 Proposed layout:
 
 ```text
-src/codegen/features/
+src/extensions/
   query/
     cursor.ts
     findMany.ts
@@ -166,9 +207,28 @@ Each feature should export:
 - any package-owned result/config types
 - metadata describing supported dialects and generated module augmentations
 
-Feature source should not be a dialect template. If a feature needs
-dialect-specific behavior, that behavior belongs in the dialect adapter or in
-an explicit per-dialect implementation file.
+Feature source may use the placeholder dialect module for type/import
+differences. If a feature needs runtime behavior differences, that behavior
+belongs in the runtime adapter or in an explicit per-dialect implementation
+file.
+
+### 6. Codegen Implementation
+
+Keep `src/codegen` focused on generation concerns:
+
+```text
+src/codegen/
+  registry.ts
+  manifest.ts
+  placeholders.ts
+  emit.ts
+  validate.ts
+  templates/
+```
+
+`src/codegen` should not contain feature behavior. It should know how to turn
+feature metadata and placeholder imports into dialect-specific generated
+entrypoints.
 
 ## Generated Output
 
@@ -194,6 +254,7 @@ Inputs:
 
 - dialect registry
 - feature manifests
+- placeholder import/type map
 - package export expectations
 - dialect function directories under `src/functions/{pg,mysql,sqlite}`
 
@@ -210,8 +271,11 @@ Generator rules:
 - never perform global `Pg` to `MySql`/`SQLite` replacement
 - never use commented insertion markers
 - never use `eval` for conditional replacement
+- rewrite only the explicit `#dialect` placeholder module and known
+  placeholders
 - skip unsupported features from registry capabilities
 - fail if package exports reference unsupported or missing generated files
+- fail if generated output would require an unresolved placeholder
 - fail if a feature has no test coverage marker in its manifest
 
 ## Public API Compatibility
@@ -235,9 +299,10 @@ Do not expose new internal paths in `package.json` until the design settles.
 
 1. Build the new source tree.
 
-   Add `src/codegen/core`, `src/codegen/dialects`, and
-   `src/codegen/features`. Copy behavior from the old generated templates only
-   as implementation reference, not as retained architecture.
+   Add `src/internal`, `src/internal/dialects`, `src/extensions`, and the
+   focused `src/codegen` generator modules. Copy behavior from the old
+   generated templates only as implementation reference, not as retained
+   architecture.
 
 2. Define the dialect registry and feature manifest.
 
@@ -247,7 +312,7 @@ Do not expose new internal paths in `package.json` until the design settles.
 3. Implement core facade modules.
 
    Move the logic currently buried in `src/generated/internal.ts` and shared
-   generated feature files into stable core helpers.
+   generated feature files into stable `src/internal` helpers.
 
 4. Implement dialect adapters.
 
@@ -255,34 +320,41 @@ Do not expose new internal paths in `package.json` until the design settles.
    behind one adapter contract, including PostgreSQL limited updates and
    MySQL/SQLite native limits.
 
-5. Implement feature modules against the facade.
+5. Implement placeholder import rewriting.
+
+   Define the `#dialect` placeholder surface with simple names such as
+   `Database`, `Table`, `Column`, `InsertValue`, `UpdateSetSource`, and
+   `RelationalQueryBuilder`. Emit direct Drizzle dialect imports for each
+   generated target.
+
+6. Implement feature modules against the facade.
 
    Port each feature into normal TypeScript modules. Start with the features
    that establish the hard contracts: `updateMany`, `upsert`, `$values`, and
    `$withRecursive`.
 
-6. Replace the generator.
+7. Replace the generator.
 
    Write generated dialect entrypoints from registry and feature metadata.
    Delete the broad text-rewrite implementation.
 
-7. Regenerate all dialect output.
+8. Regenerate all dialect output.
 
    Recreate `src/generated/{pg,mysql,sqlite}` from the new generator. Generated
    output can change substantially as long as public imports and behavior hold.
 
-8. Update package/build wiring.
+9. Update package/build wiring.
 
    Ensure `rolldown.config.ts`, `package.json` exports, and TypeScript paths
    point at the new generated output. Add generator checks that prevent missing
    export targets.
 
-9. Remove old template source.
+10. Remove old template source.
 
    Delete obsolete top-level `src/generated/*.ts` templates, `DIALECT` support,
    comment marker conventions, and replacement-only helper code.
 
-10. Verify behavior and types across dialects.
+11. Verify behavior and types across dialects.
 
     Run runtime tests, type tests, lint, and build. Add missing tests for any
     feature whose behavior was previously covered only incidentally.
@@ -349,7 +421,10 @@ Feature-specific coverage:
 - Do not add new dependencies unless the generator materially needs one.
 - Keep dialect differences in registry/adapters, not scattered through feature
   code.
-- Prefer explicit generated templates over source-code rewriting.
+- Prefer explicit generated templates and placeholder import rewriting over
+  broad source-code rewriting.
+- Use simple placeholder names like `Database` and `Table`, not `Dialect*`
+  names.
 - Centralize private Drizzle access and document the exact assumption each hook
   depends on.
 - Make unsupported dialect features impossible to generate, export, or type as
@@ -377,10 +452,13 @@ The rewrite is done when:
 - `scripts/generate.ts` emits from registry/feature metadata, not arbitrary
   source rewrites
 - top-level generated templates and marker comments are gone
-- feature implementations live under `src/codegen/features`
+- feature implementations live outside `src/codegen`, for example under
+  `src/extensions`
 - dialect facts live in one registry
 - runtime dialect differences live behind adapter contracts
-- private Drizzle hooks are centralized in `src/codegen/core` or adapters
+- private Drizzle hooks are centralized in `src/internal` or adapters
+- generated dialect output resolves simple placeholder types to direct Drizzle
+  dialect imports
 - all existing intended public imports still resolve
 - runtime tests, type tests, lint, and build pass
 - generated output can be deleted and recreated without hand edits
