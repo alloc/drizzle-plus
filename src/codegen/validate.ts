@@ -1,5 +1,4 @@
 import fs from 'node:fs'
-import path from 'node:path'
 
 export function validateGeneratedExports() {
   const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf-8')) as {
@@ -17,13 +16,26 @@ export function validateGeneratedExports() {
       continue
     }
 
-    const paths = exportPaths(value)
-    for (const exportPath of paths) {
-      if (!exportPath.includes('*') && !fs.existsSync(exportPath.replace(/^\.\//, ''))) {
-        throw new Error(`Package export ${specifier} points at missing file ${exportPath}`)
+    for (const exportPath of exportPaths(value)) {
+      if (exportPath.includes('*')) {
+        continue
+      }
+
+      const sourcePath = sourcePathForExport(exportPath)
+      if (!fs.existsSync(sourcePath)) {
+        throw new Error(
+          `Package export ${specifier} points at missing source ${sourcePath}`
+        )
       }
     }
   }
+}
+
+function sourcePathForExport(exportPath: string) {
+  return exportPath
+    .replace(/^\.\//, '')
+    .replace(/^dist\//, 'src/')
+    .replace(/\.(?:d\.ts|js)$/, '.ts')
 }
 
 function exportPaths(value: unknown): string[] {
