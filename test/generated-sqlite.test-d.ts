@@ -8,13 +8,16 @@ import 'drizzle-plus/sqlite/$values'
 import 'drizzle-plus/sqlite/$withRecursive'
 import 'drizzle-plus/sqlite/$without'
 import 'drizzle-plus/sqlite/as'
+import type { SQLiteRelationalSubquery } from 'drizzle-plus/sqlite/as'
 import 'drizzle-plus/sqlite/count'
 import 'drizzle-plus/sqlite/findManyAndCount'
 import 'drizzle-plus/sqlite/findUnique'
 import 'drizzle-plus/sqlite/fromSingle'
 import 'drizzle-plus/sqlite/updateMany'
 import 'drizzle-plus/sqlite/upsert'
+import type { SQLiteUpsertSelectQuery } from 'drizzle-plus/sqlite/upsert'
 import 'drizzle-plus/sqlite/withoutFrom'
+import type { SQLiteSelectWithoutFrom } from 'drizzle-plus/sqlite/withoutFrom'
 
 const user = sqliteTable('user', {
   id: integer().primaryKey(),
@@ -28,6 +31,15 @@ const db = drizzle(async () => ({ rows: [] }), {
 })
 
 describe('generated SQLite helpers', () => {
+  test('public generated types stay dialect-specific', () => {
+    expectTypeOf<SQLiteRelationalSubquery<{ id: number }, 'sqlite_user'>>()
+      .toHaveProperty('id')
+    expectTypeOf<
+      SQLiteSelectWithoutFrom<{ id: typeof user.id }>
+    >().toHaveProperty('execute')
+    expectTypeOf<SQLiteUpsertSelectQuery<typeof user>>().not.toBeNever()
+  })
+
   test('database helpers typecheck', () => {
     const selection = db.$select({ id: user.id, literal: 1 })
     expectTypeOf(selection).toHaveProperty('id')

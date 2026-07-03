@@ -9,6 +9,7 @@ import 'drizzle-plus/pg/$withMaterialized'
 import 'drizzle-plus/pg/$withRecursive'
 import 'drizzle-plus/pg/$without'
 import 'drizzle-plus/pg/as'
+import type { PgRelationalSubquery } from 'drizzle-plus/pg/as'
 import 'drizzle-plus/pg/count'
 import 'drizzle-plus/pg/create'
 import 'drizzle-plus/pg/findManyAndCount'
@@ -16,7 +17,9 @@ import 'drizzle-plus/pg/findUnique'
 import 'drizzle-plus/pg/fromSingle'
 import 'drizzle-plus/pg/updateMany'
 import 'drizzle-plus/pg/upsert'
+import type { PgUpsertSelectQuery } from 'drizzle-plus/pg/upsert'
 import 'drizzle-plus/pg/withoutFrom'
+import type { PgSelectWithoutFrom } from 'drizzle-plus/pg/withoutFrom'
 
 const user = pgTable('user', {
   id: integer().primaryKey(),
@@ -30,6 +33,15 @@ const db = drizzle(async () => ({ rows: [] }), {
 })
 
 describe('generated PostgreSQL helpers', () => {
+  test('public generated types stay dialect-specific', () => {
+    expectTypeOf<PgRelationalSubquery<{ id: number }, 'pg_user'>>()
+      .toHaveProperty('id')
+    expectTypeOf<PgSelectWithoutFrom<{ id: typeof user.id }>>().toHaveProperty(
+      'execute'
+    )
+    expectTypeOf<PgUpsertSelectQuery<typeof user>>().not.toBeNever()
+  })
+
   test('database helpers typecheck', () => {
     const selection = db.$select({ id: user.id, literal: 1 })
     expectTypeOf(selection).toHaveProperty('id')

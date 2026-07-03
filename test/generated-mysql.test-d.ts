@@ -8,12 +8,14 @@ import 'drizzle-plus/mysql/$values'
 import 'drizzle-plus/mysql/$withRecursive'
 import 'drizzle-plus/mysql/$without'
 import 'drizzle-plus/mysql/as'
+import type { MySqlRelationalSubquery } from 'drizzle-plus/mysql/as'
 import 'drizzle-plus/mysql/count'
 import 'drizzle-plus/mysql/findManyAndCount'
 import 'drizzle-plus/mysql/findUnique'
 import 'drizzle-plus/mysql/fromSingle'
 import 'drizzle-plus/mysql/updateMany'
 import 'drizzle-plus/mysql/withoutFrom'
+import type { MySqlSelectWithoutFrom } from 'drizzle-plus/mysql/withoutFrom'
 
 const user = mysqlTable('user', {
   id: int().primaryKey(),
@@ -27,6 +29,14 @@ const db = drizzle(async () => ({ rows: [] }), {
 })
 
 describe('generated MySQL helpers', () => {
+  test('public generated types stay dialect-specific', () => {
+    expectTypeOf<MySqlRelationalSubquery<{ id: number }, 'mysql_user'>>()
+      .toHaveProperty('id')
+    expectTypeOf<
+      MySqlSelectWithoutFrom<{ id: typeof user.id }>
+    >().toHaveProperty('execute')
+  })
+
   test('database helpers typecheck', () => {
     const selection = db.$select({ id: user.id, literal: 1 })
     expectTypeOf(selection).toHaveProperty('id')
