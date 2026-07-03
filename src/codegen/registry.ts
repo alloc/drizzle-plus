@@ -10,6 +10,7 @@ export type DialectSpec = {
   functionsModule: string
   databaseType: string
   pgPrefix: string
+  placeholders: DialectPlaceholders
   databaseTypeParams: string[]
   relationalQueryBuilderTypeParams: string[]
   relationalQueryTypeParams?: string[]
@@ -24,6 +25,54 @@ export type DialectSpec = {
   }
 }
 
+export type DialectPlaceholders = {
+  core: Record<string, string>
+  db: Record<string, string>
+  query: Record<string, string>
+  functions: Record<string, string>
+}
+
+function placeholders(
+  prefix: string,
+  databaseType: string
+): DialectPlaceholders {
+  return {
+    core: {
+      Column: `${prefix}Column`,
+      Database: databaseType,
+      Dialect: `${prefix}Dialect`,
+      InsertBase: `${prefix}InsertBase`,
+      InsertBuilder: `${prefix}InsertBuilder`,
+      InsertConfig: `${prefix}InsertConfig`,
+      InsertSelectQueryBuilder: `${prefix}InsertSelectQueryBuilder`,
+      InsertValue: `${prefix}InsertValue`,
+      QueryBuilder: 'QueryBuilder',
+      SelectBase: `${prefix}SelectBase`,
+      SelectBuilder: `${prefix}SelectBuilder`,
+      SelectConfig: `${prefix}SelectConfig`,
+      SelectHKTBase: `${prefix}SelectHKTBase`,
+      SelectQueryBuilderBase: `${prefix}SelectQueryBuilderBase`,
+      SelectQueryBuilderHKT: `${prefix}SelectQueryBuilderHKT`,
+      Session: `${prefix}Session`,
+      SetOperatorWithResult: `${prefix}SetOperatorWithResult`,
+      Table: `${prefix}Table`,
+      UpdateBase: `${prefix}UpdateBase`,
+      UpdateSetSource: `${prefix}UpdateSetSource`,
+    },
+    db: {
+      Database: databaseType,
+    },
+    query: {
+      RelationalQuery: `${prefix}RelationalQuery`,
+      RelationalQueryBuilder: 'RelationalQueryBuilder',
+      RelationalQueryHKTBase: `${prefix}RelationalQueryHKTBase`,
+    },
+    functions: {
+      SQLType: 'SQLType',
+    },
+  }
+}
+
 export const registry: Record<Dialect, DialectSpec> = {
   pg: {
     name: 'pg',
@@ -33,6 +82,7 @@ export const registry: Record<Dialect, DialectSpec> = {
     functionsModule: 'drizzle-plus/pg',
     databaseType: 'PgDatabase',
     pgPrefix: 'Pg',
+    placeholders: placeholders('Pg', 'PgDatabase'),
     databaseTypeParams: [
       "TQueryResult extends import('drizzle-orm/pg-core').PgQueryResultHKT",
       'TFullSchema extends Record<string, unknown>',
@@ -66,6 +116,7 @@ export const registry: Record<Dialect, DialectSpec> = {
     functionsModule: 'drizzle-plus/mysql',
     databaseType: 'MySqlDatabase',
     pgPrefix: 'MySql',
+    placeholders: placeholders('MySql', 'MySqlDatabase'),
     databaseTypeParams: [
       'TPreparedQueryHKT extends PreparedQueryHKTBase',
       'TFullSchema extends Record<string, unknown>',
@@ -96,6 +147,7 @@ export const registry: Record<Dialect, DialectSpec> = {
     functionsModule: 'drizzle-plus/sqlite',
     databaseType: 'BaseSQLiteDatabase',
     pgPrefix: 'SQLite',
+    placeholders: placeholders('SQLite', 'BaseSQLiteDatabase'),
     databaseTypeParams: [
       "TResultKind extends 'sync' | 'async'",
       'TRunResult',
