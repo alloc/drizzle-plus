@@ -8,16 +8,14 @@ import {
   type TableRelationalConfig,
   type TablesRelationalConfig,
 } from 'drizzle-orm'
-import { SQLiteDialect, SQLiteSession, SQLiteTable } from 'drizzle-orm/sqlite-core'
+import { SQLiteDialect as Dialect, SQLiteSession as Session, SQLiteTable as Table } from 'drizzle-orm/sqlite-core'
 import { RelationalQueryBuilder } from 'drizzle-orm/sqlite-core/query-builders/query'
 import { getContext, getFilterSQL } from './internal'
 
 declare module 'drizzle-orm/sqlite-core/query-builders/query' {
-  export interface RelationalQueryBuilder<
-    TMode extends 'sync' | 'async',
+  export interface RelationalQueryBuilder<TMode extends 'sync' | 'async',
     TSchema extends TablesRelationalConfig,
-    TFields extends TableRelationalConfig,
-  > {
+    TFields extends TableRelationalConfig> {
     count(filter?: RelationsFilter<TFields, TSchema>): CountQueryPromise
   }
 }
@@ -37,10 +35,10 @@ RelationalQueryBuilder.prototype.count = function (
 
 export class CountQueryPromise extends QueryPromise<number> {
   constructor(
-    private table: SQLiteTable,
+    private table: Table,
     private filter: SQL | undefined,
-    private session: SQLiteSession<any, any, any, any, any>,
-    private dialect: SQLiteDialect
+    private session: Session,
+    private dialect: Dialect
   ) {
     super()
   }

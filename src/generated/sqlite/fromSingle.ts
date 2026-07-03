@@ -1,18 +1,17 @@
 // @ts-nocheck
 import { DrizzleError, sql } from 'drizzle-orm'
 import {
-  SQLiteSelectBuilder,
-  SQLiteSelectQueryBuilderBase,
-  SQLiteSelectQueryBuilderHKT,
+  SQLiteSelectBuilder as SelectBuilder,
+  SQLiteSelectQueryBuilderBase as SelectQueryBuilderBase,
+  SQLiteSelectQueryBuilderHKT as SelectQueryBuilderHKT,
   SelectedFields,
 } from 'drizzle-orm/sqlite-core'
 
 declare module 'drizzle-orm/sqlite-core' {
-  interface SQLiteSelectBuilder<
-    TSelection extends SelectedFields | undefined,
-    TResultType extends 'sync' | 'async', TRunResult,
-    TBuilderMode extends 'db' | 'qb',
-  > {
+  interface SQLiteSelectBuilder<TSelection extends SelectedFields | undefined,
+    TResultType extends 'sync' | 'async',
+    TRunResult,
+    TBuilderMode extends 'db' | 'qb'> {
     /**
      * Creates a single-row placeholder base that can be left-joined with other
      * subqueries. This ensures the final result set always contains exactly one
@@ -28,10 +27,12 @@ declare module 'drizzle-orm/sqlite-core' {
      * Equivalent to calling `.from(sql.raw('(SELECT 1) AS "placeholder"'))`.
      */
     fromSingle(): TSelection extends SelectedFields
-      ? SQLiteSelectQueryBuilderBase<
-          SQLiteSelectQueryBuilderHKT,
-          undefined,
-          TResultType, TRunResult,
+      ? SelectQueryBuilderBase<
+          SelectQueryBuilderHKT,
+          undefined
+          ,
+          TResultType,
+          TRunResult,
           TSelection,
           'partial'
         >
@@ -39,7 +40,7 @@ declare module 'drizzle-orm/sqlite-core' {
   }
 }
 
-SQLiteSelectBuilder.prototype.fromSingle = function (): any {
+SelectBuilder.prototype.fromSingle = function (): any {
   const { fields }: { fields: SelectedFields | undefined } = this as any
   if (!fields) {
     throw new DrizzleError({ message: 'Selection is required' })

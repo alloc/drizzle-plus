@@ -5,7 +5,7 @@ import {
   type TableRelationalConfig,
   type TablesRelationalConfig,
 } from 'drizzle-orm'
-import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
+import { RelationalQueryBuilder } from '#dialect/query'
 import './count'
 
 export interface FindManyAndCountResult<T> {
@@ -21,11 +21,8 @@ interface FindManyAndCountQueryPromise<T>
   }
 }
 
-declare module 'drizzle-orm/pg-core/query-builders/query' {
-  export interface RelationalQueryBuilder<
-    TSchema extends TablesRelationalConfig,
-    TFields extends TableRelationalConfig,
-  > {
+declare module '#dialect/query' {
+  export interface RelationalQueryBuilder</* #dialect.relationalQueryBuilderTypeParams */> {
     findManyAndCount<TConfig extends DBQueryConfig<'many', TSchema, TFields>>(
       config?: KnownKeysOnly<TConfig, DBQueryConfig<'many', TSchema, TFields>>
     ): FindManyAndCountQueryPromise<BuildQueryResult<TSchema, TFields, TConfig>>

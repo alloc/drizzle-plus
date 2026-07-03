@@ -7,17 +7,17 @@ import {
   RelationsFilter,
   SQL,
   Subquery,
-  Table,
+  Table as BaseTable,
   type TableRelationalConfig,
   type TablesRelationalConfig,
 } from 'drizzle-orm'
 import {
-  SQLiteColumn,
-  SQLiteInsertBuilder,
-  SQLiteInsertSelectQueryBuilder,
-  SQLiteInsertValue,
-  SQLiteTable,
-  SQLiteUpdateSetSource,
+  SQLiteColumn as Column,
+  SQLiteInsertBuilder as InsertBuilder,
+  SQLiteInsertSelectQueryBuilder as InsertSelectQueryBuilder,
+  SQLiteInsertValue as InsertValue,
+  SQLiteTable as Table,
+  SQLiteUpdateSetSource as UpdateSetSource,
   QueryBuilder,
   WithSubqueryWithSelection,
 } from 'drizzle-orm/sqlite-core'
@@ -52,23 +52,23 @@ import {
  * Represents a `select` query that will have its result set used as the values
  * of an `upsert` query.
  */
-export type SQLiteUpsertSelectQuery<TTable extends SQLiteTable> =
-  | ((qb: QueryBuilder) => SQLiteInsertSelectQueryBuilder<TTable>)
-  | SQLiteInsertSelectQueryBuilder<TTable>
-  | Subquery<string, SQLiteInsertValue<TTable>>
+export type SQLiteUpsertSelectQuery<TTable extends Table> =
+  | ((qb: QueryBuilder) => InsertSelectQueryBuilder<TTable>)
+  | InsertSelectQueryBuilder<TTable>
+  | Subquery<string, InsertValue<TTable>>
   | adapter.RelationalQuery<
       any,
-      SQLiteInsertValue<TTable> | SQLiteInsertValue<TTable>[] | undefined
+      InsertValue<TTable> | InsertValue<TTable>[] | undefined
     >
 
-type DBUpsertUpdateFn<TTable extends SQLiteTable> = (tables: {
+type DBUpsertUpdateFn<TTable extends Table> = (tables: {
   current: TTable['_']['columns']
   excluded: TTable['_']['columns']
-}) => Partial<SQLiteUpdateSetSource<TTable>>
+}) => Partial<UpdateSetSource<TTable>>
 
 export interface DBUpsertConfig<
   TMode extends 'one' | 'many',
-  TTable extends SQLiteTable,
+  TTable extends Table,
   TReturning extends ReturningClause<TTable>,
   TWhere,
 > {
@@ -81,8 +81,8 @@ export interface DBUpsertConfig<
    * function that returns one.
    */
   data: TMode extends 'one'
-    ? SQLiteInsertValue<TTable>
-    : readonly SQLiteInsertValue<TTable>[] | SQLiteUpsertSelectQuery<TTable>
+    ? InsertValue<TTable>
+    : readonly InsertValue<TTable>[] | SQLiteUpsertSelectQuery<TTable>
   /**
    * Explicitly specify the columns to target for the `ON CONFLICT DO UPDATE`
    * clause.
@@ -121,11 +121,9 @@ export interface DBUpsertConfig<
 }
 
 declare module 'drizzle-orm/sqlite-core/query-builders/query' {
-  export interface RelationalQueryBuilder<
-    TMode extends 'sync' | 'async',
+  export interface RelationalQueryBuilder<TMode extends 'sync' | 'async',
     TSchema extends TablesRelationalConfig,
-    TFields extends TableRelationalConfig,
-  > {
+    TFields extends TableRelationalConfig> {
     upsert<TReturning extends ReturningClause<ExtractTable<TFields>>>(
       config: DBUpsertConfig<
         'one',
@@ -157,7 +155,7 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
   const { table, dialect, session } = getContext(this)
   const columns = getColumns(table)
 
-  const qb = new SQLiteInsertBuilder(table, session, dialect, config.with)
+  const qb = new InsertBuilder(table, session, dialect, config.with)
 
   let selection: Record<string, unknown> | undefined
   let query: adapter.InsertQuery
@@ -267,7 +265,7 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
 
 export class UpsertQueryPromise<
   TMode extends 'one' | 'many',
-  TTable extends Table,
+  TTable extends BaseTable,
   TReturning extends ReturningClause<TTable>,
 > extends QueryPromise<ReturningResultFields<TMode, TTable, TReturning>> {
   constructor(
@@ -294,7 +292,7 @@ export class UpsertQueryPromise<
     ResultFieldsToSelection<ReturningResultFields<TMode, TTable, TReturning>>,
     TAlias
   > {
-    const orderedFields = orderSelectedFields<SQLiteColumn>(this.returning)
+    const orderedFields = orderSelectedFields<Column>(this.returning)
 
     return createWithSubquery(
       this.getSQL(),

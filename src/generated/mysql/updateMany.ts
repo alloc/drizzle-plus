@@ -7,7 +7,7 @@ import {
   type TableRelationalConfig,
   type TablesRelationalConfig,
 } from 'drizzle-orm'
-import { MySqlTable, MySqlUpdateBase, MySqlUpdateSetSource } from 'drizzle-orm/mysql-core'
+import { MySqlTable as Table, MySqlUpdateBase as UpdateBase, MySqlUpdateSetSource as UpdateSetSource } from 'drizzle-orm/mysql-core'
 import { RelationalQueryBuilder } from 'drizzle-orm/mysql-core/query-builders/query'
 import {
   AnyRelationsFilter,
@@ -21,13 +21,13 @@ import * as adapter from '../../internal/dialects/mysql'
 import { ExcludeDialect, getContext, getFilterSQL } from './internal'
 
 export interface DBUpdateManyConfig<
-  TTable extends MySqlTable,
+  TTable extends Table,
   TReturning extends ReturningClause<TTable> = ReturningClause<TTable>,
   TWhere = AnyRelationsFilter,
 > {
   set:
-    | MySqlUpdateSetSource<TTable>
-    | ((table: TTable['_']['columns']) => MySqlUpdateSetSource<TTable>)
+    | UpdateSetSource<TTable>
+    | ((table: TTable['_']['columns']) => UpdateSetSource<TTable>)
   /**
    * Specify a filter to only update rows that match the filter.
    */
@@ -54,18 +54,16 @@ export interface DBUpdateManyConfig<
 }
 
 declare module 'drizzle-orm/mysql-core/query-builders/query' {
-  export interface RelationalQueryBuilder<
-    TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase,
+  export interface RelationalQueryBuilder<TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase,
     TSchema extends TablesRelationalConfig,
-    TFields extends TableRelationalConfig,
-  > {
+    TFields extends TableRelationalConfig> {
     updateMany<TReturning extends ReturningClause<ExtractTable<TFields>> = {}>(
       config: DBUpdateManyConfig<
-        ExtractTable<TFields, MySqlTable>,
+        ExtractTable<TFields, Table>,
         TReturning,
         RelationsFilter<TFields, TSchema>
       >
-    ): UpdateManyQueryPromise<ExtractTable<TFields, MySqlTable>, TReturning>
+    ): UpdateManyQueryPromise<ExtractTable<TFields, Table>, TReturning>
   }
 }
 
@@ -87,7 +85,7 @@ RelationalQueryBuilder.prototype.updateMany = function (
         )
       : undefined
 
-  const query = new MySqlUpdateBase(
+  const query = new UpdateBase(
     table,
     isFunction(config.set) ? config.set(columns) : config.set,
     session,
@@ -117,14 +115,14 @@ RelationalQueryBuilder.prototype.updateMany = function (
 }
 
 export type UpdateManyQueryResult<
-  TTable extends MySqlTable,
+  TTable extends Table,
   TReturning extends ReturningClause<TTable>,
 > = keyof TReturning extends never
   ? number
   : ReturningResultFields<'many', TTable, TReturning>
 
 export interface UpdateManyQueryPromise<
-  TTable extends MySqlTable,
+  TTable extends Table,
   TReturning extends ReturningClause<TTable>,
 > extends QueryPromise<UpdateManyQueryResult<TTable, TReturning>> {
   toSQL(): Query

@@ -1,15 +1,15 @@
 import { getColumns } from 'drizzle-orm'
-import { PgTable, TableConfig } from 'drizzle-orm/pg-core'
+import { Table, TableConfig } from '#dialect/core'
 
-declare module 'drizzle-orm/pg-core' {
-  interface PgTable<T extends TableConfig> {
+declare module '#dialect/core' {
+  interface Table<T extends TableConfig> {
     $without<TField extends keyof T['columns']>(
       ...fields: TField[]
     ): Omit<T['columns'], TField>
   }
 }
 
-PgTable.prototype.$without = function (...fields) {
+Table.prototype.$without = function (...fields) {
   const columns = { ...getColumns(this) }
   for (const field of fields) {
     delete columns[field]

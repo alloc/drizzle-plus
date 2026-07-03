@@ -6,21 +6,21 @@ import {
   RelationsFilter,
   SQL,
   Subquery,
-  Table,
+  Table as BaseTable,
   type TableRelationalConfig,
   type TablesRelationalConfig,
 } from 'drizzle-orm'
 import {
-  PgColumn,
-  PgInsertBuilder,
-  PgInsertSelectQueryBuilder,
-  PgInsertValue,
-  PgTable,
-  PgUpdateSetSource,
+  Column,
+  InsertBuilder,
+  InsertSelectQueryBuilder,
+  InsertValue,
+  Table,
+  UpdateSetSource,
   QueryBuilder,
   WithSubqueryWithSelection,
-} from 'drizzle-orm/pg-core'
-import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
+} from '#dialect/core'
+import { RelationalQueryBuilder } from '#dialect/query'
 import { TypedQueryBuilder } from 'drizzle-orm/query-builders/query-builder'
 import {
   ExtractTable,
@@ -36,7 +36,7 @@ import {
   orderSelectedFields,
 } from 'drizzle-plus/utils'
 import { isFunction, select } from 'radashi'
-import * as adapter from './adapters/pg'
+import * as adapter from './adapters/#dialect'
 import {
   buildInsertSelect,
   createWithSubquery,
@@ -51,23 +51,23 @@ import {
  * Represents a `select` query that will have its result set used as the values
  * of an `upsert` query.
  */
-export type PgUpsertSelectQuery<TTable extends PgTable> =
-  | ((qb: QueryBuilder) => PgInsertSelectQueryBuilder<TTable>)
-  | PgInsertSelectQueryBuilder<TTable>
-  | Subquery<string, PgInsertValue<TTable>>
+export type UpsertSelectQuery<TTable extends Table> =
+  | ((qb: QueryBuilder) => InsertSelectQueryBuilder<TTable>)
+  | InsertSelectQueryBuilder<TTable>
+  | Subquery<string, InsertValue<TTable>>
   | adapter.RelationalQuery<
       any,
-      PgInsertValue<TTable> | PgInsertValue<TTable>[] | undefined
+      InsertValue<TTable> | InsertValue<TTable>[] | undefined
     >
 
-type DBUpsertUpdateFn<TTable extends PgTable> = (tables: {
+type DBUpsertUpdateFn<TTable extends Table> = (tables: {
   current: TTable['_']['columns']
   excluded: TTable['_']['columns']
-}) => Partial<PgUpdateSetSource<TTable>>
+}) => Partial<UpdateSetSource<TTable>>
 
 export interface DBUpsertConfig<
   TMode extends 'one' | 'many',
-  TTable extends PgTable,
+  TTable extends Table,
   TReturning extends ReturningClause<TTable>,
   TWhere,
 > {
@@ -80,8 +80,8 @@ export interface DBUpsertConfig<
    * function that returns one.
    */
   data: TMode extends 'one'
-    ? PgInsertValue<TTable>
-    : readonly PgInsertValue<TTable>[] | PgUpsertSelectQuery<TTable>
+    ? InsertValue<TTable>
+    : readonly InsertValue<TTable>[] | UpsertSelectQuery<TTable>
   /**
    * Explicitly specify the columns to target for the `ON CONFLICT DO UPDATE`
    * clause.
@@ -119,11 +119,8 @@ export interface DBUpsertConfig<
     | undefined
 }
 
-declare module 'drizzle-orm/pg-core/query-builders/query' {
-  export interface RelationalQueryBuilder<
-    TSchema extends TablesRelationalConfig,
-    TFields extends TableRelationalConfig,
-  > {
+declare module '#dialect/query' {
+  export interface RelationalQueryBuilder</* #dialect.relationalQueryBuilderTypeParams */> {
     upsert<TReturning extends ReturningClause<ExtractTable<TFields>>>(
       config: DBUpsertConfig<
         'one',
@@ -155,7 +152,7 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
   const { table, dialect, session } = getContext(this)
   const columns = getColumns(table)
 
-  const qb = new PgInsertBuilder(table, session, dialect, config.with)
+  const qb = new InsertBuilder(table, session, dialect, config.with)
 
   let selection: Record<string, unknown> | undefined
   let query: adapter.InsertQuery
@@ -265,7 +262,7 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
 
 export class UpsertQueryPromise<
   TMode extends 'one' | 'many',
-  TTable extends Table,
+  TTable extends BaseTable,
   TReturning extends ReturningClause<TTable>,
 > extends QueryPromise<ReturningResultFields<TMode, TTable, TReturning>> {
   constructor(
@@ -292,7 +289,7 @@ export class UpsertQueryPromise<
     ResultFieldsToSelection<ReturningResultFields<TMode, TTable, TReturning>>,
     TAlias
   > {
-    const orderedFields = orderSelectedFields<PgColumn>(this.returning)
+    const orderedFields = orderSelectedFields<Column>(this.returning)
 
     return createWithSubquery(
       this.getSQL(),

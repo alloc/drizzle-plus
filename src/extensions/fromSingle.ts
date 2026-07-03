@@ -1,19 +1,14 @@
-// mysql-insert: import type { PreparedQueryHKTBase } from 'drizzle-orm/mysql-core'
+/* #dialect.extraTypeImports */
 import { DrizzleError, sql } from 'drizzle-orm'
 import {
-  PgSelectBuilder,
-  PgSelectQueryBuilderBase,
-  PgSelectQueryBuilderHKT,
+  SelectBuilder,
+  SelectQueryBuilderBase,
+  SelectQueryBuilderHKT,
   SelectedFields,
-} from 'drizzle-orm/pg-core'
+} from '#dialect/core'
 
-declare module 'drizzle-orm/pg-core' {
-  interface PgSelectBuilder<
-    TSelection extends SelectedFields | undefined,
-    // mysql-insert: TPreparedQueryHKT extends PreparedQueryHKTBase,
-    // sqlite-insert: TResultType extends 'sync' | 'async', TRunResult,
-    TBuilderMode extends 'db' | 'qb',
-  > {
+declare module '#dialect/core' {
+  interface SelectBuilder</* #dialect.selectBuilderFromTypeParams */> {
     /**
      * Creates a single-row placeholder base that can be left-joined with other
      * subqueries. This ensures the final result set always contains exactly one
@@ -29,19 +24,17 @@ declare module 'drizzle-orm/pg-core' {
      * Equivalent to calling `.from(sql.raw('(SELECT 1) AS "placeholder"'))`.
      */
     fromSingle(): TSelection extends SelectedFields
-      ? PgSelectQueryBuilderBase<
-          PgSelectQueryBuilderHKT,
-          undefined,
-          // sqlite-insert: TResultType, TRunResult,
-          TSelection,
-          'partial'
-          // mysql-insert: ,TPreparedQueryHKT
+      ? SelectQueryBuilderBase<
+          SelectQueryBuilderHKT,
+          undefined
+          /* #dialect.selectQueryBuilderBaseArgs */
+          /* #dialect.selectQueryBuilderBaseTrailingArgs */
         >
       : never
   }
 }
 
-PgSelectBuilder.prototype.fromSingle = function (): any {
+SelectBuilder.prototype.fromSingle = function (): any {
   const { fields }: { fields: SelectedFields | undefined } = this as any
   if (!fields) {
     throw new DrizzleError({ message: 'Selection is required' })

@@ -23,10 +23,8 @@ interface FindManyAndCountQueryPromise<T>
 }
 
 declare module 'drizzle-orm/pg-core/query-builders/query' {
-  export interface RelationalQueryBuilder<
-    TSchema extends TablesRelationalConfig,
-    TFields extends TableRelationalConfig,
-  > {
+  export interface RelationalQueryBuilder<TSchema extends TablesRelationalConfig,
+    TFields extends TableRelationalConfig> {
     findManyAndCount<TConfig extends DBQueryConfig<'many', TSchema, TFields>>(
       config?: KnownKeysOnly<TConfig, DBQueryConfig<'many', TSchema, TFields>>
     ): FindManyAndCountQueryPromise<BuildQueryResult<TSchema, TFields, TConfig>>

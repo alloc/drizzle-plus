@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { SQL, Subquery } from 'drizzle-orm'
-import { SQLiteColumn } from 'drizzle-orm/sqlite-core'
+import { SQLiteColumn as Column } from 'drizzle-orm/sqlite-core'
 import type { RelationalQueryBuilder } from 'drizzle-orm/sqlite-core/query-builders/query'
 import { RawFieldsToSelection } from 'drizzle-plus/types'
 
@@ -12,7 +12,7 @@ export type { RelationalQueryBuilder }
  * @example
  * ```ts
  * type FooColumns = InferColumns<typeof db.query.foo>
- * //   ^? type { id: SQLiteColumn; name: SQLiteColumn }
+ * //   ^? type { id: Column; name: Column }
  * ```
  */
 type ColumnsOf<T> = T extends { columns: infer TColumns } ? TColumns : never
@@ -30,7 +30,7 @@ type RawFieldsToColumnsSelection<T extends Record<string, unknown>> =
         [K in keyof TSelection]: TSelection[K] extends infer TExpression
           ?
               | TExpression
-              | (TExpression extends SQL.Aliased<any> ? SQLiteColumn : never)
+              | (TExpression extends SQL.Aliased<any> ? Column : never)
           : never
       }
     : never

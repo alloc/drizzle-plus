@@ -1,17 +1,14 @@
 // @ts-nocheck
 import { mapRelationalRow, sql, SQL } from 'drizzle-orm'
 import {
-  PgColumn,
-  PgSelectHKTBase,
-  PgSelectBuilder,
+  PgColumn as Column,
+  PgSelectHKTBase as SelectHKTBase,
+  PgSelectBuilder as SelectBuilder,
   SelectedFields,
   SelectedFieldsOrdered,
   WithSubqueryWithSelection,
 } from 'drizzle-orm/pg-core'
-import {
-  PgRelationalQuery,
-  PgRelationalQueryHKTBase,
-} from 'drizzle-orm/pg-core/query-builders/query'
+import { PgRelationalQuery as RelationalQuery, PgRelationalQueryHKTBase as RelationalQueryHKTBase } from 'drizzle-orm/pg-core/query-builders/query'
 import { DecodedFields, ResultFieldsToSelection } from 'drizzle-plus/types'
 import {
   mapSelectedFieldsToDecoders,
@@ -25,14 +22,15 @@ export type PgRelationalSubquery<
 > = WithSubqueryWithSelection<ResultFieldsToSelection<TResult>, TAlias>
 
 declare module 'drizzle-orm/pg-core/query-builders/query' {
-  interface PgRelationalQuery<THKT extends PgRelationalQueryHKTBase, TResult> {
+  interface PgRelationalQuery<THKT extends PgRelationalQueryHKTBase,
+    TResult> {
     as<TAlias extends string>(
       alias: TAlias
     ): PgRelationalSubquery<TResult, TAlias>
   }
 }
 
-PgRelationalQuery.prototype.as = function (alias: string): any {
+RelationalQuery.prototype.as = function (alias: string): any {
   const { sql, selection } = buildRelationalQuery(this)
 
   const decodedFields: DecodedFields = {}
@@ -48,10 +46,8 @@ PgRelationalQuery.prototype.as = function (alias: string): any {
 }
 
 declare module 'drizzle-orm/pg-core' {
-  interface PgSelectBuilder<
-    TSelection extends SelectedFields | undefined,
-    THKT extends PgSelectHKTBase,
-  > {
+  interface PgSelectBuilder<TSelection extends SelectedFields | undefined,
+    THKT extends SelectHKTBase> {
     as<TAlias extends string>(
       alias: TAlias
     ): TSelection extends SelectedFields
@@ -60,7 +56,7 @@ declare module 'drizzle-orm/pg-core' {
   }
 }
 
-PgSelectBuilder.prototype.as = function (alias): any {
+SelectBuilder.prototype.as = function (alias): any {
   const {
     fields,
     dialect,
@@ -73,7 +69,7 @@ PgSelectBuilder.prototype.as = function (alias): any {
     throw new Error('Cannot alias a select query without a selection')
   }
 
-  const orderedFields = orderSelectedFields<PgColumn>(fields)
+  const orderedFields = orderSelectedFields<Column>(fields)
 
   return createWithSubquery(
     sql`select ${dialect.buildSelection(orderedFields)}`,

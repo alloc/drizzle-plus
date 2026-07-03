@@ -1,4 +1,4 @@
-// mysql-insert: import type { PreparedQueryHKTBase } from 'drizzle-orm/mysql-core'
+/* #dialect.extraTypeImports */
 import {
   AnyRelations,
   DrizzleError,
@@ -11,33 +11,23 @@ import {
 } from 'drizzle-orm'
 import type * as V1 from 'drizzle-orm/_relations'
 import {
-  PgColumn,
-  PgTable,
+  Column,
+  Table,
   TableConfig,
   WithSubqueryWithSelection,
-} from 'drizzle-orm/pg-core'
+} from '#dialect/core'
 import { noopDecoder, sql, SQLWrapper } from 'drizzle-orm/sql'
-import type { SQLType } from 'drizzle-plus/pg'
+import type { SQLType } from 'drizzle-plus/#dialect'
 import { DecodedFields, RawFieldsToSelection } from 'drizzle-plus/types'
 import { pushStringChunk } from 'drizzle-plus/utils'
 import { createWithSubquery, setWithSubqueryAddons } from './internal'
 
-type PgTableWithTheseColumns<K extends string> = PgTable<
-  Omit<TableConfig, 'columns'> & { columns: Record<K, PgColumn> }
+type TableWithTheseColumns<K extends string> = Table<
+  Omit<TableConfig, 'columns'> & { columns: Record<K, Column> }
 >
 
-declare module 'drizzle-orm/pg-core' {
-  interface PgDatabase<
-    // sqlite-insert: TResultKind extends 'sync' | 'async',
-    // sqlite-insert: TRunResult,
-    // sqlite-remove-next-line
-    TQueryResult extends import('drizzle-orm/pg-core').PgQueryResultHKT,
-    // mysql-insert: TPreparedQueryHKT extends PreparedQueryHKTBase,
-    TFullSchema extends Record<string, unknown>,
-    TRelations extends AnyRelations,
-    TTablesConfig extends TablesRelationalConfig,
-    TSchema extends V1.TablesRelationalConfig,
-  > {
+declare module '#dialect/core' {
+  interface Database</* #dialect.databaseTypeParams */> {
     /**
      * Allows you to declare a values list as raw SQL or a subquery. Use the
      * `getSQL` method to get the raw SQL. Use the `as` method to get a
@@ -54,7 +44,7 @@ declare module 'drizzle-orm/pg-core' {
       rows: readonly TRow[],
       typings?:
         | { [K in keyof TRow]?: SQLType }
-        | PgTableWithTheseColumns<string & keyof TRow>
+        | TableWithTheseColumns<string & keyof TRow>
     ): ValuesList<TRow>
     /**
      * Allows you to declare a values list in a CTE.
@@ -72,7 +62,7 @@ declare module 'drizzle-orm/pg-core' {
         rows: readonly TRow[],
         typings?:
           | { [K in keyof TRow]?: SQLType }
-          | PgTableWithTheseColumns<string & keyof TRow>
+          | TableWithTheseColumns<string & keyof TRow>
       ): WithSubqueryWithSelection<RawFieldsToSelection<TRow>, string>
     }
   }
@@ -90,9 +80,9 @@ declare module 'drizzle-orm/pg-core' {
  * db.select().from(db.$values([{ a: 1 }, { a: 2 }]).as('my_values'))
  * ```
  */
-PgDatabase.prototype.$values = function (
+Database.prototype.$values = function (
   rows: readonly Record<string, unknown>[],
-  typings?: Partial<Record<string, SQLType>> | PgTable
+  typings?: Partial<Record<string, SQLType>> | Table
 ): any {
   if (!rows.length) {
     throw new DrizzleError({ message: 'No rows provided' })
@@ -101,17 +91,17 @@ PgDatabase.prototype.$values = function (
   return new ValuesList(casing, Object.keys(rows[0]), rows, typings)
 }
 
-PgDatabase.prototype.$withValues = function (
+Database.prototype.$withValues = function (
   alias: string,
   rows: readonly Record<string, unknown>[],
-  typings?: Partial<Record<string, SQLType>> | PgTable
+  typings?: Partial<Record<string, SQLType>> | Table
 ): any {
   const withSubquery = createWithSubquery(
     this.$values(rows, typings).getSQL(),
     alias,
     new Proxy(rows[0] as DecodedFields, {
       get: (_, key: string) =>
-        (is(typings, PgTable) && getColumns(typings)[key]) || noopDecoder,
+        (is(typings, Table) && getColumns(typings)[key]) || noopDecoder,
     })
   )
   return setWithSubqueryAddons(withSubquery, {
@@ -130,20 +120,21 @@ export type ValuesListSubquery<
 
 export class ValuesList<
   TValues extends Record<string, unknown> = Record<string, unknown>,
-> implements SQLWrapper<unknown> {
+> implements SQLWrapper<unknown>
+{
   declare _: {
     selectedFields: RawFieldsToSelection<TValues>
   }
   private shouldInlineParams = false
-  private typings?: Partial<Record<string, SQLType | PgColumn>>
+  private typings?: Partial<Record<string, SQLType | Column>>
   constructor(
     private casing: { convert: (key: string) => string },
     private keys: string[],
     private rows: readonly object[],
-    typings?: Partial<Record<string, SQLType>> | PgTable
+    typings?: Partial<Record<string, SQLType>> | Table
   ) {
     this.typings =
-      typings && (is(typings, PgTable) ? getColumns(typings) : typings)
+      typings && (is(typings, Table) ? getColumns(typings) : typings)
   }
 
   as<TAlias extends string>(
@@ -156,7 +147,7 @@ export class ValuesList<
         sql`${sql.identifier(alias)}.${sql.identifier(columnList[index])}`)
 
       const type = this.typings?.[key]
-      if (is(type, PgColumn)) {
+      if (is(type, Column)) {
         field.mapWith(type)
       }
     })
@@ -194,7 +185,7 @@ export class ValuesList<
         if (rowIndex === 0) {
           let type = this.typings?.[key]
           if (type) {
-            value = sql`cast(${value} as ${sql.raw(is(type, PgColumn<any>) ? type.getSQLType() : type)})`
+            value = sql`cast(${value} as ${sql.raw(is(type, Column<any>) ? type.getSQLType() : type)})`
           }
         }
 

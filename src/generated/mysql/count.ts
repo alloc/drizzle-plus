@@ -8,16 +8,14 @@ import {
   type TableRelationalConfig,
   type TablesRelationalConfig,
 } from 'drizzle-orm'
-import { MySqlDialect, MySqlSession, MySqlTable } from 'drizzle-orm/mysql-core'
+import { MySqlDialect as Dialect, MySqlSession as Session, MySqlTable as Table } from 'drizzle-orm/mysql-core'
 import { RelationalQueryBuilder } from 'drizzle-orm/mysql-core/query-builders/query'
 import { getContext, getFilterSQL } from './internal'
 
 declare module 'drizzle-orm/mysql-core/query-builders/query' {
-  export interface RelationalQueryBuilder<
-    TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase,
+  export interface RelationalQueryBuilder<TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase,
     TSchema extends TablesRelationalConfig,
-    TFields extends TableRelationalConfig,
-  > {
+    TFields extends TableRelationalConfig> {
     count(filter?: RelationsFilter<TFields, TSchema>): CountQueryPromise
   }
 }
@@ -37,10 +35,10 @@ RelationalQueryBuilder.prototype.count = function (
 
 export class CountQueryPromise extends QueryPromise<number> {
   constructor(
-    private table: MySqlTable,
+    private table: Table,
     private filter: SQL | undefined,
-    private session: MySqlSession,
-    private dialect: MySqlDialect
+    private session: Session,
+    private dialect: Dialect
   ) {
     super()
   }

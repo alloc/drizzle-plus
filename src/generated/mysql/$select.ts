@@ -2,19 +2,16 @@
 import type { PreparedQueryHKTBase } from 'drizzle-orm/mysql-core'
 import { AnyRelations, TablesRelationalConfig } from 'drizzle-orm'
 import type * as V1 from 'drizzle-orm/_relations'
-import { MySqlDatabase } from 'drizzle-orm/mysql-core/db'
+import { MySqlDatabase as Database } from 'drizzle-orm/mysql-core/db'
 import { toSelection } from 'drizzle-plus'
 import { RawFieldsToSelection } from 'drizzle-plus/types'
 
 declare module 'drizzle-orm/mysql-core/db' {
-  interface MySqlDatabase<
-    TQueryResult extends import('drizzle-orm/mysql-core').MySqlQueryResultHKT,
-    TPreparedQueryHKT extends PreparedQueryHKTBase,
+  interface MySqlDatabase<TPreparedQueryHKT extends PreparedQueryHKTBase,
     TFullSchema extends Record<string, unknown>,
     TRelations extends AnyRelations,
     TTablesConfig extends TablesRelationalConfig,
-    TSchema extends V1.TablesRelationalConfig,
-  > {
+    TSchema extends V1.TablesRelationalConfig> {
     /**
      * Create a "selection" object compatible with `db.select` from a plain
      * object containing almost any value.
@@ -31,5 +28,5 @@ declare module 'drizzle-orm/mysql-core/db' {
   }
 }
 
-MySqlDatabase.prototype.$select = <T extends Record<string, unknown>>(fields: T) =>
+Database.prototype.$select = <T extends Record<string, unknown>>(fields: T) =>
   toSelection(fields, { addAliases: true })

@@ -9,9 +9,8 @@ import type { SelectResultFields } from 'drizzle-orm/query-builders/select.types
 import type { InferOrderBy } from 'drizzle-plus/types'
 import type { InferColumns } from './types'
 
-export type InferCursor<T extends RelationalQueryBuilder<any, any, any>> = Partial<
-  SelectResultFields<InferColumns<T>>
->
+export type InferCursor<T extends RelationalQueryBuilder<any, any, any>> =
+  Partial<SelectResultFields<InferColumns<T>>>
 
 /**
  * The return type of the `$cursor` method.
@@ -35,14 +34,15 @@ export interface RelationalQueryCursor<
 }
 
 declare module 'drizzle-orm/mysql-core/query-builders/query' {
-  export interface RelationalQueryBuilder<
-    TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase,
+  export interface RelationalQueryBuilder<TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase,
     TSchema extends TablesRelationalConfig,
-    TFields extends TableRelationalConfig,
-  > {
+    TFields extends TableRelationalConfig> {
     $cursor<
       TOrderBy extends Exclude<InferOrderBy<this>, Function>,
-      TCursor extends Partial<Record<keyof TOrderBy, unknown>> | null | undefined,
+      TCursor extends
+        | Partial<Record<keyof TOrderBy, unknown>>
+        | null
+        | undefined,
     >(
       orderBy: TOrderBy,
       cursor: TCursor

@@ -7,7 +7,7 @@ import {
   type TableRelationalConfig,
   type TablesRelationalConfig,
 } from 'drizzle-orm'
-import { PgTable, PgUpdateBase, PgUpdateSetSource } from 'drizzle-orm/pg-core'
+import { PgTable as Table, PgUpdateBase as UpdateBase, PgUpdateSetSource as UpdateSetSource } from 'drizzle-orm/pg-core'
 import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
 import {
   AnyRelationsFilter,
@@ -21,13 +21,13 @@ import * as adapter from '../../internal/dialects/pg'
 import { ExcludeDialect, getContext, getFilterSQL } from './internal'
 
 export interface DBUpdateManyConfig<
-  TTable extends PgTable,
+  TTable extends Table,
   TReturning extends ReturningClause<TTable> = ReturningClause<TTable>,
   TWhere = AnyRelationsFilter,
 > {
   set:
-    | PgUpdateSetSource<TTable>
-    | ((table: TTable['_']['columns']) => PgUpdateSetSource<TTable>)
+    | UpdateSetSource<TTable>
+    | ((table: TTable['_']['columns']) => UpdateSetSource<TTable>)
   /**
    * Specify a filter to only update rows that match the filter.
    */
@@ -54,17 +54,15 @@ export interface DBUpdateManyConfig<
 }
 
 declare module 'drizzle-orm/pg-core/query-builders/query' {
-  export interface RelationalQueryBuilder<
-    TSchema extends TablesRelationalConfig,
-    TFields extends TableRelationalConfig,
-  > {
+  export interface RelationalQueryBuilder<TSchema extends TablesRelationalConfig,
+    TFields extends TableRelationalConfig> {
     updateMany<TReturning extends ReturningClause<ExtractTable<TFields>> = {}>(
       config: DBUpdateManyConfig<
-        ExtractTable<TFields, PgTable>,
+        ExtractTable<TFields, Table>,
         TReturning,
         RelationsFilter<TFields, TSchema>
       >
-    ): UpdateManyQueryPromise<ExtractTable<TFields, PgTable>, TReturning>
+    ): UpdateManyQueryPromise<ExtractTable<TFields, Table>, TReturning>
   }
 }
 
@@ -86,7 +84,7 @@ RelationalQueryBuilder.prototype.updateMany = function (
         )
       : undefined
 
-  const query = new PgUpdateBase(
+  const query = new UpdateBase(
     table,
     isFunction(config.set) ? config.set(columns) : config.set,
     session,
@@ -116,14 +114,14 @@ RelationalQueryBuilder.prototype.updateMany = function (
 }
 
 export type UpdateManyQueryResult<
-  TTable extends PgTable,
+  TTable extends Table,
   TReturning extends ReturningClause<TTable>,
 > = keyof TReturning extends never
   ? number
   : ReturningResultFields<'many', TTable, TReturning>
 
 export interface UpdateManyQueryPromise<
-  TTable extends PgTable,
+  TTable extends Table,
   TReturning extends ReturningClause<TTable>,
 > extends QueryPromise<UpdateManyQueryResult<TTable, TReturning>> {
   toSQL(): Query

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { SQL, Subquery } from 'drizzle-orm'
-import { MySqlColumn } from 'drizzle-orm/mysql-core'
+import { MySqlColumn as Column } from 'drizzle-orm/mysql-core'
 import type { RelationalQueryBuilder } from 'drizzle-orm/mysql-core/query-builders/query'
 import { RawFieldsToSelection } from 'drizzle-plus/types'
 
@@ -12,7 +12,7 @@ export type { RelationalQueryBuilder }
  * @example
  * ```ts
  * type FooColumns = InferColumns<typeof db.query.foo>
- * //   ^? type { id: MySqlColumn; name: MySqlColumn }
+ * //   ^? type { id: Column; name: Column }
  * ```
  */
 type ColumnsOf<T> = T extends { columns: infer TColumns } ? TColumns : never
@@ -30,7 +30,7 @@ type RawFieldsToColumnsSelection<T extends Record<string, unknown>> =
         [K in keyof TSelection]: TSelection[K] extends infer TExpression
           ?
               | TExpression
-              | (TExpression extends SQL.Aliased<any> ? MySqlColumn : never)
+              | (TExpression extends SQL.Aliased<any> ? Column : never)
           : never
       }
     : never

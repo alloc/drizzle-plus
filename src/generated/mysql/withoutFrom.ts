@@ -10,13 +10,13 @@ import {
   Subquery,
 } from 'drizzle-orm'
 import {
-  MySqlColumn,
-  MySqlDialect,
-  MySqlSelectBase,
-  MySqlSelectBuilder,
-  MySqlSelectConfig,
-  MySqlSession,
-  MySqlSetOperatorWithResult,
+  MySqlColumn as Column,
+  MySqlDialect as Dialect,
+  MySqlSelectBase as SelectBase,
+  MySqlSelectBuilder as SelectBuilder,
+  MySqlSelectConfig as SelectConfig,
+  MySqlSession as Session,
+  MySqlSetOperatorWithResult as SetOperatorWithResult,
   SelectedFields,
   SelectedFieldsOrdered,
 } from 'drizzle-orm/mysql-core'
@@ -25,11 +25,9 @@ import { SelectResultFields } from 'drizzle-orm/query-builders/select.types'
 import { orderSelectedFields } from 'drizzle-plus/utils'
 
 declare module 'drizzle-orm/mysql-core' {
-  interface MySqlSelectBuilder<
-    TSelection extends SelectedFields | undefined,
+  interface MySqlSelectBuilder<TSelection extends SelectedFields | undefined,
     TPreparedQueryHKT extends PreparedQueryHKTBase,
-    TBuilderMode extends 'db' | 'qb',
-  > {
+    TBuilderMode extends 'db' | 'qb'> {
     withoutFrom(): TSelection extends SelectedFields
       ? MySqlSelectWithoutFrom<TSelection>
       : never
@@ -38,15 +36,15 @@ declare module 'drizzle-orm/mysql-core' {
 
 type MySqlSelectBuilderPrivate = {
   fields: ColumnsSelection
-  session?: MySqlSession
-  dialect: MySqlDialect
+  session?: Session
+  dialect: Dialect
   withList: Subquery[]
-  distinct?: boolean | { on: (MySqlColumn | SQLWrapper)[] }
+  distinct?: boolean | { on: (Column | SQLWrapper)[] }
 }
 
 export class MySqlSelectWithoutFrom<TSelection extends SelectedFields>
   extends TypedQueryBuilder<TSelection, SelectResultFields<TSelection>[]>
-  implements MySqlSetOperatorWithResult<SelectResultFields<TSelection>[]>
+  implements SetOperatorWithResult<SelectResultFields<TSelection>[]>
 {
   _: {
     readonly hkt: any
@@ -61,19 +59,19 @@ export class MySqlSelectWithoutFrom<TSelection extends SelectedFields>
   }
 
   declare private config: {
-    fields: MySqlSelectConfig['fields']
-    withList?: MySqlSelectConfig['withList']
+    fields: SelectConfig['fields']
+    withList?: SelectConfig['withList']
   }
 
   declare private joinsNotNullableMap: Record<string, boolean>
-  declare private session: MySqlSession | undefined
-  declare private dialect: MySqlDialect
+  declare private session: Session | undefined
+  declare private dialect: Dialect
   declare private usedTables: Set<string>
 
   constructor(select: MySqlSelectBuilderPrivate, selectedFields: TSelection) {
     super()
 
-    // Any property required by MySqlSelectBase#_prepare must be here.
+    // Any property required by SelectBase#_prepare must be here.
     this.config = { fields: { ...selectedFields }, withList: select.withList }
     this.joinsNotNullableMap = {}
     this.session = select.session
@@ -88,14 +86,14 @@ export class MySqlSelectWithoutFrom<TSelection extends SelectedFields>
       buildSelection: (fields: SelectedFieldsOrdered) => SQL
       buildWithCTE: (withList: Subquery[] | undefined) => SQL | undefined
     }
-    const orderedFields = orderSelectedFields<MySqlColumn>(this._.selectedFields)
+    const orderedFields = orderSelectedFields<Column>(this._.selectedFields)
     const withSql = dialect.buildWithCTE(this.config.withList)
     return sql`${withSql}select ${dialect.buildSelection(orderedFields)}`
   }
   execute(placeholderValues?: Record<string, unknown>) {
     return this._prepare().execute(placeholderValues)
   }
-  // Inherited from MySqlSelectBase.
+  // Inherited from SelectBase.
   declare private _prepare: () => {
     execute: (
       placeholderValues?: Record<string, unknown>
@@ -109,13 +107,13 @@ export interface MySqlSelectWithoutFrom<TSelection extends SelectedFields>
 }
 
 Object.defineProperties(MySqlSelectWithoutFrom.prototype, {
-  ...Object.getOwnPropertyDescriptors(MySqlSelectBase.prototype),
+  ...Object.getOwnPropertyDescriptors(SelectBase.prototype),
   constructor: {
     value: MySqlSelectWithoutFrom,
   },
 })
 
-MySqlSelectBuilder.prototype.withoutFrom = function (): any {
+SelectBuilder.prototype.withoutFrom = function (): any {
   const { fields } = this as unknown as {
     fields: SelectedFields | undefined
   }

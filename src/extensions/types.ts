@@ -1,6 +1,6 @@
 import { SQL, Subquery } from 'drizzle-orm'
-import { PgColumn } from 'drizzle-orm/pg-core'
-import type { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
+import { Column } from '#dialect/core'
+import type { RelationalQueryBuilder } from '#dialect/query'
 import { RawFieldsToSelection } from 'drizzle-plus/types'
 
 export type { RelationalQueryBuilder }
@@ -11,7 +11,7 @@ export type { RelationalQueryBuilder }
  * @example
  * ```ts
  * type FooColumns = InferColumns<typeof db.query.foo>
- * //   ^? type { id: PgColumn; name: PgColumn }
+ * //   ^? type { id: Column; name: Column }
  * ```
  */
 type ColumnsOf<T> = T extends { columns: infer TColumns } ? TColumns : never
@@ -29,7 +29,7 @@ type RawFieldsToColumnsSelection<T extends Record<string, unknown>> =
         [K in keyof TSelection]: TSelection[K] extends infer TExpression
           ?
               | TExpression
-              | (TExpression extends SQL.Aliased<any> ? PgColumn : never)
+              | (TExpression extends SQL.Aliased<any> ? Column : never)
           : never
       }
     : never

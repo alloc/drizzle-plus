@@ -2,8 +2,8 @@
 import { ColumnsSelection, Name, SQL, StringChunk, Subquery } from 'drizzle-orm'
 import type * as V1 from 'drizzle-orm/_relations'
 import {
-  PgColumn,
-  PgDatabase,
+  PgColumn as Column,
+  PgDatabase as Database,
   SelectedFields,
   WithSubqueryWithSelection,
 } from 'drizzle-orm/pg-core'
@@ -17,13 +17,11 @@ import {
 import { setWithSubqueryAddons } from './internal'
 
 declare module 'drizzle-orm/pg-core' {
-  interface PgDatabase<
-    TQueryResult extends import('drizzle-orm/pg-core').PgQueryResultHKT,
+  interface PgDatabase<TQueryResult extends import('drizzle-orm/pg-core').PgQueryResultHKT,
     TFullSchema extends Record<string, unknown>,
     TRelations extends AnyRelations,
     TTablesConfig extends TablesRelationalConfig,
-    TSchema extends V1.TablesRelationalConfig,
-  > {
+    TSchema extends V1.TablesRelationalConfig> {
     /**
      * Use this instead of `$with()` to create a subquery that can reference
      * itself. If TypeScript is failing, it may help to declare the selection
@@ -45,8 +43,8 @@ declare module 'drizzle-orm/pg-core' {
   }
 }
 
-PgDatabase.prototype.$withRecursive = function (
-  this: PgDatabase<any, any>,
+Database.prototype.$withRecursive = function (
+  this: Database<any, any>,
   alias: string
 ) {
   const db = this
@@ -62,7 +60,7 @@ PgDatabase.prototype.$withRecursive = function (
       )
 
       const fields = (subquery as any).getSelectedFields() as SelectedFields
-      const orderedFields = orderSelectedFields<PgColumn>(fields)
+      const orderedFields = orderSelectedFields<Column>(fields)
       decoders = mapSelectedFieldsToDecoders(orderedFields)
 
       return setWithSubqueryAddons(db.$with(alias).as(subquery), {

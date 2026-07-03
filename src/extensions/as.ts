@@ -1,17 +1,14 @@
-// mysql-insert: import type { PreparedQueryHKTBase } from 'drizzle-orm/mysql-core'
+/* #dialect.extraTypeImports */
 import { mapRelationalRow, sql, SQL } from 'drizzle-orm'
 import {
-  PgColumn,
-  PgSelectHKTBase,
-  PgSelectBuilder,
+  Column,
+  SelectHKTBase,
+  SelectBuilder,
   SelectedFields,
   SelectedFieldsOrdered,
   WithSubqueryWithSelection,
-} from 'drizzle-orm/pg-core'
-import {
-  PgRelationalQuery,
-  PgRelationalQueryHKTBase,
-} from 'drizzle-orm/pg-core/query-builders/query'
+} from '#dialect/core'
+import { RelationalQuery, RelationalQueryHKTBase } from '#dialect/query'
 import { DecodedFields, ResultFieldsToSelection } from 'drizzle-plus/types'
 import {
   mapSelectedFieldsToDecoders,
@@ -19,20 +16,20 @@ import {
 } from 'drizzle-plus/utils'
 import { buildRelationalQuery, createWithSubquery } from './internal'
 
-export type PgRelationalSubquery<
+export type RelationalSubquery<
   TResult,
   TAlias extends string,
 > = WithSubqueryWithSelection<ResultFieldsToSelection<TResult>, TAlias>
 
-declare module 'drizzle-orm/pg-core/query-builders/query' {
-  interface PgRelationalQuery<THKT extends PgRelationalQueryHKTBase, TResult> {
+declare module '#dialect/query' {
+  interface RelationalQuery</* #dialect.relationalQueryTypeParams */> {
     as<TAlias extends string>(
       alias: TAlias
-    ): PgRelationalSubquery<TResult, TAlias>
+    ): RelationalSubquery<TResult, TAlias>
   }
 }
 
-PgRelationalQuery.prototype.as = function (alias: string): any {
+RelationalQuery.prototype.as = function (alias: string): any {
   const { sql, selection } = buildRelationalQuery(this)
 
   const decodedFields: DecodedFields = {}
@@ -47,13 +44,8 @@ PgRelationalQuery.prototype.as = function (alias: string): any {
   return createWithSubquery(sql, alias, decodedFields)
 }
 
-declare module 'drizzle-orm/pg-core' {
-  interface PgSelectBuilder<
-    TSelection extends SelectedFields | undefined,
-    THKT extends PgSelectHKTBase,
-    // mysql-insert: TPreparedQueryHKT extends PreparedQueryHKTBase,
-    // sqlite-insert: TResultType extends 'sync' | 'async', TRunResult,
-  > {
+declare module '#dialect/core' {
+  interface SelectBuilder</* #dialect.selectBuilderAsTypeParams */> {
     as<TAlias extends string>(
       alias: TAlias
     ): TSelection extends SelectedFields
@@ -62,7 +54,7 @@ declare module 'drizzle-orm/pg-core' {
   }
 }
 
-PgSelectBuilder.prototype.as = function (alias): any {
+SelectBuilder.prototype.as = function (alias): any {
   const {
     fields,
     dialect,
@@ -75,7 +67,7 @@ PgSelectBuilder.prototype.as = function (alias): any {
     throw new Error('Cannot alias a select query without a selection')
   }
 
-  const orderedFields = orderSelectedFields<PgColumn>(fields)
+  const orderedFields = orderSelectedFields<Column>(fields)
 
   return createWithSubquery(
     sql`select ${dialect.buildSelection(orderedFields)}`,

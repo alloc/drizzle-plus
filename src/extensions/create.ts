@@ -5,13 +5,8 @@ import {
   type TableRelationalConfig,
   type TablesRelationalConfig,
 } from 'drizzle-orm'
-import {
-  PgInsertBase,
-  PgInsertConfig,
-  PgInsertValue,
-  PgTable,
-} from 'drizzle-orm/pg-core'
-import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
+import { InsertBase, InsertConfig, InsertValue, Table } from '#dialect/core'
+import { RelationalQueryBuilder } from '#dialect/query'
 import {
   ExtractTable,
   ReturningClause,
@@ -21,12 +16,12 @@ import { getContext, getReturningFields } from './internal'
 
 export interface DBCreateConfig<
   TMode extends 'one' | 'many',
-  TTable extends PgTable,
+  TTable extends Table,
   TReturning extends ReturningClause<TTable>,
 > {
   data: TMode extends 'one'
-    ? PgInsertValue<TTable>
-    : readonly PgInsertValue<TTable>[]
+    ? InsertValue<TTable>
+    : readonly InsertValue<TTable>[]
   /**
    * If true, inserted rows that conflict with an existing row will be ignored,
    * rather than cause an error.
@@ -43,11 +38,8 @@ export interface DBCreateConfig<
     | undefined
 }
 
-declare module 'drizzle-orm/pg-core/query-builders/query' {
-  export interface RelationalQueryBuilder<
-    TSchema extends TablesRelationalConfig,
-    TFields extends TableRelationalConfig,
-  > {
+declare module '#dialect/query' {
+  export interface RelationalQueryBuilder</* #dialect.relationalQueryBuilderTypeParams */> {
     create<TReturning extends ReturningClause<ExtractTable<TFields>> = {}>(
       config: DBCreateConfig<'one', ExtractTable<TFields>, TReturning>
     ): CreateQueryPromise<'one', ExtractTable<TFields>, TReturning>
@@ -64,9 +56,9 @@ RelationalQueryBuilder.prototype.create = function (
   const { table, dialect, session } = getContext(this)
   const columns = getColumns(table)
 
-  const query = new PgInsertBase(
+  const query = new InsertBase(
     table,
-    config.data as PgInsertConfig['values'],
+    config.data as InsertConfig['values'],
     session,
     dialect
   )
@@ -85,7 +77,7 @@ RelationalQueryBuilder.prototype.create = function (
 
 export type CreateQueryResult<
   TMode extends 'one' | 'many',
-  TTable extends PgTable,
+  TTable extends Table,
   TReturning extends ReturningClause<TTable>,
 > = keyof TReturning extends never
   ? number
@@ -93,7 +85,7 @@ export type CreateQueryResult<
 
 export interface CreateQueryPromise<
   TMode extends 'one' | 'many',
-  TTable extends PgTable,
+  TTable extends Table,
   TReturning extends ReturningClause<TTable>,
 > extends QueryPromise<CreateQueryResult<TMode, TTable, TReturning>> {
   toSQL(): Query

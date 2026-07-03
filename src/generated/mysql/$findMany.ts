@@ -9,11 +9,9 @@ import { mergeFindManyArgs, type MergeFindManyArgs } from 'drizzle-plus'
 import { AnyDBQueryConfig } from 'drizzle-plus/types'
 
 declare module 'drizzle-orm/mysql-core/query-builders/query' {
-  export interface RelationalQueryBuilder<
-    TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase,
+  export interface RelationalQueryBuilder<TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase,
     TSchema extends TablesRelationalConfig,
-    TFields extends TableRelationalConfig,
-  > {
+    TFields extends TableRelationalConfig> {
     $findMany<const TConfig extends DBQueryConfig<'many', TSchema, TFields>>(
       config: TConfig
     ): TConfig

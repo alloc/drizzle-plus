@@ -3,15 +3,12 @@ import type {
   TableRelationalConfig,
   TablesRelationalConfig,
 } from 'drizzle-orm'
-import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
+import { RelationalQueryBuilder } from '#dialect/query'
 import { mergeFindManyArgs, type MergeFindManyArgs } from 'drizzle-plus'
 import { AnyDBQueryConfig } from 'drizzle-plus/types'
 
-declare module 'drizzle-orm/pg-core/query-builders/query' {
-  export interface RelationalQueryBuilder<
-    TSchema extends TablesRelationalConfig,
-    TFields extends TableRelationalConfig,
-  > {
+declare module '#dialect/query' {
+  export interface RelationalQueryBuilder</* #dialect.relationalQueryBuilderTypeParams */> {
     $findMany<const TConfig extends DBQueryConfig<'many', TSchema, TFields>>(
       config: TConfig
     ): TConfig

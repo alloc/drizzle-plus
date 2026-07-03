@@ -2,17 +2,14 @@
 import type { PreparedQueryHKTBase } from 'drizzle-orm/mysql-core'
 import { mapRelationalRow, sql, SQL } from 'drizzle-orm'
 import {
-  MySqlColumn,
-  MySqlSelectHKTBase,
-  MySqlSelectBuilder,
+  MySqlColumn as Column,
+  MySqlSelectHKTBase as SelectHKTBase,
+  MySqlSelectBuilder as SelectBuilder,
   SelectedFields,
   SelectedFieldsOrdered,
   WithSubqueryWithSelection,
 } from 'drizzle-orm/mysql-core'
-import {
-  MySqlRelationalQuery,
-  MySqlRelationalQueryHKTBase,
-} from 'drizzle-orm/mysql-core/query-builders/query'
+import { MySqlRelationalQuery as RelationalQuery, MySqlRelationalQueryHKTBase as RelationalQueryHKTBase } from 'drizzle-orm/mysql-core/query-builders/query'
 import { DecodedFields, ResultFieldsToSelection } from 'drizzle-plus/types'
 import {
   mapSelectedFieldsToDecoders,
@@ -26,14 +23,15 @@ export type MySqlRelationalSubquery<
 > = WithSubqueryWithSelection<ResultFieldsToSelection<TResult>, TAlias>
 
 declare module 'drizzle-orm/mysql-core/query-builders/query' {
-  interface MySqlRelationalQuery<THKT extends MySqlRelationalQueryHKTBase, TResult> {
+  interface MySqlRelationalQuery<THKT extends MySqlRelationalQueryHKTBase,
+    TResult> {
     as<TAlias extends string>(
       alias: TAlias
     ): MySqlRelationalSubquery<TResult, TAlias>
   }
 }
 
-MySqlRelationalQuery.prototype.as = function (alias: string): any {
+RelationalQuery.prototype.as = function (alias: string): any {
   const { sql, selection } = buildRelationalQuery(this)
 
   const decodedFields: DecodedFields = {}
@@ -49,11 +47,9 @@ MySqlRelationalQuery.prototype.as = function (alias: string): any {
 }
 
 declare module 'drizzle-orm/mysql-core' {
-  interface MySqlSelectBuilder<
-    TSelection extends SelectedFields | undefined,
-    THKT extends MySqlSelectHKTBase,
-    TPreparedQueryHKT extends PreparedQueryHKTBase,
-  > {
+  interface MySqlSelectBuilder<TSelection extends SelectedFields | undefined,
+    THKT extends SelectHKTBase,
+    TPreparedQueryHKT extends PreparedQueryHKTBase> {
     as<TAlias extends string>(
       alias: TAlias
     ): TSelection extends SelectedFields
@@ -62,7 +58,7 @@ declare module 'drizzle-orm/mysql-core' {
   }
 }
 
-MySqlSelectBuilder.prototype.as = function (alias): any {
+SelectBuilder.prototype.as = function (alias): any {
   const {
     fields,
     dialect,
@@ -75,7 +71,7 @@ MySqlSelectBuilder.prototype.as = function (alias): any {
     throw new Error('Cannot alias a select query without a selection')
   }
 
-  const orderedFields = orderSelectedFields<MySqlColumn>(fields)
+  const orderedFields = orderSelectedFields<Column>(fields)
 
   return createWithSubquery(
     sql`select ${dialect.buildSelection(orderedFields)}`,

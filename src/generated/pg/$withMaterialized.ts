@@ -1,18 +1,16 @@
 // @ts-nocheck
 import { ColumnsSelection } from 'drizzle-orm'
 import type * as V1 from 'drizzle-orm/_relations'
-import { PgDatabase, WithBuilder } from 'drizzle-orm/pg-core'
+import { PgDatabase as Database, WithBuilder } from 'drizzle-orm/pg-core'
 import { AnyRelations, TablesRelationalConfig } from 'drizzle-orm/relations'
 import { injectWithSubqueryAddons } from './internal'
 
 declare module 'drizzle-orm/pg-core' {
-  interface PgDatabase<
-    TQueryResult extends import('drizzle-orm/pg-core').PgQueryResultHKT,
+  interface PgDatabase<TQueryResult extends import('drizzle-orm/pg-core').PgQueryResultHKT,
     TFullSchema extends Record<string, unknown>,
     TRelations extends AnyRelations,
     TTablesConfig extends TablesRelationalConfig,
-    TSchema extends V1.TablesRelationalConfig,
-  > {
+    TSchema extends V1.TablesRelationalConfig> {
     /**
      * Similar to `$with()` but the CTE is materialized.
      *
@@ -36,7 +34,7 @@ declare module 'drizzle-orm/pg-core' {
   }
 }
 
-PgDatabase.prototype.$withMaterialized = function (
+Database.prototype.$withMaterialized = function (
   alias: string,
   selection?: ColumnsSelection
 ) {
@@ -45,7 +43,7 @@ PgDatabase.prototype.$withMaterialized = function (
   })
 }
 
-PgDatabase.prototype.$withNotMaterialized = function (
+Database.prototype.$withNotMaterialized = function (
   alias: string,
   selection?: ColumnsSelection
 ) {

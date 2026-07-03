@@ -11,9 +11,14 @@ export type DialectSpec = {
   databaseType: string
   pgPrefix: string
   placeholders: DialectPlaceholders
+  extraTypeImports: string[]
   databaseTypeParams: string[]
   relationalQueryBuilderTypeParams: string[]
   relationalQueryTypeParams?: string[]
+  selectBuilderAsTypeParams: string[]
+  selectBuilderFromTypeParams: string[]
+  selectQueryBuilderBaseArgs: string[]
+  selectQueryBuilderBaseTrailingArgs: string[]
   relationalQueryBuilderExtendsArgs: string[]
   sessionSuffix: string
   capabilities: {
@@ -41,6 +46,7 @@ function placeholders(
       Column: `${prefix}Column`,
       Database: databaseType,
       Dialect: `${prefix}Dialect`,
+      getTableConfig: 'getTableConfig',
       InsertBase: `${prefix}InsertBase`,
       InsertBuilder: `${prefix}InsertBuilder`,
       InsertConfig: `${prefix}InsertConfig`,
@@ -56,8 +62,13 @@ function placeholders(
       Session: `${prefix}Session`,
       SetOperatorWithResult: `${prefix}SetOperatorWithResult`,
       Table: `${prefix}Table`,
+      TableConfig: 'TableConfig',
       UpdateBase: `${prefix}UpdateBase`,
       UpdateSetSource: `${prefix}UpdateSetSource`,
+      SelectedFields: 'SelectedFields',
+      SelectedFieldsOrdered: 'SelectedFieldsOrdered',
+      WithBuilder: 'WithBuilder',
+      WithSubqueryWithSelection: 'WithSubqueryWithSelection',
     },
     db: {
       Database: databaseType,
@@ -83,6 +94,7 @@ export const registry: Record<Dialect, DialectSpec> = {
     databaseType: 'PgDatabase',
     pgPrefix: 'Pg',
     placeholders: placeholders('Pg', 'PgDatabase'),
+    extraTypeImports: [],
     databaseTypeParams: [
       "TQueryResult extends import('drizzle-orm/pg-core').PgQueryResultHKT",
       'TFullSchema extends Record<string, unknown>',
@@ -98,6 +110,16 @@ export const registry: Record<Dialect, DialectSpec> = {
       'THKT extends PgRelationalQueryHKTBase',
       'TResult',
     ],
+    selectBuilderAsTypeParams: [
+      'TSelection extends SelectedFields | undefined',
+      'THKT extends SelectHKTBase',
+    ],
+    selectBuilderFromTypeParams: [
+      'TSelection extends SelectedFields | undefined',
+      "TBuilderMode extends 'db' | 'qb'",
+    ],
+    selectQueryBuilderBaseArgs: ['TSelection', "'partial'"],
+    selectQueryBuilderBaseTrailingArgs: [],
     relationalQueryBuilderExtendsArgs: [],
     sessionSuffix: '',
     capabilities: {
@@ -117,6 +139,9 @@ export const registry: Record<Dialect, DialectSpec> = {
     databaseType: 'MySqlDatabase',
     pgPrefix: 'MySql',
     placeholders: placeholders('MySql', 'MySqlDatabase'),
+    extraTypeImports: [
+      "import type { PreparedQueryHKTBase } from 'drizzle-orm/mysql-core'",
+    ],
     databaseTypeParams: [
       'TPreparedQueryHKT extends PreparedQueryHKTBase',
       'TFullSchema extends Record<string, unknown>',
@@ -129,6 +154,22 @@ export const registry: Record<Dialect, DialectSpec> = {
       'TSchema extends TablesRelationalConfig',
       'TFields extends TableRelationalConfig',
     ],
+    relationalQueryTypeParams: [
+      'THKT extends MySqlRelationalQueryHKTBase',
+      'TResult',
+    ],
+    selectBuilderAsTypeParams: [
+      'TSelection extends SelectedFields | undefined',
+      'THKT extends SelectHKTBase',
+      'TPreparedQueryHKT extends PreparedQueryHKTBase',
+    ],
+    selectBuilderFromTypeParams: [
+      'TSelection extends SelectedFields | undefined',
+      'TPreparedQueryHKT extends PreparedQueryHKTBase',
+      "TBuilderMode extends 'db' | 'qb'",
+    ],
+    selectQueryBuilderBaseArgs: ['TSelection', "'partial'"],
+    selectQueryBuilderBaseTrailingArgs: ['TPreparedQueryHKT'],
     relationalQueryBuilderExtendsArgs: ['any'],
     sessionSuffix: '',
     capabilities: {
@@ -148,6 +189,7 @@ export const registry: Record<Dialect, DialectSpec> = {
     databaseType: 'BaseSQLiteDatabase',
     pgPrefix: 'SQLite',
     placeholders: placeholders('SQLite', 'BaseSQLiteDatabase'),
+    extraTypeImports: [],
     databaseTypeParams: [
       "TResultKind extends 'sync' | 'async'",
       'TRunResult',
@@ -162,6 +204,25 @@ export const registry: Record<Dialect, DialectSpec> = {
       'TFields extends TableRelationalConfig',
     ],
     relationalQueryTypeParams: ["TType extends 'sync' | 'async'", 'TResult'],
+    selectBuilderAsTypeParams: [
+      'TSelection extends SelectedFields | undefined',
+      'THKT extends SelectHKTBase',
+      "TResultType extends 'sync' | 'async'",
+      'TRunResult',
+    ],
+    selectBuilderFromTypeParams: [
+      'TSelection extends SelectedFields | undefined',
+      "TResultType extends 'sync' | 'async'",
+      'TRunResult',
+      "TBuilderMode extends 'db' | 'qb'",
+    ],
+    selectQueryBuilderBaseArgs: [
+      'TResultType',
+      'TRunResult',
+      'TSelection',
+      "'partial'",
+    ],
+    selectQueryBuilderBaseTrailingArgs: [],
     relationalQueryBuilderExtendsArgs: ['any'],
     sessionSuffix: '',
     capabilities: {

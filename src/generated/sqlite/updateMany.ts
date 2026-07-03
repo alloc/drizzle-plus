@@ -7,7 +7,7 @@ import {
   type TableRelationalConfig,
   type TablesRelationalConfig,
 } from 'drizzle-orm'
-import { SQLiteTable, SQLiteUpdateBase, SQLiteUpdateSetSource } from 'drizzle-orm/sqlite-core'
+import { SQLiteTable as Table, SQLiteUpdateBase as UpdateBase, SQLiteUpdateSetSource as UpdateSetSource } from 'drizzle-orm/sqlite-core'
 import { RelationalQueryBuilder } from 'drizzle-orm/sqlite-core/query-builders/query'
 import {
   AnyRelationsFilter,
@@ -21,13 +21,13 @@ import * as adapter from '../../internal/dialects/sqlite'
 import { ExcludeDialect, getContext, getFilterSQL } from './internal'
 
 export interface DBUpdateManyConfig<
-  TTable extends SQLiteTable,
+  TTable extends Table,
   TReturning extends ReturningClause<TTable> = ReturningClause<TTable>,
   TWhere = AnyRelationsFilter,
 > {
   set:
-    | SQLiteUpdateSetSource<TTable>
-    | ((table: TTable['_']['columns']) => SQLiteUpdateSetSource<TTable>)
+    | UpdateSetSource<TTable>
+    | ((table: TTable['_']['columns']) => UpdateSetSource<TTable>)
   /**
    * Specify a filter to only update rows that match the filter.
    */
@@ -54,18 +54,16 @@ export interface DBUpdateManyConfig<
 }
 
 declare module 'drizzle-orm/sqlite-core/query-builders/query' {
-  export interface RelationalQueryBuilder<
-    TMode extends 'sync' | 'async',
+  export interface RelationalQueryBuilder<TMode extends 'sync' | 'async',
     TSchema extends TablesRelationalConfig,
-    TFields extends TableRelationalConfig,
-  > {
+    TFields extends TableRelationalConfig> {
     updateMany<TReturning extends ReturningClause<ExtractTable<TFields>> = {}>(
       config: DBUpdateManyConfig<
-        ExtractTable<TFields, SQLiteTable>,
+        ExtractTable<TFields, Table>,
         TReturning,
         RelationsFilter<TFields, TSchema>
       >
-    ): UpdateManyQueryPromise<ExtractTable<TFields, SQLiteTable>, TReturning>
+    ): UpdateManyQueryPromise<ExtractTable<TFields, Table>, TReturning>
   }
 }
 
@@ -87,7 +85,7 @@ RelationalQueryBuilder.prototype.updateMany = function (
         )
       : undefined
 
-  const query = new SQLiteUpdateBase(
+  const query = new UpdateBase(
     table,
     isFunction(config.set) ? config.set(columns) : config.set,
     session,
@@ -117,14 +115,14 @@ RelationalQueryBuilder.prototype.updateMany = function (
 }
 
 export type UpdateManyQueryResult<
-  TTable extends SQLiteTable,
+  TTable extends Table,
   TReturning extends ReturningClause<TTable>,
 > = keyof TReturning extends never
   ? number
   : ReturningResultFields<'many', TTable, TReturning>
 
 export interface UpdateManyQueryPromise<
-  TTable extends SQLiteTable,
+  TTable extends Table,
   TReturning extends ReturningClause<TTable>,
 > extends QueryPromise<UpdateManyQueryResult<TTable, TReturning>> {
   toSQL(): Query

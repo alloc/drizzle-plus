@@ -7,15 +7,12 @@ import {
   type TableRelationalConfig,
   type TablesRelationalConfig,
 } from 'drizzle-orm'
-import { PgDialect, PgSession, PgTable } from 'drizzle-orm/pg-core'
-import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
+import { Dialect, Session, Table } from '#dialect/core'
+import { RelationalQueryBuilder } from '#dialect/query'
 import { getContext, getFilterSQL } from './internal'
 
-declare module 'drizzle-orm/pg-core/query-builders/query' {
-  export interface RelationalQueryBuilder<
-    TSchema extends TablesRelationalConfig,
-    TFields extends TableRelationalConfig,
-  > {
+declare module '#dialect/query' {
+  export interface RelationalQueryBuilder</* #dialect.relationalQueryBuilderTypeParams */> {
     count(filter?: RelationsFilter<TFields, TSchema>): CountQueryPromise
   }
 }
@@ -35,10 +32,10 @@ RelationalQueryBuilder.prototype.count = function (
 
 export class CountQueryPromise extends QueryPromise<number> {
   constructor(
-    private table: PgTable,
+    private table: Table,
     private filter: SQL | undefined,
-    private session: PgSession,
-    private dialect: PgDialect
+    private session: Session,
+    private dialect: Dialect
   ) {
     super()
   }

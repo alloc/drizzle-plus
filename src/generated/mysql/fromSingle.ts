@@ -2,18 +2,16 @@
 import type { PreparedQueryHKTBase } from 'drizzle-orm/mysql-core'
 import { DrizzleError, sql } from 'drizzle-orm'
 import {
-  MySqlSelectBuilder,
-  MySqlSelectQueryBuilderBase,
-  MySqlSelectQueryBuilderHKT,
+  MySqlSelectBuilder as SelectBuilder,
+  MySqlSelectQueryBuilderBase as SelectQueryBuilderBase,
+  MySqlSelectQueryBuilderHKT as SelectQueryBuilderHKT,
   SelectedFields,
 } from 'drizzle-orm/mysql-core'
 
 declare module 'drizzle-orm/mysql-core' {
-  interface MySqlSelectBuilder<
-    TSelection extends SelectedFields | undefined,
+  interface MySqlSelectBuilder<TSelection extends SelectedFields | undefined,
     TPreparedQueryHKT extends PreparedQueryHKTBase,
-    TBuilderMode extends 'db' | 'qb',
-  > {
+    TBuilderMode extends 'db' | 'qb'> {
     /**
      * Creates a single-row placeholder base that can be left-joined with other
      * subqueries. This ensures the final result set always contains exactly one
@@ -29,18 +27,19 @@ declare module 'drizzle-orm/mysql-core' {
      * Equivalent to calling `.from(sql.raw('(SELECT 1) AS "placeholder"'))`.
      */
     fromSingle(): TSelection extends SelectedFields
-      ? MySqlSelectQueryBuilderBase<
-          MySqlSelectQueryBuilderHKT,
-          undefined,
+      ? SelectQueryBuilderBase<
+          SelectQueryBuilderHKT,
+          undefined
+          ,
           TSelection,
-          'partial'
-          ,TPreparedQueryHKT
+          'partial',
+          TPreparedQueryHKT
         >
       : never
   }
 }
 
-MySqlSelectBuilder.prototype.fromSingle = function (): any {
+SelectBuilder.prototype.fromSingle = function (): any {
   const { fields }: { fields: SelectedFields | undefined } = this as any
   if (!fields) {
     throw new DrizzleError({ message: 'Selection is required' })

@@ -11,8 +11,8 @@ import {
 } from 'drizzle-orm'
 import type * as V1 from 'drizzle-orm/_relations'
 import {
-  SQLiteColumn,
-  SQLiteTable,
+  SQLiteColumn as Column,
+  SQLiteTable as Table,
   TableConfig,
   WithSubqueryWithSelection,
 } from 'drizzle-orm/sqlite-core'
@@ -22,19 +22,17 @@ import { DecodedFields, RawFieldsToSelection } from 'drizzle-plus/types'
 import { pushStringChunk } from 'drizzle-plus/utils'
 import { createWithSubquery, setWithSubqueryAddons } from './internal'
 
-type SQLiteTableWithTheseColumns<K extends string> = SQLiteTable<
-  Omit<TableConfig, 'columns'> & { columns: Record<K, SQLiteColumn> }
+type TableWithTheseColumns<K extends string> = Table<
+  Omit<TableConfig, 'columns'> & { columns: Record<K, Column> }
 >
 
 declare module 'drizzle-orm/sqlite-core' {
-  interface BaseSQLiteDatabase<
-    TResultKind extends 'sync' | 'async',
+  interface BaseSQLiteDatabase<TResultKind extends 'sync' | 'async',
     TRunResult,
     TFullSchema extends Record<string, unknown>,
     TRelations extends AnyRelations,
     TTablesConfig extends TablesRelationalConfig,
-    TSchema extends V1.TablesRelationalConfig,
-  > {
+    TSchema extends V1.TablesRelationalConfig> {
     /**
      * Allows you to declare a values list as raw SQL or a subquery. Use the
      * `getSQL` method to get the raw SQL. Use the `as` method to get a
@@ -51,7 +49,7 @@ declare module 'drizzle-orm/sqlite-core' {
       rows: readonly TRow[],
       typings?:
         | { [K in keyof TRow]?: SQLType }
-        | SQLiteTableWithTheseColumns<string & keyof TRow>
+        | TableWithTheseColumns<string & keyof TRow>
     ): ValuesList<TRow>
     /**
      * Allows you to declare a values list in a CTE.
@@ -69,7 +67,7 @@ declare module 'drizzle-orm/sqlite-core' {
         rows: readonly TRow[],
         typings?:
           | { [K in keyof TRow]?: SQLType }
-          | SQLiteTableWithTheseColumns<string & keyof TRow>
+          | TableWithTheseColumns<string & keyof TRow>
       ): WithSubqueryWithSelection<RawFieldsToSelection<TRow>, string>
     }
   }
@@ -87,9 +85,9 @@ declare module 'drizzle-orm/sqlite-core' {
  * db.select().from(db.$values([{ a: 1 }, { a: 2 }]).as('my_values'))
  * ```
  */
-BaseSQLiteDatabase.prototype.$values = function (
+Database.prototype.$values = function (
   rows: readonly Record<string, unknown>[],
-  typings?: Partial<Record<string, SQLType>> | SQLiteTable
+  typings?: Partial<Record<string, SQLType>> | Table
 ): any {
   if (!rows.length) {
     throw new DrizzleError({ message: 'No rows provided' })
@@ -98,17 +96,17 @@ BaseSQLiteDatabase.prototype.$values = function (
   return new ValuesList(casing, Object.keys(rows[0]), rows, typings)
 }
 
-BaseSQLiteDatabase.prototype.$withValues = function (
+Database.prototype.$withValues = function (
   alias: string,
   rows: readonly Record<string, unknown>[],
-  typings?: Partial<Record<string, SQLType>> | SQLiteTable
+  typings?: Partial<Record<string, SQLType>> | Table
 ): any {
   const withSubquery = createWithSubquery(
     this.$values(rows, typings).getSQL(),
     alias,
     new Proxy(rows[0] as DecodedFields, {
       get: (_, key: string) =>
-        (is(typings, SQLiteTable) && getColumns(typings)[key]) || noopDecoder,
+        (is(typings, Table) && getColumns(typings)[key]) || noopDecoder,
     })
   )
   return setWithSubqueryAddons(withSubquery, {
@@ -127,20 +125,21 @@ export type ValuesListSubquery<
 
 export class ValuesList<
   TValues extends Record<string, unknown> = Record<string, unknown>,
-> implements SQLWrapper<unknown> {
+> implements SQLWrapper<unknown>
+{
   declare _: {
     selectedFields: RawFieldsToSelection<TValues>
   }
   private shouldInlineParams = false
-  private typings?: Partial<Record<string, SQLType | SQLiteColumn>>
+  private typings?: Partial<Record<string, SQLType | Column>>
   constructor(
     private casing: { convert: (key: string) => string },
     private keys: string[],
     private rows: readonly object[],
-    typings?: Partial<Record<string, SQLType>> | SQLiteTable
+    typings?: Partial<Record<string, SQLType>> | Table
   ) {
     this.typings =
-      typings && (is(typings, SQLiteTable) ? getColumns(typings) : typings)
+      typings && (is(typings, Table) ? getColumns(typings) : typings)
   }
 
   as<TAlias extends string>(
@@ -153,7 +152,7 @@ export class ValuesList<
         sql`${sql.identifier(alias)}.${sql.identifier(columnList[index])}`)
 
       const type = this.typings?.[key]
-      if (is(type, SQLiteColumn)) {
+      if (is(type, Column)) {
         field.mapWith(type)
       }
     })
@@ -191,7 +190,7 @@ export class ValuesList<
         if (rowIndex === 0) {
           let type = this.typings?.[key]
           if (type) {
-            value = sql`cast(${value} as ${sql.raw(is(type, SQLiteColumn<any>) ? type.getSQLType() : type)})`
+            value = sql`cast(${value} as ${sql.raw(is(type, Column<any>) ? type.getSQLType() : type)})`
           }
         }
 

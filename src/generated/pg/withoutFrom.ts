@@ -9,13 +9,13 @@ import {
   Subquery,
 } from 'drizzle-orm'
 import {
-  PgColumn,
-  PgDialect,
-  PgSelectBase,
-  PgSelectBuilder,
-  PgSelectConfig,
-  PgSession,
-  PgSetOperatorWithResult,
+  PgColumn as Column,
+  PgDialect as Dialect,
+  PgSelectBase as SelectBase,
+  PgSelectBuilder as SelectBuilder,
+  PgSelectConfig as SelectConfig,
+  PgSession as Session,
+  PgSetOperatorWithResult as SetOperatorWithResult,
   SelectedFields,
   SelectedFieldsOrdered,
 } from 'drizzle-orm/pg-core'
@@ -24,10 +24,8 @@ import { SelectResultFields } from 'drizzle-orm/query-builders/select.types'
 import { orderSelectedFields } from 'drizzle-plus/utils'
 
 declare module 'drizzle-orm/pg-core' {
-  interface PgSelectBuilder<
-    TSelection extends SelectedFields | undefined,
-    TBuilderMode extends 'db' | 'qb',
-  > {
+  interface PgSelectBuilder<TSelection extends SelectedFields | undefined,
+    TBuilderMode extends 'db' | 'qb'> {
     withoutFrom(): TSelection extends SelectedFields
       ? PgSelectWithoutFrom<TSelection>
       : never
@@ -36,15 +34,15 @@ declare module 'drizzle-orm/pg-core' {
 
 type PgSelectBuilderPrivate = {
   fields: ColumnsSelection
-  session?: PgSession
-  dialect: PgDialect
+  session?: Session
+  dialect: Dialect
   withList: Subquery[]
-  distinct?: boolean | { on: (PgColumn | SQLWrapper)[] }
+  distinct?: boolean | { on: (Column | SQLWrapper)[] }
 }
 
 export class PgSelectWithoutFrom<TSelection extends SelectedFields>
   extends TypedQueryBuilder<TSelection, SelectResultFields<TSelection>[]>
-  implements PgSetOperatorWithResult<SelectResultFields<TSelection>[]>
+  implements SetOperatorWithResult<SelectResultFields<TSelection>[]>
 {
   _: {
     readonly hkt: any
@@ -59,19 +57,19 @@ export class PgSelectWithoutFrom<TSelection extends SelectedFields>
   }
 
   declare private config: {
-    fields: PgSelectConfig['fields']
-    withList?: PgSelectConfig['withList']
+    fields: SelectConfig['fields']
+    withList?: SelectConfig['withList']
   }
 
   declare private joinsNotNullableMap: Record<string, boolean>
-  declare private session: PgSession | undefined
-  declare private dialect: PgDialect
+  declare private session: Session | undefined
+  declare private dialect: Dialect
   declare private usedTables: Set<string>
 
   constructor(select: PgSelectBuilderPrivate, selectedFields: TSelection) {
     super()
 
-    // Any property required by PgSelectBase#_prepare must be here.
+    // Any property required by SelectBase#_prepare must be here.
     this.config = { fields: { ...selectedFields }, withList: select.withList }
     this.joinsNotNullableMap = {}
     this.session = select.session
@@ -86,14 +84,14 @@ export class PgSelectWithoutFrom<TSelection extends SelectedFields>
       buildSelection: (fields: SelectedFieldsOrdered) => SQL
       buildWithCTE: (withList: Subquery[] | undefined) => SQL | undefined
     }
-    const orderedFields = orderSelectedFields<PgColumn>(this._.selectedFields)
+    const orderedFields = orderSelectedFields<Column>(this._.selectedFields)
     const withSql = dialect.buildWithCTE(this.config.withList)
     return sql`${withSql}select ${dialect.buildSelection(orderedFields)}`
   }
   execute(placeholderValues?: Record<string, unknown>) {
     return this._prepare().execute(placeholderValues)
   }
-  // Inherited from PgSelectBase.
+  // Inherited from SelectBase.
   declare private _prepare: () => {
     execute: (
       placeholderValues?: Record<string, unknown>
@@ -107,13 +105,13 @@ export interface PgSelectWithoutFrom<TSelection extends SelectedFields>
 }
 
 Object.defineProperties(PgSelectWithoutFrom.prototype, {
-  ...Object.getOwnPropertyDescriptors(PgSelectBase.prototype),
+  ...Object.getOwnPropertyDescriptors(SelectBase.prototype),
   constructor: {
     value: PgSelectWithoutFrom,
   },
 })
 
-PgSelectBuilder.prototype.withoutFrom = function (): any {
+SelectBuilder.prototype.withoutFrom = function (): any {
   const { fields } = this as unknown as {
     fields: SelectedFields | undefined
   }

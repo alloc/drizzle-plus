@@ -1,7 +1,6 @@
 // @ts-nocheck
 import {
   BuildRelationalQueryResult,
-  Column,
   Name,
   RelationsFilter,
   relationsFilterToSQL,
@@ -10,7 +9,6 @@ import {
   SQLChunk,
   StringChunk,
   Subquery,
-  Table,
   TableRelationalConfig,
   TablesRelationalConfig,
   WithSubquery,
@@ -18,10 +16,10 @@ import {
 import { CasingCache } from 'drizzle-orm/casing'
 import {
   getTableConfig,
-  SQLiteColumn,
-  SQLiteDialect,
-  SQLiteSession,
-  SQLiteTable,
+  SQLiteColumn as Column,
+  SQLiteDialect as Dialect,
+  SQLiteSession as Session,
+  SQLiteTable as Table,
   SelectedFields,
   WithBuilder,
 } from 'drizzle-orm/sqlite-core'
@@ -34,13 +32,13 @@ import { RelationalQueryBuilder } from './types'
 
 export function getContext(rqb: RelationalQueryBuilder<any, any, any>) {
   return rqb as unknown as {
-    tables: Record<string, SQLiteTable>
+    tables: Record<string, Table>
     schema: TablesRelationalConfig
     tableNamesMap: Record<string, string>
-    table: SQLiteTable
+    table: Table
     tableConfig: TableRelationalConfig
-    dialect: SQLiteDialect & { casing: CasingCache }
-    session: SQLiteSession<any, any, any, any, any>
+    dialect: Dialect & { casing: CasingCache }
+    session: Session
   }
 }
 
@@ -110,14 +108,14 @@ export function getReturningFields(
   return selectedFields
 }
 
-const getTableConfigMemoized = memoByFirstArgument((table: SQLiteTable) => {
+const getTableConfigMemoized = memoByFirstArgument((table: Table) => {
   const { primaryKeys, uniqueConstraints, indexes } = getTableConfig(table)
   const uniqueIndexes = indexes.filter(index => index.config.unique)
 
   return { primaryKeys, uniqueConstraints, uniqueIndexes }
 })
 
-export function getTargetColumns(table: SQLiteTable, columns: SQLiteColumn[]) {
+export function getTargetColumns(table: Table, columns: Column[]) {
   // If the primary key is defined, prefer it over any unique constraint.
   const uniqueColumn =
     columns.find(column => column.primary) ||
@@ -252,7 +250,7 @@ export function setWithSubqueryAddons(
     withSubqueryAddons = new WeakMap()
 
     // @ts-expect-error: Rewrite internal method
-    SQLiteDialect.prototype.buildWithCTE = buildWithCTE
+    Dialect.prototype.buildWithCTE = buildWithCTE
   }
 
   withSubqueryAddons.set(withSubquery, addons)
@@ -273,7 +271,7 @@ export const sqlNull = sql`null`
 // A workaround for https://github.com/drizzle-team/drizzle-orm/issues/3971
 export function buildInsertSelect(
   selectedFields: any,
-  columns: Record<string, SQLiteColumn>,
+  columns: Record<string, Column>,
   isRelationalQuery?: boolean
 ): SelectedFields {
   const values: any = {}

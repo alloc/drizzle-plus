@@ -5,12 +5,13 @@ export function applyDialectPlaceholders(source: string, spec: DialectSpec) {
 
   out = rewritePlaceholderImports(out, spec)
   out = rewritePlaceholderModules(out, spec)
+  out = rewritePlaceholderDeclarations(out, spec)
   out = rewritePlaceholderTypeParams(out, spec)
   out = removeDialectMarkerLines(out, spec)
   out = rewriteDialectModules(out, spec)
+  out = rewriteDialectPublicTypeNames(out, spec)
   out = rewriteDialectTypeNames(out, spec)
   out = rewriteDialectSessionTypes(out, spec)
-  out = rewriteDialectTypeParameters(out, spec)
   out = rewriteDialectConstants(out, spec)
   out = rewriteAdapterImports(out, spec)
 
@@ -28,7 +29,7 @@ const placeholderModules = {
 
 function rewritePlaceholderImports(source: string, spec: DialectSpec) {
   return source.replace(
-    /import( type)? \{([\s\S]*?)\} from ['"](#dialect\/core|#dialect\/db|#dialect\/query|drizzle-plus\/#dialect)['"]/g,
+    /import( type)? \{([^}]*)\} from ['"](#dialect\/core|#dialect\/db|#dialect\/query|drizzle-plus\/#dialect)['"]/g,
     (
       match,
       typeKeyword: string | undefined,
@@ -79,8 +80,35 @@ function rewritePlaceholderModules(source: string, spec: DialectSpec) {
   )
 }
 
+function rewritePlaceholderDeclarations(source: string, spec: DialectSpec) {
+  return source
+    .replace(/\binterface Database</g, `interface ${spec.databaseType}<`)
+    .replace(
+      /\binterface SelectBuilder</g,
+      `interface ${spec.placeholders.core.SelectBuilder}<`
+    )
+    .replace(
+      /\binterface Table</g,
+      `interface ${spec.placeholders.core.Table}<`
+    )
+    .replace(
+      /\binterface RelationalQueryBuilder</g,
+      `interface ${spec.placeholders.query.RelationalQueryBuilder}<`
+    )
+    .replace(
+      /\binterface RelationalQuery</g,
+      `interface ${spec.placeholders.query.RelationalQuery}<`
+    )
+}
+
 function rewritePlaceholderTypeParams(source: string, spec: DialectSpec) {
   return source
+    .replace(
+      /\/\* #dialect\.extraTypeImports \*\/\n?/g,
+      spec.extraTypeImports.length
+        ? `${spec.extraTypeImports.join('\n')}\n`
+        : ''
+    )
     .replace(
       /\/\* #dialect\.databaseTypeParams \*\//g,
       spec.databaseTypeParams.join(',\n    ')
@@ -93,6 +121,25 @@ function rewritePlaceholderTypeParams(source: string, spec: DialectSpec) {
       /\/\* #dialect\.relationalQueryTypeParams \*\//g,
       (spec.relationalQueryTypeParams ?? []).join(',\n    ')
     )
+    .replace(
+      /\/\* #dialect\.selectBuilderAsTypeParams \*\//g,
+      spec.selectBuilderAsTypeParams.join(',\n    ')
+    )
+    .replace(
+      /\/\* #dialect\.selectBuilderFromTypeParams \*\//g,
+      spec.selectBuilderFromTypeParams.join(',\n    ')
+    )
+    .replace(
+      /\/\* #dialect\.selectQueryBuilderBaseArgs \*\//g,
+      `,\n          ${spec.selectQueryBuilderBaseArgs.join(',\n          ')}`
+    )
+    .replace(
+      /\s*\/\* #dialect\.selectQueryBuilderBaseTrailingArgs \*\//g,
+      spec.selectQueryBuilderBaseTrailingArgs.length
+        ? `,\n          ${spec.selectQueryBuilderBaseTrailingArgs.join(',\n          ')}`
+        : ''
+    )
+    .replace(/'#dialect\/name'/g, `'${spec.name}'`)
 }
 
 function placeholderMapForModule(spec: DialectSpec, module: string) {
@@ -147,6 +194,17 @@ function rewriteDialectTypeNames(source: string, spec: DialectSpec) {
     .replace(/\bPg/g, spec.pgPrefix)
 }
 
+function rewriteDialectPublicTypeNames(source: string, spec: DialectSpec) {
+  return source
+    .replace(/\bRelationalSubquery\b/g, `${spec.pgPrefix}RelationalSubquery`)
+    .replace(/\bUpsertSelectQuery\b/g, `${spec.pgPrefix}UpsertSelectQuery`)
+    .replace(
+      /\bSelectBuilderPrivate\b/g,
+      `${spec.pgPrefix}SelectBuilderPrivate`
+    )
+    .replace(/\bSelectWithoutFrom\b/g, `${spec.pgPrefix}SelectWithoutFrom`)
+}
+
 function rewriteDialectSessionTypes(source: string, spec: DialectSpec) {
   if (spec.name !== 'sqlite') {
     return source
@@ -194,7 +252,7 @@ function rewriteDialectConstants(source: string, spec: DialectSpec) {
 
 function rewriteAdapterImports(source: string, spec: DialectSpec) {
   return source.replace(
-    /from ['"]\.\/adapters\/pg['"]/g,
+    /from ['"]\.\/adapters\/(?:pg|#dialect)['"]/g,
     `from '../../internal/dialects/${spec.name}'`
   )
 }

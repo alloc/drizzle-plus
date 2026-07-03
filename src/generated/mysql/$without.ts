@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { getColumns } from 'drizzle-orm'
-import { MySqlTable, TableConfig } from 'drizzle-orm/mysql-core'
+import { MySqlTable as Table, TableConfig } from 'drizzle-orm/mysql-core'
 
 declare module 'drizzle-orm/mysql-core' {
   interface MySqlTable<T extends TableConfig> {
@@ -10,7 +10,7 @@ declare module 'drizzle-orm/mysql-core' {
   }
 }
 
-MySqlTable.prototype.$without = function (...fields) {
+Table.prototype.$without = function (...fields) {
   const columns = { ...getColumns(this) }
   for (const field of fields) {
     delete columns[field]

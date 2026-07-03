@@ -1,18 +1,16 @@
 // @ts-nocheck
 import { AnyRelations, TablesRelationalConfig } from 'drizzle-orm'
 import type * as V1 from 'drizzle-orm/_relations'
-import { PgDatabase } from 'drizzle-orm/pg-core/db'
+import { PgDatabase as Database } from 'drizzle-orm/pg-core/db'
 import { toSelection } from 'drizzle-plus'
 import { RawFieldsToSelection } from 'drizzle-plus/types'
 
 declare module 'drizzle-orm/pg-core/db' {
-  interface PgDatabase<
-    TQueryResult extends import('drizzle-orm/pg-core').PgQueryResultHKT,
+  interface PgDatabase<TQueryResult extends import('drizzle-orm/pg-core').PgQueryResultHKT,
     TFullSchema extends Record<string, unknown>,
     TRelations extends AnyRelations,
     TTablesConfig extends TablesRelationalConfig,
-    TSchema extends V1.TablesRelationalConfig,
-  > {
+    TSchema extends V1.TablesRelationalConfig> {
     /**
      * Create a "selection" object compatible with `db.select` from a plain
      * object containing almost any value.
@@ -29,5 +27,5 @@ declare module 'drizzle-orm/pg-core/db' {
   }
 }
 
-PgDatabase.prototype.$select = <T extends Record<string, unknown>>(fields: T) =>
+Database.prototype.$select = <T extends Record<string, unknown>>(fields: T) =>
   toSelection(fields, { addAliases: true })

@@ -9,13 +9,13 @@ import {
   Subquery,
 } from 'drizzle-orm'
 import {
-  SQLiteColumn,
-  SQLiteDialect,
-  SQLiteSelectBase,
-  SQLiteSelectBuilder,
-  SQLiteSelectConfig,
-  SQLiteSession,
-  SQLiteSetOperatorWithResult,
+  SQLiteColumn as Column,
+  SQLiteDialect as Dialect,
+  SQLiteSelectBase as SelectBase,
+  SQLiteSelectBuilder as SelectBuilder,
+  SQLiteSelectConfig as SelectConfig,
+  SQLiteSession as Session,
+  SQLiteSetOperatorWithResult as SetOperatorWithResult,
   SelectedFields,
   SelectedFieldsOrdered,
 } from 'drizzle-orm/sqlite-core'
@@ -24,11 +24,10 @@ import { SelectResultFields } from 'drizzle-orm/query-builders/select.types'
 import { orderSelectedFields } from 'drizzle-plus/utils'
 
 declare module 'drizzle-orm/sqlite-core' {
-  interface SQLiteSelectBuilder<
-    TSelection extends SelectedFields | undefined,
-    TResultType extends 'sync' | 'async', TRunResult,
-    TBuilderMode extends 'db' | 'qb',
-  > {
+  interface SQLiteSelectBuilder<TSelection extends SelectedFields | undefined,
+    TResultType extends 'sync' | 'async',
+    TRunResult,
+    TBuilderMode extends 'db' | 'qb'> {
     withoutFrom(): TSelection extends SelectedFields
       ? SQLiteSelectWithoutFrom<TSelection>
       : never
@@ -37,15 +36,15 @@ declare module 'drizzle-orm/sqlite-core' {
 
 type SQLiteSelectBuilderPrivate = {
   fields: ColumnsSelection
-  session?: SQLiteSession
-  dialect: SQLiteDialect
+  session?: Session
+  dialect: Dialect
   withList: Subquery[]
-  distinct?: boolean | { on: (SQLiteColumn | SQLWrapper)[] }
+  distinct?: boolean | { on: (Column | SQLWrapper)[] }
 }
 
 export class SQLiteSelectWithoutFrom<TSelection extends SelectedFields>
   extends TypedQueryBuilder<TSelection, SelectResultFields<TSelection>[]>
-  implements SQLiteSetOperatorWithResult<SelectResultFields<TSelection>[]>
+  implements SetOperatorWithResult<SelectResultFields<TSelection>[]>
 {
   _: {
     readonly hkt: any
@@ -60,19 +59,19 @@ export class SQLiteSelectWithoutFrom<TSelection extends SelectedFields>
   }
 
   declare private config: {
-    fields: SQLiteSelectConfig['fields']
-    withList?: SQLiteSelectConfig['withList']
+    fields: SelectConfig['fields']
+    withList?: SelectConfig['withList']
   }
 
   declare private joinsNotNullableMap: Record<string, boolean>
-  declare private session: SQLiteSession<any, any, any, any, any> | undefined
-  declare private dialect: SQLiteDialect
+  declare private session: Session | undefined
+  declare private dialect: Dialect
   declare private usedTables: Set<string>
 
   constructor(select: SQLiteSelectBuilderPrivate, selectedFields: TSelection) {
     super()
 
-    // Any property required by SQLiteSelectBase#_prepare must be here.
+    // Any property required by SelectBase#_prepare must be here.
     this.config = { fields: { ...selectedFields }, withList: select.withList }
     this.joinsNotNullableMap = {}
     this.session = select.session
@@ -87,14 +86,14 @@ export class SQLiteSelectWithoutFrom<TSelection extends SelectedFields>
       buildSelection: (fields: SelectedFieldsOrdered) => SQL
       buildWithCTE: (withList: Subquery[] | undefined) => SQL | undefined
     }
-    const orderedFields = orderSelectedFields<SQLiteColumn>(this._.selectedFields)
+    const orderedFields = orderSelectedFields<Column>(this._.selectedFields)
     const withSql = dialect.buildWithCTE(this.config.withList)
     return sql`${withSql}select ${dialect.buildSelection(orderedFields)}`
   }
   execute(placeholderValues?: Record<string, unknown>) {
     return this._prepare().execute(placeholderValues)
   }
-  // Inherited from SQLiteSelectBase.
+  // Inherited from SelectBase.
   declare private _prepare: () => {
     execute: (
       placeholderValues?: Record<string, unknown>
@@ -108,13 +107,13 @@ export interface SQLiteSelectWithoutFrom<TSelection extends SelectedFields>
 }
 
 Object.defineProperties(SQLiteSelectWithoutFrom.prototype, {
-  ...Object.getOwnPropertyDescriptors(SQLiteSelectBase.prototype),
+  ...Object.getOwnPropertyDescriptors(SelectBase.prototype),
   constructor: {
     value: SQLiteSelectWithoutFrom,
   },
 })
 
-SQLiteSelectBuilder.prototype.withoutFrom = function (): any {
+SelectBuilder.prototype.withoutFrom = function (): any {
   const { fields } = this as unknown as {
     fields: SelectedFields | undefined
   }

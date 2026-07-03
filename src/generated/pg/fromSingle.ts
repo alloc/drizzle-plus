@@ -1,17 +1,15 @@
 // @ts-nocheck
 import { DrizzleError, sql } from 'drizzle-orm'
 import {
-  PgSelectBuilder,
-  PgSelectQueryBuilderBase,
-  PgSelectQueryBuilderHKT,
+  PgSelectBuilder as SelectBuilder,
+  PgSelectQueryBuilderBase as SelectQueryBuilderBase,
+  PgSelectQueryBuilderHKT as SelectQueryBuilderHKT,
   SelectedFields,
 } from 'drizzle-orm/pg-core'
 
 declare module 'drizzle-orm/pg-core' {
-  interface PgSelectBuilder<
-    TSelection extends SelectedFields | undefined,
-    TBuilderMode extends 'db' | 'qb',
-  > {
+  interface PgSelectBuilder<TSelection extends SelectedFields | undefined,
+    TBuilderMode extends 'db' | 'qb'> {
     /**
      * Creates a single-row placeholder base that can be left-joined with other
      * subqueries. This ensures the final result set always contains exactly one
@@ -27,9 +25,10 @@ declare module 'drizzle-orm/pg-core' {
      * Equivalent to calling `.from(sql.raw('(SELECT 1) AS "placeholder"'))`.
      */
     fromSingle(): TSelection extends SelectedFields
-      ? PgSelectQueryBuilderBase<
-          PgSelectQueryBuilderHKT,
-          undefined,
+      ? SelectQueryBuilderBase<
+          SelectQueryBuilderHKT,
+          undefined
+          ,
           TSelection,
           'partial'
         >
@@ -37,7 +36,7 @@ declare module 'drizzle-orm/pg-core' {
   }
 }
 
-PgSelectBuilder.prototype.fromSingle = function (): any {
+SelectBuilder.prototype.fromSingle = function (): any {
   const { fields }: { fields: SelectedFields | undefined } = this as any
   if (!fields) {
     throw new DrizzleError({ message: 'Selection is required' })

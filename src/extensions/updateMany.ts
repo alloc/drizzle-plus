@@ -6,8 +6,8 @@ import {
   type TableRelationalConfig,
   type TablesRelationalConfig,
 } from 'drizzle-orm'
-import { PgTable, PgUpdateBase, PgUpdateSetSource } from 'drizzle-orm/pg-core'
-import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
+import { Table, UpdateBase, UpdateSetSource } from '#dialect/core'
+import { RelationalQueryBuilder } from '#dialect/query'
 import {
   AnyRelationsFilter,
   ExtractTable,
@@ -16,17 +16,17 @@ import {
   ReturningResultFields,
 } from 'drizzle-plus/types'
 import { isFunction } from 'radashi'
-import * as adapter from './adapters/pg'
+import * as adapter from './adapters/#dialect'
 import { ExcludeDialect, getContext, getFilterSQL } from './internal'
 
 export interface DBUpdateManyConfig<
-  TTable extends PgTable,
+  TTable extends Table,
   TReturning extends ReturningClause<TTable> = ReturningClause<TTable>,
   TWhere = AnyRelationsFilter,
 > {
   set:
-    | PgUpdateSetSource<TTable>
-    | ((table: TTable['_']['columns']) => PgUpdateSetSource<TTable>)
+    | UpdateSetSource<TTable>
+    | ((table: TTable['_']['columns']) => UpdateSetSource<TTable>)
   /**
    * Specify a filter to only update rows that match the filter.
    */
@@ -52,18 +52,15 @@ export interface DBUpdateManyConfig<
   >
 }
 
-declare module 'drizzle-orm/pg-core/query-builders/query' {
-  export interface RelationalQueryBuilder<
-    TSchema extends TablesRelationalConfig,
-    TFields extends TableRelationalConfig,
-  > {
+declare module '#dialect/query' {
+  export interface RelationalQueryBuilder</* #dialect.relationalQueryBuilderTypeParams */> {
     updateMany<TReturning extends ReturningClause<ExtractTable<TFields>> = {}>(
       config: DBUpdateManyConfig<
-        ExtractTable<TFields, PgTable>,
+        ExtractTable<TFields, Table>,
         TReturning,
         RelationsFilter<TFields, TSchema>
       >
-    ): UpdateManyQueryPromise<ExtractTable<TFields, PgTable>, TReturning>
+    ): UpdateManyQueryPromise<ExtractTable<TFields, Table>, TReturning>
   }
 }
 
@@ -76,7 +73,7 @@ RelationalQueryBuilder.prototype.updateMany = function (
   // Since Postgres doesn't support LIMIT in UPDATE queries, we need to use a
   // CTE that selects the rows to update.
   const withList =
-    DIALECT === 'pg' && config.limit !== undefined
+    '#dialect/name' === 'pg' && config.limit !== undefined
       ? adapter.selectRowsToUpdateOrDelete(
           this,
           config.limit,
@@ -85,7 +82,7 @@ RelationalQueryBuilder.prototype.updateMany = function (
         )
       : undefined
 
-  const query = new PgUpdateBase(
+  const query = new UpdateBase(
     table,
     isFunction(config.set) ? config.set(columns) : config.set,
     session,
@@ -93,17 +90,17 @@ RelationalQueryBuilder.prototype.updateMany = function (
     withList
   )
 
-  if (DIALECT === 'pg' && config.limit !== undefined) {
+  if ('#dialect/name' === 'pg' && config.limit !== undefined) {
     adapter.innerJoinMatchedRows(table, query)
   } else if (config.where) {
     query.where(getFilterSQL(this, config.where))
   }
 
-  if (DIALECT !== 'pg' && config.limit !== undefined) {
+  if ('#dialect/name' !== 'pg' && config.limit !== undefined) {
     adapter.limitUpdateOrDelete(table, query, config.limit, config.orderBy)
   }
 
-  if (DIALECT !== 'mysql') {
+  if ('#dialect/name' !== 'mysql') {
     adapter.setReturningClauseForUpdateOrDelete(
       query,
       config.returning,
@@ -115,14 +112,14 @@ RelationalQueryBuilder.prototype.updateMany = function (
 }
 
 export type UpdateManyQueryResult<
-  TTable extends PgTable,
+  TTable extends Table,
   TReturning extends ReturningClause<TTable>,
 > = keyof TReturning extends never
   ? number
   : ReturningResultFields<'many', TTable, TReturning>
 
 export interface UpdateManyQueryPromise<
-  TTable extends PgTable,
+  TTable extends Table,
   TReturning extends ReturningClause<TTable>,
 > extends QueryPromise<UpdateManyQueryResult<TTable, TReturning>> {
   toSQL(): Query

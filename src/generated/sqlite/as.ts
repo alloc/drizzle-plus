@@ -1,17 +1,14 @@
 // @ts-nocheck
 import { mapRelationalRow, sql, SQL } from 'drizzle-orm'
 import {
-  SQLiteColumn,
-  SQLiteSelectHKTBase,
-  SQLiteSelectBuilder,
+  SQLiteColumn as Column,
+  SQLiteSelectHKTBase as SelectHKTBase,
+  SQLiteSelectBuilder as SelectBuilder,
   SelectedFields,
   SelectedFieldsOrdered,
   WithSubqueryWithSelection,
 } from 'drizzle-orm/sqlite-core'
-import {
-  SQLiteRelationalQuery,
-  SQLiteRelationalQueryHKTBase,
-} from 'drizzle-orm/sqlite-core/query-builders/query'
+import { SQLiteRelationalQuery as RelationalQuery, SQLiteRelationalQueryHKTBase as RelationalQueryHKTBase } from 'drizzle-orm/sqlite-core/query-builders/query'
 import { DecodedFields, ResultFieldsToSelection } from 'drizzle-plus/types'
 import {
   mapSelectedFieldsToDecoders,
@@ -25,10 +22,34 @@ export type SQLiteRelationalSubquery<
 > = WithSubqueryWithSelection<ResultFieldsToSelection<TResult>, TAlias>
 
 declare module 'drizzle-orm/sqlite-core/query-builders/query' {
-  interface SQLiteRelationalQuery<
-    TType extends 'sync' | 'async',
-    TResult,
-  > {
+  interface SQLiteRelationalQuery<TType extends 'sync' | 'async',
+    TResult> {
+    as<TAlias extends string>(
+      alias: TAlias
+    ): SQLiteRelationalSubquery<TResult, TAlias>
+  }
+}
+
+RelationalQuery.prototype.as = function (alias: string): any {
+  const { sql, selection } = buildRelationalQuery(this)
+
+  const decodedFields: DecodedFields = {}
+  for (const item of selection) {
+    decodedFields[item.key] = {
+      mapFromDriverValue(value: unknown) {
+        return mapRelationalRow({ [item.key]: value }, [item])[item.key]
+      },
+    }
+  }
+
+  return createWithSubquery(sql, alias, decodedFields)
+}
+
+declare module 'drizzle-orm/sqlite-core' {
+  interface SQLiteSelectBuilder<TSelection extends SelectedFields | undefined,
+    THKT extends SelectHKTBase,
+    TResultType extends 'sync' | 'async',
+    TRunResult> {
     as<TAlias extends string>(
       alias: TAlias
     ): TSelection extends SelectedFields
@@ -37,7 +58,7 @@ declare module 'drizzle-orm/sqlite-core/query-builders/query' {
   }
 }
 
-SQLiteSelectBuilder.prototype.as = function (alias): any {
+SelectBuilder.prototype.as = function (alias): any {
   const {
     fields,
     dialect,
@@ -50,7 +71,7 @@ SQLiteSelectBuilder.prototype.as = function (alias): any {
     throw new Error('Cannot alias a select query without a selection')
   }
 
-  const orderedFields = orderSelectedFields<SQLiteColumn>(fields)
+  const orderedFields = orderSelectedFields<Column>(fields)
 
   return createWithSubquery(
     sql`select ${dialect.buildSelection(orderedFields)}`,
