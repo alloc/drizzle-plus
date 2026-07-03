@@ -15,6 +15,7 @@
     "format": "prettier --write .",
     "lint": "tsc-lint",
     "test": "vitest",
+    "test:extensions": "tsc -p tsconfig.extensions.json",
     "prepublishOnly": "pnpm build"
   },
   "devDependencies": {
