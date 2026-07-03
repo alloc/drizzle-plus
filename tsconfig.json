@@ -19,7 +19,11 @@
       "drizzle-plus/sqlite": ["./src/functions/sqlite/types.ts"],
       "drizzle-plus/types": ["./src/types.ts"],
       "drizzle-plus/types/*": ["./src/types/*.ts"],
-      "drizzle-plus/utils": ["./src/utils.ts"]
+      "drizzle-plus/utils": ["./src/utils.ts"],
+      "#dialect/core": ["./src/extensions/dialect/core.ts"],
+      "#dialect/db": ["./src/extensions/dialect/db.ts"],
+      "#dialect/query": ["./src/extensions/dialect/query.ts"],
+      "drizzle-plus/#dialect": ["./src/extensions/dialect/functions.ts"]
     }
   }
 }
