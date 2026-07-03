@@ -12,7 +12,11 @@ import { RelationalQueryBuilder } from '#dialect/query'
 import { getContext, getFilterSQL } from './internal'
 
 declare module '#dialect/query' {
-  export interface RelationalQueryBuilder</* #dialect.relationalQueryBuilderTypeParams */> {
+  export interface RelationalQueryBuilder<
+    TQueryContext = unknown,
+    TSchema extends TablesRelationalConfig = TablesRelationalConfig,
+    TFields extends TableRelationalConfig = TableRelationalConfig,
+  > {
     count(filter?: RelationsFilter<TFields, TSchema>): CountQueryPromise
   }
 }

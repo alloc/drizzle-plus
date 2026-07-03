@@ -9,9 +9,11 @@ import { mergeFindManyArgs, type MergeFindManyArgs } from 'drizzle-plus'
 import { AnyDBQueryConfig } from 'drizzle-plus/types'
 
 declare module 'drizzle-orm/sqlite-core/query-builders/query' {
-  export interface RelationalQueryBuilder<TMode extends 'sync' | 'async',
+  export interface RelationalQueryBuilder<
+    TMode extends 'sync' | 'async',
     TSchema extends TablesRelationalConfig,
-    TFields extends TableRelationalConfig> {
+    TFields extends TableRelationalConfig,
+  > {
     $findMany<const TConfig extends DBQueryConfig<'many', TSchema, TFields>>(
       config: TConfig
     ): TConfig

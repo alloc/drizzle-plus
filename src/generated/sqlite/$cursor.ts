@@ -34,9 +34,11 @@ export interface RelationalQueryCursor<
 }
 
 declare module 'drizzle-orm/sqlite-core/query-builders/query' {
-  export interface RelationalQueryBuilder<TMode extends 'sync' | 'async',
+  export interface RelationalQueryBuilder<
+    TMode extends 'sync' | 'async',
     TSchema extends TablesRelationalConfig,
-    TFields extends TableRelationalConfig> {
+    TFields extends TableRelationalConfig,
+  > {
     $cursor<
       TOrderBy extends Exclude<InferOrderBy<this>, Function>,
       TCursor extends

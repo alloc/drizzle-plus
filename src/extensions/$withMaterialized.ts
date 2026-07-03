@@ -1,4 +1,3 @@
-/* #dialect.extraTypeImports */
 import { ColumnsSelection } from 'drizzle-orm'
 import type * as V1 from 'drizzle-orm/_relations'
 import { Database, WithBuilder } from '#dialect/core'
@@ -6,7 +5,13 @@ import { AnyRelations, TablesRelationalConfig } from 'drizzle-orm/relations'
 import { injectWithSubqueryAddons } from './internal'
 
 declare module '#dialect/core' {
-  interface Database</* #dialect.databaseTypeParams */> {
+  interface Database<
+    TQueryResult = unknown,
+    TFullSchema extends Record<string, unknown> = Record<string, unknown>,
+    TRelations extends AnyRelations = AnyRelations,
+    TTablesConfig extends TablesRelationalConfig = TablesRelationalConfig,
+    TSchema extends V1.TablesRelationalConfig = V1.TablesRelationalConfig,
+  > {
     /**
      * Similar to `$with()` but the CTE is materialized.
      *

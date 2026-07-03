@@ -13,9 +13,11 @@ import { RelationalQueryBuilder } from 'drizzle-orm/mysql-core/query-builders/qu
 import { getContext, getFilterSQL } from './internal'
 
 declare module 'drizzle-orm/mysql-core/query-builders/query' {
-  export interface RelationalQueryBuilder<TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase,
+  export interface RelationalQueryBuilder<
+    TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase,
     TSchema extends TablesRelationalConfig,
-    TFields extends TableRelationalConfig> {
+    TFields extends TableRelationalConfig,
+  > {
     count(filter?: RelationsFilter<TFields, TSchema>): CountQueryPromise
   }
 }

@@ -14,6 +14,7 @@ import {
   PgSelectBase as SelectBase,
   PgSelectBuilder as SelectBuilder,
   PgSelectConfig as SelectConfig,
+  PgSelectHKTBase as SelectHKTBase,
   PgSession as Session,
   PgSetOperatorWithResult as SetOperatorWithResult,
   SelectedFields,
@@ -24,8 +25,10 @@ import { SelectResultFields } from 'drizzle-orm/query-builders/select.types'
 import { orderSelectedFields } from 'drizzle-plus/utils'
 
 declare module 'drizzle-orm/pg-core' {
-  interface PgSelectBuilder<TSelection extends SelectedFields | undefined,
-    TBuilderMode extends 'db' | 'qb'> {
+  interface PgSelectBuilder<
+    TSelection extends SelectedFields | undefined,
+    TBuilderMode extends 'db' | 'qb',
+  > {
     withoutFrom(): TSelection extends SelectedFields
       ? PgSelectWithoutFrom<TSelection>
       : never

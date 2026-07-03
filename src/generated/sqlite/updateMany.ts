@@ -54,9 +54,11 @@ export interface DBUpdateManyConfig<
 }
 
 declare module 'drizzle-orm/sqlite-core/query-builders/query' {
-  export interface RelationalQueryBuilder<TMode extends 'sync' | 'async',
+  export interface RelationalQueryBuilder<
+    TMode extends 'sync' | 'async',
     TSchema extends TablesRelationalConfig,
-    TFields extends TableRelationalConfig> {
+    TFields extends TableRelationalConfig,
+  > {
     updateMany<TReturning extends ReturningClause<ExtractTable<TFields>> = {}>(
       config: DBUpdateManyConfig<
         ExtractTable<TFields, Table>,

@@ -1,4 +1,3 @@
-/* #dialect.extraTypeImports */
 import { mapRelationalRow, sql, SQL } from 'drizzle-orm'
 import {
   Column,
@@ -22,7 +21,10 @@ export type RelationalSubquery<
 > = WithSubqueryWithSelection<ResultFieldsToSelection<TResult>, TAlias>
 
 declare module '#dialect/query' {
-  interface RelationalQuery</* #dialect.relationalQueryTypeParams */> {
+  interface RelationalQuery<
+    THKT extends RelationalQueryHKTBase = RelationalQueryHKTBase,
+    TResult = unknown,
+  > {
     as<TAlias extends string>(
       alias: TAlias
     ): RelationalSubquery<TResult, TAlias>
@@ -45,7 +47,14 @@ RelationalQuery.prototype.as = function (alias: string): any {
 }
 
 declare module '#dialect/core' {
-  interface SelectBuilder</* #dialect.selectBuilderAsTypeParams */> {
+  interface SelectBuilder<
+    TSelection extends SelectedFields | undefined = SelectedFields | undefined,
+    THKT extends SelectHKTBase = SelectHKTBase,
+    TResultType extends 'sync' | 'async' = 'async',
+    TRunResult = unknown,
+    TBuilderMode extends 'db' | 'qb' = 'db',
+    TPreparedQueryHKT = unknown,
+  > {
     as<TAlias extends string>(
       alias: TAlias
     ): TSelection extends SelectedFields

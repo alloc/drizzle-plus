@@ -22,7 +22,11 @@ interface FindManyAndCountQueryPromise<T>
 }
 
 declare module '#dialect/query' {
-  export interface RelationalQueryBuilder</* #dialect.relationalQueryBuilderTypeParams */> {
+  export interface RelationalQueryBuilder<
+    TQueryContext = unknown,
+    TSchema extends TablesRelationalConfig = TablesRelationalConfig,
+    TFields extends TableRelationalConfig = TableRelationalConfig,
+  > {
     findManyAndCount<TConfig extends DBQueryConfig<'many', TSchema, TFields>>(
       config?: KnownKeysOnly<TConfig, DBQueryConfig<'many', TSchema, TFields>>
     ): FindManyAndCountQueryPromise<BuildQueryResult<TSchema, TFields, TConfig>>

@@ -33,7 +33,11 @@ export interface RelationalQueryCursor<
 }
 
 declare module '#dialect/query' {
-  export interface RelationalQueryBuilder</* #dialect.relationalQueryBuilderTypeParams */> {
+  export interface RelationalQueryBuilder<
+    TQueryContext = unknown,
+    TSchema extends TablesRelationalConfig = TablesRelationalConfig,
+    TFields extends TableRelationalConfig = TableRelationalConfig,
+  > {
     $cursor<
       TOrderBy extends Exclude<InferOrderBy<this>, Function>,
       TCursor extends

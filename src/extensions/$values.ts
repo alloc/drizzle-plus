@@ -1,4 +1,3 @@
-/* #dialect.extraTypeImports */
 import {
   AnyRelations,
   DrizzleError,
@@ -12,6 +11,7 @@ import {
 import type * as V1 from 'drizzle-orm/_relations'
 import {
   Column,
+  Database,
   Table,
   TableConfig,
   WithSubqueryWithSelection,
@@ -27,7 +27,13 @@ type TableWithTheseColumns<K extends string> = Table<
 >
 
 declare module '#dialect/core' {
-  interface Database</* #dialect.databaseTypeParams */> {
+  interface Database<
+    TQueryResult = unknown,
+    TFullSchema extends Record<string, unknown> = Record<string, unknown>,
+    TRelations extends AnyRelations = AnyRelations,
+    TTablesConfig extends TablesRelationalConfig = TablesRelationalConfig,
+    TSchema extends V1.TablesRelationalConfig = V1.TablesRelationalConfig,
+  > {
     /**
      * Allows you to declare a values list as raw SQL or a subquery. Use the
      * `getSQL` method to get the raw SQL. Use the `as` method to get a

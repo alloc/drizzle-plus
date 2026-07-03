@@ -1,4 +1,3 @@
-/* #dialect.extraTypeImports */
 import { AnyRelations, TablesRelationalConfig } from 'drizzle-orm'
 import type * as V1 from 'drizzle-orm/_relations'
 import { Database } from '#dialect/db'
@@ -6,7 +5,13 @@ import { toSelection } from 'drizzle-plus'
 import { RawFieldsToSelection } from 'drizzle-plus/types'
 
 declare module '#dialect/db' {
-  interface Database</* #dialect.databaseTypeParams */> {
+  interface Database<
+    TQueryResult = unknown,
+    TFullSchema extends Record<string, unknown> = Record<string, unknown>,
+    TRelations extends AnyRelations = AnyRelations,
+    TTablesConfig extends TablesRelationalConfig = TablesRelationalConfig,
+    TSchema extends V1.TablesRelationalConfig = V1.TablesRelationalConfig,
+  > {
     /**
      * Create a "selection" object compatible with `db.select` from a plain
      * object containing almost any value.

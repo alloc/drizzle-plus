@@ -17,11 +17,13 @@ import {
 import { setWithSubqueryAddons } from './internal'
 
 declare module 'drizzle-orm/pg-core' {
-  interface PgDatabase<TQueryResult extends import('drizzle-orm/pg-core').PgQueryResultHKT,
+  interface PgDatabase<
+    TQueryResult extends import('drizzle-orm/pg-core').PgQueryResultHKT,
     TFullSchema extends Record<string, unknown>,
     TRelations extends AnyRelations,
     TTablesConfig extends TablesRelationalConfig,
-    TSchema extends V1.TablesRelationalConfig> {
+    TSchema extends V1.TablesRelationalConfig,
+  > {
     /**
      * Use this instead of `$with()` to create a subquery that can reference
      * itself. If TypeScript is failing, it may help to declare the selection

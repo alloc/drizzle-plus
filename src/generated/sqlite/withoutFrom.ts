@@ -14,6 +14,7 @@ import {
   SQLiteSelectBase as SelectBase,
   SQLiteSelectBuilder as SelectBuilder,
   SQLiteSelectConfig as SelectConfig,
+  SQLiteSelectHKTBase as SelectHKTBase,
   SQLiteSession as Session,
   SQLiteSetOperatorWithResult as SetOperatorWithResult,
   SelectedFields,
@@ -24,10 +25,12 @@ import { SelectResultFields } from 'drizzle-orm/query-builders/select.types'
 import { orderSelectedFields } from 'drizzle-plus/utils'
 
 declare module 'drizzle-orm/sqlite-core' {
-  interface SQLiteSelectBuilder<TSelection extends SelectedFields | undefined,
+  interface SQLiteSelectBuilder<
+    TSelection extends SelectedFields | undefined,
     TResultType extends 'sync' | 'async',
     TRunResult,
-    TBuilderMode extends 'db' | 'qb'> {
+    TBuilderMode extends 'db' | 'qb',
+  > {
     withoutFrom(): TSelection extends SelectedFields
       ? SQLiteSelectWithoutFrom<TSelection>
       : never

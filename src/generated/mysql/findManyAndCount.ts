@@ -23,9 +23,11 @@ interface FindManyAndCountQueryPromise<T>
 }
 
 declare module 'drizzle-orm/mysql-core/query-builders/query' {
-  export interface RelationalQueryBuilder<TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase,
+  export interface RelationalQueryBuilder<
+    TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase,
     TSchema extends TablesRelationalConfig,
-    TFields extends TableRelationalConfig> {
+    TFields extends TableRelationalConfig,
+  > {
     findManyAndCount<TConfig extends DBQueryConfig<'many', TSchema, TFields>>(
       config?: KnownKeysOnly<TConfig, DBQueryConfig<'many', TSchema, TFields>>
     ): FindManyAndCountQueryPromise<BuildQueryResult<TSchema, TFields, TConfig>>

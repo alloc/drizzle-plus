@@ -34,8 +34,10 @@ export interface RelationalQueryCursor<
 }
 
 declare module 'drizzle-orm/pg-core/query-builders/query' {
-  export interface RelationalQueryBuilder<TSchema extends TablesRelationalConfig,
-    TFields extends TableRelationalConfig> {
+  export interface RelationalQueryBuilder<
+    TSchema extends TablesRelationalConfig,
+    TFields extends TableRelationalConfig,
+  > {
     $cursor<
       TOrderBy extends Exclude<InferOrderBy<this>, Function>,
       TCursor extends

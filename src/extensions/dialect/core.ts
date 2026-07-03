@@ -1,40 +1,30 @@
 import type {
+  AnyRelations,
   ColumnsSelection,
   Query,
-  QueryPromise,
   SQL,
   SQLWrapper,
+  SelectedFields as DrizzleSelectedFields,
+  SelectedFieldsOrdered as DrizzleSelectedFieldsOrdered,
   Subquery,
+  TableConfig,
+  TablesRelationalConfig,
 } from 'drizzle-orm'
+import type * as V1 from 'drizzle-orm/_relations'
+import { Column, QueryPromise, Table } from 'drizzle-orm'
 import { TypedQueryBuilder } from 'drizzle-orm/query-builders/query-builder'
 import type { SelectResultFields } from 'drizzle-orm/query-builders/select.types'
 
-export type TableConfig = {
-  name: string
-  schema: string | undefined
-  columns: Record<string, Column>
-  dialect: string
-}
-
-export declare class Column<T = any> {
-  _: T
-  name: string
-  hasDefault?: boolean
-  generated?: unknown
-  generatedIdentity?: unknown
-  getSQLType(): string
-}
-
-export declare class Table<T extends TableConfig = TableConfig> {
-  _: T
-}
+export { Column, Table }
+export type { TableConfig }
 
 export declare function getTableConfig(table: Table): {
   primaryKeys: { columns: Column[] }[]
   uniqueConstraints: { columns: Column[] }[]
-  uniqueIndexes: {
+  indexes: {
     config: {
-      columns: ({ name: string } | unknown)[]
+      columns: { name: string }[]
+      unique?: boolean
     }
   }[]
 }
@@ -52,8 +42,8 @@ export declare class Session {
   all(query: SQL): Promise<unknown[]>
 }
 
-export type SelectedFields = Record<string, unknown>
-export type SelectedFieldsOrdered = { path: string[]; field: unknown }[]
+export type SelectedFields = DrizzleSelectedFields<Column, Table>
+export type SelectedFieldsOrdered = DrizzleSelectedFieldsOrdered<Column>
 
 export type WithSubqueryWithSelection<
   TSelection,
@@ -72,9 +62,9 @@ export type WithBuilder = {
 export declare class Database<
   TQueryResult = unknown,
   TFullSchema extends Record<string, unknown> = Record<string, unknown>,
-  TRelations = unknown,
-  TTablesConfig = unknown,
-  TSchema = unknown,
+  TRelations extends AnyRelations = AnyRelations,
+  TTablesConfig extends TablesRelationalConfig = TablesRelationalConfig,
+  TSchema extends V1.TablesRelationalConfig = V1.TablesRelationalConfig,
 > {
   $with: WithBuilder
   select<TSelection extends SelectedFields>(
@@ -88,15 +78,17 @@ export declare class QueryBuilder {
   ): SelectBuilder<TSelection>
 }
 
-export declare class InsertBase {
+export declare class InsertBase extends QueryPromise<unknown> {
   constructor(...args: any[])
+  execute(): Promise<unknown>
+  toSQL(): Query
   onConflictDoNothing(): this
   returning(fields: unknown): this
 }
 
 export declare class InsertBuilder {
   constructor(...args: any[])
-  select(query: unknown): InsertQuery
+  select(query: unknown | ((qb: any) => unknown)): InsertQuery
   values(values: unknown): InsertQuery
 }
 
@@ -119,8 +111,10 @@ export type UpdateSetSource<TTable extends Table> = Partial<
   TTable['_']['columns']
 >
 
-export declare class UpdateBase {
+export declare class UpdateBase extends QueryPromise<unknown> {
   constructor(...args: any[])
+  execute(): Promise<unknown>
+  toSQL(): Query
   where(where: unknown): this
   returning(fields: unknown): this
 }
@@ -168,6 +162,6 @@ export interface SetOperatorWithResult<TResult> {
   _: { result: TResult }
 }
 
-export declare class SelectWithoutFromBase<
+export declare abstract class SelectWithoutFromBase<
   TSelection extends SelectedFields,
 > extends TypedQueryBuilder<TSelection, SelectResultFields<TSelection>[]> {}

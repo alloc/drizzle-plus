@@ -1,5 +1,4 @@
 // @ts-nocheck
-import type { PreparedQueryHKTBase } from 'drizzle-orm/mysql-core'
 import { mapRelationalRow, sql, SQL } from 'drizzle-orm'
 import {
   MySqlColumn as Column,
@@ -23,8 +22,10 @@ export type MySqlRelationalSubquery<
 > = WithSubqueryWithSelection<ResultFieldsToSelection<TResult>, TAlias>
 
 declare module 'drizzle-orm/mysql-core/query-builders/query' {
-  interface MySqlRelationalQuery<THKT extends MySqlRelationalQueryHKTBase,
-    TResult> {
+  interface MySqlRelationalQuery<
+    THKT extends MySqlRelationalQueryHKTBase,
+    TResult,
+  > {
     as<TAlias extends string>(
       alias: TAlias
     ): MySqlRelationalSubquery<TResult, TAlias>
@@ -47,9 +48,11 @@ RelationalQuery.prototype.as = function (alias: string): any {
 }
 
 declare module 'drizzle-orm/mysql-core' {
-  interface MySqlSelectBuilder<TSelection extends SelectedFields | undefined,
+  interface MySqlSelectBuilder<
+    TSelection extends SelectedFields | undefined,
     THKT extends SelectHKTBase,
-    TPreparedQueryHKT extends PreparedQueryHKTBase> {
+    TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase,
+  > {
     as<TAlias extends string>(
       alias: TAlias
     ): TSelection extends SelectedFields

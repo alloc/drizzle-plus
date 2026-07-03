@@ -1,4 +1,3 @@
-/* #dialect.extraTypeImports */
 import { ColumnsSelection, Name, SQL, StringChunk, Subquery } from 'drizzle-orm'
 import type * as V1 from 'drizzle-orm/_relations'
 import {
@@ -17,7 +16,13 @@ import {
 import { setWithSubqueryAddons } from './internal'
 
 declare module '#dialect/core' {
-  interface Database</* #dialect.databaseTypeParams */> {
+  interface Database<
+    TQueryResult = unknown,
+    TFullSchema extends Record<string, unknown> = Record<string, unknown>,
+    TRelations extends AnyRelations = AnyRelations,
+    TTablesConfig extends TablesRelationalConfig = TablesRelationalConfig,
+    TSchema extends V1.TablesRelationalConfig = V1.TablesRelationalConfig,
+  > {
     /**
      * Use this instead of `$with()` to create a subquery that can reference
      * itself. If TypeScript is failing, it may help to declare the selection

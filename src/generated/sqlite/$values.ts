@@ -12,6 +12,7 @@ import {
 import type * as V1 from 'drizzle-orm/_relations'
 import {
   SQLiteColumn as Column,
+  BaseSQLiteDatabase as Database,
   SQLiteTable as Table,
   TableConfig,
   WithSubqueryWithSelection,
@@ -27,12 +28,14 @@ type TableWithTheseColumns<K extends string> = Table<
 >
 
 declare module 'drizzle-orm/sqlite-core' {
-  interface BaseSQLiteDatabase<TResultKind extends 'sync' | 'async',
+  interface BaseSQLiteDatabase<
+    TResultKind extends 'sync' | 'async',
     TRunResult,
     TFullSchema extends Record<string, unknown>,
     TRelations extends AnyRelations,
     TTablesConfig extends TablesRelationalConfig,
-    TSchema extends V1.TablesRelationalConfig> {
+    TSchema extends V1.TablesRelationalConfig,
+  > {
     /**
      * Allows you to declare a values list as raw SQL or a subquery. Use the
      * `getSQL` method to get the raw SQL. Use the `as` method to get a

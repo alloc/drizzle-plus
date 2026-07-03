@@ -1,5 +1,4 @@
 // @ts-nocheck
-import type { PreparedQueryHKTBase } from 'drizzle-orm/mysql-core'
 import {
   ColumnsSelection,
   DrizzleError,
@@ -15,6 +14,7 @@ import {
   MySqlSelectBase as SelectBase,
   MySqlSelectBuilder as SelectBuilder,
   MySqlSelectConfig as SelectConfig,
+  MySqlSelectHKTBase as SelectHKTBase,
   MySqlSession as Session,
   MySqlSetOperatorWithResult as SetOperatorWithResult,
   SelectedFields,
@@ -25,9 +25,11 @@ import { SelectResultFields } from 'drizzle-orm/query-builders/select.types'
 import { orderSelectedFields } from 'drizzle-plus/utils'
 
 declare module 'drizzle-orm/mysql-core' {
-  interface MySqlSelectBuilder<TSelection extends SelectedFields | undefined,
-    TPreparedQueryHKT extends PreparedQueryHKTBase,
-    TBuilderMode extends 'db' | 'qb'> {
+  interface MySqlSelectBuilder<
+    TSelection extends SelectedFields | undefined,
+    TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase,
+    TBuilderMode extends 'db' | 'qb',
+  > {
     withoutFrom(): TSelection extends SelectedFields
       ? MySqlSelectWithoutFrom<TSelection>
       : never

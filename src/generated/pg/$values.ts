@@ -12,6 +12,7 @@ import {
 import type * as V1 from 'drizzle-orm/_relations'
 import {
   PgColumn as Column,
+  PgDatabase as Database,
   PgTable as Table,
   TableConfig,
   WithSubqueryWithSelection,
@@ -27,11 +28,13 @@ type TableWithTheseColumns<K extends string> = Table<
 >
 
 declare module 'drizzle-orm/pg-core' {
-  interface PgDatabase<TQueryResult extends import('drizzle-orm/pg-core').PgQueryResultHKT,
+  interface PgDatabase<
+    TQueryResult extends import('drizzle-orm/pg-core').PgQueryResultHKT,
     TFullSchema extends Record<string, unknown>,
     TRelations extends AnyRelations,
     TTablesConfig extends TablesRelationalConfig,
-    TSchema extends V1.TablesRelationalConfig> {
+    TSchema extends V1.TablesRelationalConfig,
+  > {
     /**
      * Allows you to declare a values list as raw SQL or a subquery. Use the
      * `getSQL` method to get the raw SQL. Use the `as` method to get a

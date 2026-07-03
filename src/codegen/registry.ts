@@ -143,7 +143,7 @@ export const registry: Record<Dialect, DialectSpec> = {
       "import type { PreparedQueryHKTBase } from 'drizzle-orm/mysql-core'",
     ],
     databaseTypeParams: [
-      'TPreparedQueryHKT extends PreparedQueryHKTBase',
+      "TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase",
       'TFullSchema extends Record<string, unknown>',
       'TRelations extends AnyRelations',
       'TTablesConfig extends TablesRelationalConfig',
@@ -161,11 +161,11 @@ export const registry: Record<Dialect, DialectSpec> = {
     selectBuilderAsTypeParams: [
       'TSelection extends SelectedFields | undefined',
       'THKT extends SelectHKTBase',
-      'TPreparedQueryHKT extends PreparedQueryHKTBase',
+      "TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase",
     ],
     selectBuilderFromTypeParams: [
       'TSelection extends SelectedFields | undefined',
-      'TPreparedQueryHKT extends PreparedQueryHKTBase',
+      "TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase",
       "TBuilderMode extends 'db' | 'qb'",
     ],
     selectQueryBuilderBaseArgs: ['TSelection', "'partial'"],

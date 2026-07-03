@@ -39,7 +39,11 @@ export interface DBCreateConfig<
 }
 
 declare module '#dialect/query' {
-  export interface RelationalQueryBuilder</* #dialect.relationalQueryBuilderTypeParams */> {
+  export interface RelationalQueryBuilder<
+    TQueryContext = unknown,
+    TSchema extends TablesRelationalConfig = TablesRelationalConfig,
+    TFields extends TableRelationalConfig = TableRelationalConfig,
+  > {
     create<TReturning extends ReturningClause<ExtractTable<TFields>> = {}>(
       config: DBCreateConfig<'one', ExtractTable<TFields>, TReturning>
     ): CreateQueryPromise<'one', ExtractTable<TFields>, TReturning>

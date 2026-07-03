@@ -1,9 +1,19 @@
-import type { TableRelationalConfig, TablesRelationalConfig } from 'drizzle-orm'
+import { QueryPromise } from 'drizzle-orm'
+import type {
+  Query,
+  TableRelationalConfig,
+  TablesRelationalConfig,
+} from 'drizzle-orm'
 
 export type RelationalQueryHKTBase = unknown
 
-export declare class RelationalQuery<THKT = unknown, TResult = unknown> {
+export declare class RelationalQuery<
+  THKT = unknown,
+  TResult = unknown,
+> extends QueryPromise<TResult> {
   _: { result: TResult }
+  execute(): Promise<TResult>
+  toSQL(): Query
 }
 
 export declare class RelationalQueryBuilder<
@@ -11,6 +21,6 @@ export declare class RelationalQueryBuilder<
   TSchema extends TablesRelationalConfig = TablesRelationalConfig,
   TFields extends TableRelationalConfig = TableRelationalConfig,
 > {
-  findMany(args?: unknown): Promise<unknown[]>
+  findMany(args?: unknown): QueryPromise<unknown[]> & { toSQL(): Query }
   findFirst(args?: unknown): RelationalQuery<unknown, unknown>
 }

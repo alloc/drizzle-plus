@@ -2,14 +2,17 @@
 import { DrizzleError, sql } from 'drizzle-orm'
 import {
   PgSelectBuilder as SelectBuilder,
+  PgSelectHKTBase as SelectHKTBase,
   PgSelectQueryBuilderBase as SelectQueryBuilderBase,
   PgSelectQueryBuilderHKT as SelectQueryBuilderHKT,
   SelectedFields,
 } from 'drizzle-orm/pg-core'
 
 declare module 'drizzle-orm/pg-core' {
-  interface PgSelectBuilder<TSelection extends SelectedFields | undefined,
-    TBuilderMode extends 'db' | 'qb'> {
+  interface PgSelectBuilder<
+    TSelection extends SelectedFields | undefined,
+    THKT extends SelectHKTBase,
+  > {
     /**
      * Creates a single-row placeholder base that can be left-joined with other
      * subqueries. This ensures the final result set always contains exactly one
@@ -27,8 +30,7 @@ declare module 'drizzle-orm/pg-core' {
     fromSingle(): TSelection extends SelectedFields
       ? SelectQueryBuilderBase<
           SelectQueryBuilderHKT,
-          undefined
-          ,
+          undefined,
           TSelection,
           'partial'
         >

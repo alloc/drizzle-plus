@@ -17,12 +17,14 @@ import {
 import { setWithSubqueryAddons } from './internal'
 
 declare module 'drizzle-orm/sqlite-core' {
-  interface BaseSQLiteDatabase<TResultKind extends 'sync' | 'async',
+  interface BaseSQLiteDatabase<
+    TResultKind extends 'sync' | 'async',
     TRunResult,
     TFullSchema extends Record<string, unknown>,
     TRelations extends AnyRelations,
     TTablesConfig extends TablesRelationalConfig,
-    TSchema extends V1.TablesRelationalConfig> {
+    TSchema extends V1.TablesRelationalConfig,
+  > {
     /**
      * Use this instead of `$with()` to create a subquery that can reference
      * itself. If TypeScript is failing, it may help to declare the selection

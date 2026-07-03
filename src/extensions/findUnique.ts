@@ -18,7 +18,11 @@ export type FindUniqueConfig<
 > = RequireKeys<DBQueryConfig<'one', TSchema, TFields>, 'where'>
 
 declare module '#dialect/query' {
-  export interface RelationalQueryBuilder</* #dialect.relationalQueryBuilderTypeParams */> {
+  export interface RelationalQueryBuilder<
+    TQueryContext = unknown,
+    TSchema extends TablesRelationalConfig = TablesRelationalConfig,
+    TFields extends TableRelationalConfig = TableRelationalConfig,
+  > {
     /**
      * Find a unique record by its primary key or unique constraint.
      *

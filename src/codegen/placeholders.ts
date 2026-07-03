@@ -102,44 +102,88 @@ function rewritePlaceholderDeclarations(source: string, spec: DialectSpec) {
 }
 
 function rewritePlaceholderTypeParams(source: string, spec: DialectSpec) {
+  let out = rewriteInterfaceTypeParams(
+    source,
+    spec.databaseType,
+    spec.databaseTypeParams
+  )
+
+  out = rewriteInterfaceTypeParams(
+    out,
+    spec.placeholders.query.RelationalQueryBuilder,
+    spec.relationalQueryBuilderTypeParams
+  )
+
+  if (spec.relationalQueryTypeParams) {
+    out = rewriteInterfaceTypeParams(
+      out,
+      spec.placeholders.query.RelationalQuery,
+      spec.relationalQueryTypeParams
+    )
+  }
+
+  out = rewriteSelectBuilderTypeParams(out, spec)
+  out = rewriteSelectQueryBuilderBaseArgs(out, spec)
+
+  return rewriteDialectNamePlaceholder(out, spec)
+}
+
+function rewriteInterfaceTypeParams(
+  source: string,
+  interfaceName: string,
+  typeParams: string[]
+) {
+  return source.replace(
+    new RegExp(
+      `\\binterface ${escapeRegExp(interfaceName)}<[\\s\\S]*?^\\s*>`,
+      'gm'
+    ),
+    `interface ${interfaceName}<\n    ${typeParams.join(',\n    ')},\n  >`
+  )
+}
+
+function rewriteSelectBuilderTypeParams(source: string, spec: DialectSpec) {
+  const name = spec.placeholders.core.SelectBuilder
+  return source.replace(
+    new RegExp(`\\binterface ${escapeRegExp(name)}<[\\s\\S]*?^\\s*>`, 'gm'),
+    (match, offset) => {
+      const bodyStart = source.slice(
+        offset + match.length,
+        offset + match.length + 500
+      )
+      const typeParams =
+        bodyStart.includes('fromSingle()') ||
+        bodyStart.includes('withoutFrom()')
+          ? spec.selectBuilderFromTypeParams
+          : spec.selectBuilderAsTypeParams
+      return `interface ${name}<\n    ${typeParams.join(',\n    ')},\n  >`
+    }
+  )
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function rewriteDialectNamePlaceholder(source: string, spec: DialectSpec) {
   return source
     .replace(
-      /\/\* #dialect\.extraTypeImports \*\/\n?/g,
-      spec.extraTypeImports.length
-        ? `${spec.extraTypeImports.join('\n')}\n`
-        : ''
+      /const dialectName = '#dialect\/name' as 'pg' \| 'mysql' \| 'sqlite'\n\n?/g,
+      ''
     )
-    .replace(
-      /\/\* #dialect\.databaseTypeParams \*\//g,
-      spec.databaseTypeParams.join(',\n    ')
-    )
-    .replace(
-      /\/\* #dialect\.relationalQueryBuilderTypeParams \*\//g,
-      spec.relationalQueryBuilderTypeParams.join(',\n    ')
-    )
-    .replace(
-      /\/\* #dialect\.relationalQueryTypeParams \*\//g,
-      (spec.relationalQueryTypeParams ?? []).join(',\n    ')
-    )
-    .replace(
-      /\/\* #dialect\.selectBuilderAsTypeParams \*\//g,
-      spec.selectBuilderAsTypeParams.join(',\n    ')
-    )
-    .replace(
-      /\/\* #dialect\.selectBuilderFromTypeParams \*\//g,
-      spec.selectBuilderFromTypeParams.join(',\n    ')
-    )
-    .replace(
-      /\/\* #dialect\.selectQueryBuilderBaseArgs \*\//g,
-      `,\n          ${spec.selectQueryBuilderBaseArgs.join(',\n          ')}`
-    )
-    .replace(
-      /\s*\/\* #dialect\.selectQueryBuilderBaseTrailingArgs \*\//g,
-      spec.selectQueryBuilderBaseTrailingArgs.length
-        ? `,\n          ${spec.selectQueryBuilderBaseTrailingArgs.join(',\n          ')}`
-        : ''
-    )
+    .replace(/\bdialectName\b/g, `'${spec.name}'`)
     .replace(/'#dialect\/name'/g, `'${spec.name}'`)
+}
+
+function rewriteSelectQueryBuilderBaseArgs(source: string, spec: DialectSpec) {
+  const trailingArgs = spec.selectQueryBuilderBaseTrailingArgs.length
+    ? `,\n          ${spec.selectQueryBuilderBaseTrailingArgs.join(',\n          ')}`
+    : ''
+
+  return source.replace(
+    /SelectQueryBuilderBase<\n\s*SelectQueryBuilderHKT,\n\s*undefined,\n\s*TSelection,\n\s*'partial',\n\s*TResultType,\n\s*TRunResult,\n\s*TPreparedQueryHKT\n\s*>/g,
+    `SelectQueryBuilderBase<\n          SelectQueryBuilderHKT,\n          undefined,\n          ${spec.selectQueryBuilderBaseArgs.join(',\n          ')}${trailingArgs}\n        >`
+  )
 }
 
 function placeholderMapForModule(spec: DialectSpec, module: string) {
@@ -214,34 +258,6 @@ function rewriteDialectSessionTypes(source: string, spec: DialectSpec) {
     /\b(session: |private session: |declare private session: )SQLiteSession\b/g,
     '$1SQLiteSession<any, any, any, any, any>'
   )
-}
-
-function rewriteDialectTypeParameters(source: string, spec: DialectSpec) {
-  if (spec.name === 'pg') {
-    return source
-  }
-
-  let out = source.replace(
-    /\binterface RelationalQueryBuilder<([\s\S]*?)^\s*>/gm,
-    () => `interface RelationalQueryBuilder<
-    ${spec.relationalQueryBuilderTypeParams.join(',\n    ')},
-  >`
-  )
-
-  out = out.replace(
-    /\binterface \w+RelationalQuery<([\s\S]*?)^\s*>/gm,
-    match => {
-      if (!spec.relationalQueryTypeParams) {
-        return match
-      }
-      const name = `${spec.pgPrefix}RelationalQuery`
-      return `interface ${name}<
-    ${spec.relationalQueryTypeParams.join(',\n    ')},
-  >`
-    }
-  )
-
-  return out
 }
 
 function rewriteDialectConstants(source: string, spec: DialectSpec) {

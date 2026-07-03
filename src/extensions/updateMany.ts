@@ -19,6 +19,8 @@ import { isFunction } from 'radashi'
 import * as adapter from './adapters/#dialect'
 import { ExcludeDialect, getContext, getFilterSQL } from './internal'
 
+const dialectName = '#dialect/name' as 'pg' | 'mysql' | 'sqlite'
+
 export interface DBUpdateManyConfig<
   TTable extends Table,
   TReturning extends ReturningClause<TTable> = ReturningClause<TTable>,
@@ -53,7 +55,11 @@ export interface DBUpdateManyConfig<
 }
 
 declare module '#dialect/query' {
-  export interface RelationalQueryBuilder</* #dialect.relationalQueryBuilderTypeParams */> {
+  export interface RelationalQueryBuilder<
+    TQueryContext = unknown,
+    TSchema extends TablesRelationalConfig = TablesRelationalConfig,
+    TFields extends TableRelationalConfig = TableRelationalConfig,
+  > {
     updateMany<TReturning extends ReturningClause<ExtractTable<TFields>> = {}>(
       config: DBUpdateManyConfig<
         ExtractTable<TFields, Table>,
@@ -73,7 +79,7 @@ RelationalQueryBuilder.prototype.updateMany = function (
   // Since Postgres doesn't support LIMIT in UPDATE queries, we need to use a
   // CTE that selects the rows to update.
   const withList =
-    '#dialect/name' === 'pg' && config.limit !== undefined
+    dialectName === 'pg' && config.limit !== undefined
       ? adapter.selectRowsToUpdateOrDelete(
           this,
           config.limit,
@@ -90,17 +96,17 @@ RelationalQueryBuilder.prototype.updateMany = function (
     withList
   )
 
-  if ('#dialect/name' === 'pg' && config.limit !== undefined) {
+  if (dialectName === 'pg' && config.limit !== undefined) {
     adapter.innerJoinMatchedRows(table, query)
   } else if (config.where) {
     query.where(getFilterSQL(this, config.where))
   }
 
-  if ('#dialect/name' !== 'pg' && config.limit !== undefined) {
+  if (dialectName !== 'pg' && config.limit !== undefined) {
     adapter.limitUpdateOrDelete(table, query, config.limit, config.orderBy)
   }
 
-  if ('#dialect/name' !== 'mysql') {
+  if (dialectName !== 'mysql') {
     adapter.setReturningClauseForUpdateOrDelete(
       query,
       config.returning,

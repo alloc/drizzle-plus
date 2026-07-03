@@ -22,8 +22,10 @@ export type PgRelationalSubquery<
 > = WithSubqueryWithSelection<ResultFieldsToSelection<TResult>, TAlias>
 
 declare module 'drizzle-orm/pg-core/query-builders/query' {
-  interface PgRelationalQuery<THKT extends PgRelationalQueryHKTBase,
-    TResult> {
+  interface PgRelationalQuery<
+    THKT extends PgRelationalQueryHKTBase,
+    TResult,
+  > {
     as<TAlias extends string>(
       alias: TAlias
     ): PgRelationalSubquery<TResult, TAlias>
@@ -46,8 +48,10 @@ RelationalQuery.prototype.as = function (alias: string): any {
 }
 
 declare module 'drizzle-orm/pg-core' {
-  interface PgSelectBuilder<TSelection extends SelectedFields | undefined,
-    THKT extends SelectHKTBase> {
+  interface PgSelectBuilder<
+    TSelection extends SelectedFields | undefined,
+    THKT extends SelectHKTBase,
+  > {
     as<TAlias extends string>(
       alias: TAlias
     ): TSelection extends SelectedFields

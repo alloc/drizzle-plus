@@ -120,7 +120,11 @@ export interface DBUpsertConfig<
 }
 
 declare module '#dialect/query' {
-  export interface RelationalQueryBuilder</* #dialect.relationalQueryBuilderTypeParams */> {
+  export interface RelationalQueryBuilder<
+    TQueryContext = unknown,
+    TSchema extends TablesRelationalConfig = TablesRelationalConfig,
+    TFields extends TableRelationalConfig = TableRelationalConfig,
+  > {
     upsert<TReturning extends ReturningClause<ExtractTable<TFields>>>(
       config: DBUpsertConfig<
         'one',
@@ -170,8 +174,8 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
 
     query = qb.select(data)
   } else if (isSQLWrapper(config.data)) {
-    selection = getSelectedFields(config.data)
-    query = qb.select(qb => {
+    selection = getSelectedFields(config.data as any)
+    query = qb.select((qb: any) => {
       return qb
         .select(buildInsertSelect(selection, columns, true))
         .from(getSQL(config.data))

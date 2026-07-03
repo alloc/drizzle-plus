@@ -22,8 +22,10 @@ export type SQLiteRelationalSubquery<
 > = WithSubqueryWithSelection<ResultFieldsToSelection<TResult>, TAlias>
 
 declare module 'drizzle-orm/sqlite-core/query-builders/query' {
-  interface SQLiteRelationalQuery<TType extends 'sync' | 'async',
-    TResult> {
+  interface SQLiteRelationalQuery<
+    TType extends 'sync' | 'async',
+    TResult,
+  > {
     as<TAlias extends string>(
       alias: TAlias
     ): SQLiteRelationalSubquery<TResult, TAlias>
@@ -46,10 +48,12 @@ RelationalQuery.prototype.as = function (alias: string): any {
 }
 
 declare module 'drizzle-orm/sqlite-core' {
-  interface SQLiteSelectBuilder<TSelection extends SelectedFields | undefined,
+  interface SQLiteSelectBuilder<
+    TSelection extends SelectedFields | undefined,
     THKT extends SelectHKTBase,
     TResultType extends 'sync' | 'async',
-    TRunResult> {
+    TRunResult,
+  > {
     as<TAlias extends string>(
       alias: TAlias
     ): TSelection extends SelectedFields

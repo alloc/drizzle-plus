@@ -1,4 +1,3 @@
-/* #dialect.extraTypeImports */
 import {
   ColumnsSelection,
   DrizzleError,
@@ -14,6 +13,7 @@ import {
   SelectBase,
   SelectBuilder,
   SelectConfig,
+  SelectHKTBase,
   Session,
   SetOperatorWithResult,
   SelectedFields,
@@ -24,7 +24,14 @@ import { SelectResultFields } from 'drizzle-orm/query-builders/select.types'
 import { orderSelectedFields } from 'drizzle-plus/utils'
 
 declare module '#dialect/core' {
-  interface SelectBuilder</* #dialect.selectBuilderFromTypeParams */> {
+  interface SelectBuilder<
+    TSelection extends SelectedFields | undefined = SelectedFields | undefined,
+    THKT extends SelectHKTBase = SelectHKTBase,
+    TResultType extends 'sync' | 'async' = 'async',
+    TRunResult = unknown,
+    TBuilderMode extends 'db' | 'qb' = 'db',
+    TPreparedQueryHKT = unknown,
+  > {
     withoutFrom(): TSelection extends SelectedFields
       ? SelectWithoutFrom<TSelection>
       : never

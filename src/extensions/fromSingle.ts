@@ -1,14 +1,21 @@
-/* #dialect.extraTypeImports */
 import { DrizzleError, sql } from 'drizzle-orm'
 import {
   SelectBuilder,
+  SelectHKTBase,
   SelectQueryBuilderBase,
   SelectQueryBuilderHKT,
   SelectedFields,
 } from '#dialect/core'
 
 declare module '#dialect/core' {
-  interface SelectBuilder</* #dialect.selectBuilderFromTypeParams */> {
+  interface SelectBuilder<
+    TSelection extends SelectedFields | undefined = SelectedFields | undefined,
+    THKT extends SelectHKTBase = SelectHKTBase,
+    TResultType extends 'sync' | 'async' = 'async',
+    TRunResult = unknown,
+    TBuilderMode extends 'db' | 'qb' = 'db',
+    TPreparedQueryHKT = unknown,
+  > {
     /**
      * Creates a single-row placeholder base that can be left-joined with other
      * subqueries. This ensures the final result set always contains exactly one
@@ -26,9 +33,12 @@ declare module '#dialect/core' {
     fromSingle(): TSelection extends SelectedFields
       ? SelectQueryBuilderBase<
           SelectQueryBuilderHKT,
-          undefined
-          /* #dialect.selectQueryBuilderBaseArgs */
-          /* #dialect.selectQueryBuilderBaseTrailingArgs */
+          undefined,
+          TSelection,
+          'partial',
+          TResultType,
+          TRunResult,
+          TPreparedQueryHKT
         >
       : never
   }

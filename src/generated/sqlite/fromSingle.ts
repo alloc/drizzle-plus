@@ -2,16 +2,19 @@
 import { DrizzleError, sql } from 'drizzle-orm'
 import {
   SQLiteSelectBuilder as SelectBuilder,
+  SQLiteSelectHKTBase as SelectHKTBase,
   SQLiteSelectQueryBuilderBase as SelectQueryBuilderBase,
   SQLiteSelectQueryBuilderHKT as SelectQueryBuilderHKT,
   SelectedFields,
 } from 'drizzle-orm/sqlite-core'
 
 declare module 'drizzle-orm/sqlite-core' {
-  interface SQLiteSelectBuilder<TSelection extends SelectedFields | undefined,
+  interface SQLiteSelectBuilder<
+    TSelection extends SelectedFields | undefined,
+    THKT extends SelectHKTBase,
     TResultType extends 'sync' | 'async',
     TRunResult,
-    TBuilderMode extends 'db' | 'qb'> {
+  > {
     /**
      * Creates a single-row placeholder base that can be left-joined with other
      * subqueries. This ensures the final result set always contains exactly one
@@ -29,8 +32,7 @@ declare module 'drizzle-orm/sqlite-core' {
     fromSingle(): TSelection extends SelectedFields
       ? SelectQueryBuilderBase<
           SelectQueryBuilderHKT,
-          undefined
-          ,
+          undefined,
           TResultType,
           TRunResult,
           TSelection,

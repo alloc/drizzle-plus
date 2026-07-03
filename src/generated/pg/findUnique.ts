@@ -19,8 +19,10 @@ export type FindUniqueConfig<
 > = RequireKeys<DBQueryConfig<'one', TSchema, TFields>, 'where'>
 
 declare module 'drizzle-orm/pg-core/query-builders/query' {
-  export interface RelationalQueryBuilder<TSchema extends TablesRelationalConfig,
-    TFields extends TableRelationalConfig> {
+  export interface RelationalQueryBuilder<
+    TSchema extends TablesRelationalConfig,
+    TFields extends TableRelationalConfig,
+  > {
     /**
      * Find a unique record by its primary key or unique constraint.
      *

@@ -52,6 +52,7 @@ export function getFilterSQL(
     filter,
     ctx.tableConfig.relations,
     ctx.schema,
+    ctx.tableNamesMap,
     ctx.dialect.casing
   )
 }
@@ -249,7 +250,7 @@ export function setWithSubqueryAddons(
   if (!withSubqueryAddons) {
     withSubqueryAddons = new WeakMap()
 
-    // @ts-expect-error: Rewrite internal method
+    // @ts-ignore: Rewrite internal method
     Dialect.prototype.buildWithCTE = buildWithCTE
   }
 
@@ -257,7 +258,13 @@ export function setWithSubqueryAddons(
   return withSubquery
 }
 
-export type InferDialect<TTable extends Table> = TTable['_']['dialect']
+export type InferDialect<TTable extends Table> = TTable['_'] extends {
+  dialect: infer TDialect
+}
+  ? TDialect
+  : TTable['_']['config'] extends { dialect: infer TDialect }
+    ? TDialect
+    : never
 
 export type ExcludeDialect<TTable extends Table, TDialect extends string, T> =
   InferDialect<TTable> extends TDialect ? never : T

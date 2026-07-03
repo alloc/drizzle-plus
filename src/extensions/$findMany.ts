@@ -8,7 +8,11 @@ import { mergeFindManyArgs, type MergeFindManyArgs } from 'drizzle-plus'
 import { AnyDBQueryConfig } from 'drizzle-plus/types'
 
 declare module '#dialect/query' {
-  export interface RelationalQueryBuilder</* #dialect.relationalQueryBuilderTypeParams */> {
+  export interface RelationalQueryBuilder<
+    TQueryContext = unknown,
+    TSchema extends TablesRelationalConfig = TablesRelationalConfig,
+    TFields extends TableRelationalConfig = TableRelationalConfig,
+  > {
     $findMany<const TConfig extends DBQueryConfig<'many', TSchema, TFields>>(
       config: TConfig
     ): TConfig

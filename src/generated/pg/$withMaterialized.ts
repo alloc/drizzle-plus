@@ -6,11 +6,13 @@ import { AnyRelations, TablesRelationalConfig } from 'drizzle-orm/relations'
 import { injectWithSubqueryAddons } from './internal'
 
 declare module 'drizzle-orm/pg-core' {
-  interface PgDatabase<TQueryResult extends import('drizzle-orm/pg-core').PgQueryResultHKT,
+  interface PgDatabase<
+    TQueryResult extends import('drizzle-orm/pg-core').PgQueryResultHKT,
     TFullSchema extends Record<string, unknown>,
     TRelations extends AnyRelations,
     TTablesConfig extends TablesRelationalConfig,
-    TSchema extends V1.TablesRelationalConfig> {
+    TSchema extends V1.TablesRelationalConfig,
+  > {
     /**
      * Similar to `$with()` but the CTE is materialized.
      *

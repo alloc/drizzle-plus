@@ -1,5 +1,4 @@
 // @ts-nocheck
-import type { PreparedQueryHKTBase } from 'drizzle-orm/mysql-core'
 import {
   AnyRelations,
   DrizzleError,
@@ -13,6 +12,7 @@ import {
 import type * as V1 from 'drizzle-orm/_relations'
 import {
   MySqlColumn as Column,
+  MySqlDatabase as Database,
   MySqlTable as Table,
   TableConfig,
   WithSubqueryWithSelection,
@@ -28,11 +28,13 @@ type TableWithTheseColumns<K extends string> = Table<
 >
 
 declare module 'drizzle-orm/mysql-core' {
-  interface MySqlDatabase<TPreparedQueryHKT extends PreparedQueryHKTBase,
+  interface MySqlDatabase<
+    TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase,
     TFullSchema extends Record<string, unknown>,
     TRelations extends AnyRelations,
     TTablesConfig extends TablesRelationalConfig,
-    TSchema extends V1.TablesRelationalConfig> {
+    TSchema extends V1.TablesRelationalConfig,
+  > {
     /**
      * Allows you to declare a values list as raw SQL or a subquery. Use the
      * `getSQL` method to get the raw SQL. Use the `as` method to get a

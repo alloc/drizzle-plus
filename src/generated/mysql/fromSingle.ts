@@ -1,17 +1,19 @@
 // @ts-nocheck
-import type { PreparedQueryHKTBase } from 'drizzle-orm/mysql-core'
 import { DrizzleError, sql } from 'drizzle-orm'
 import {
   MySqlSelectBuilder as SelectBuilder,
+  MySqlSelectHKTBase as SelectHKTBase,
   MySqlSelectQueryBuilderBase as SelectQueryBuilderBase,
   MySqlSelectQueryBuilderHKT as SelectQueryBuilderHKT,
   SelectedFields,
 } from 'drizzle-orm/mysql-core'
 
 declare module 'drizzle-orm/mysql-core' {
-  interface MySqlSelectBuilder<TSelection extends SelectedFields | undefined,
-    TPreparedQueryHKT extends PreparedQueryHKTBase,
-    TBuilderMode extends 'db' | 'qb'> {
+  interface MySqlSelectBuilder<
+    TSelection extends SelectedFields | undefined,
+    THKT extends SelectHKTBase,
+    TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase,
+  > {
     /**
      * Creates a single-row placeholder base that can be left-joined with other
      * subqueries. This ensures the final result set always contains exactly one
@@ -29,8 +31,7 @@ declare module 'drizzle-orm/mysql-core' {
     fromSingle(): TSelection extends SelectedFields
       ? SelectQueryBuilderBase<
           SelectQueryBuilderHKT,
-          undefined
-          ,
+          undefined,
           TSelection,
           'partial',
           TPreparedQueryHKT

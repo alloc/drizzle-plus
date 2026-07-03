@@ -19,9 +19,11 @@ export type FindUniqueConfig<
 > = RequireKeys<DBQueryConfig<'one', TSchema, TFields>, 'where'>
 
 declare module 'drizzle-orm/sqlite-core/query-builders/query' {
-  export interface RelationalQueryBuilder<TMode extends 'sync' | 'async',
+  export interface RelationalQueryBuilder<
+    TMode extends 'sync' | 'async',
     TSchema extends TablesRelationalConfig,
-    TFields extends TableRelationalConfig> {
+    TFields extends TableRelationalConfig,
+  > {
     /**
      * Find a unique record by its primary key or unique constraint.
      *
