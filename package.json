@@ -26,6 +26,7 @@
     "drizzle-kit": "rc",
     "drizzle-orm": "rc",
     "drizzle-plus": "link:",
+    "lildocs": "^0.1.25",
     "picorun": "^0.1.5",
     "picospawn": "^0.3.2",
     "prettier": "^3.6.2",
