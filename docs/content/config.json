@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/aleclarson/lildocs/main/schemas/config.schema.json",
+  "projectName": "drizzle-plus",
+  "navigation": {
+    "order": [
+      "getting-started.md",
+      "features/query/",
+      "features/select/",
+      "features/sql/",
+      "features/utilities/",
+      "drizzle-orm-subquery-column-list.md"
+    ]
+  }
+}

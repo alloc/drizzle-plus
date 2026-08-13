@@ -12,6 +12,8 @@
   "scripts": {
     "dev": "rimraf dist && picorun --names generate,build 'watchlist -e scripts/* src/codegen/*.ts src/extensions/*.ts -- tsx scripts/generate.ts --no-remove' 'tsup --sourcemap --watch'",
     "build": "rimraf dist && tsx scripts/generate.ts && rolldown -c rolldown.config.ts",
+    "docs:build": "pnpm run build && lildocs build ./docs/content --out ./dist/docs",
+    "docs:dev": "pnpm run build && lildocs dev ./docs/content",
     "format": "prettier --write .",
     "lint": "tsc-lint",
     "test": "vitest",

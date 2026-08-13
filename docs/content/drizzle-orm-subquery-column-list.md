@@ -1,5 +1,7 @@
 # Drizzle ORM RC upstream bug: aliased subqueries need column lists
 
+> Record the upstream behavior that `$values().as(alias)` depends on, so maintainers can distinguish a drizzle-plus feature issue from a Drizzle ORM renderer issue.
+
 Status: the local `drizzle-orm` patch has been removed. This document captures the
 behavior that drizzle-plus still needs from upstream.
 
@@ -16,10 +18,10 @@ when the resulting subquery is used as a table source or joined as a table.
 The implementation exists in the shared extension source and in the generated
 Postgres, MySQL, and SQLite entrypoints:
 
-- [`src/extensions/$values.ts`](../src/extensions/$values.ts)
-- [`src/generated/pg/$values.ts`](../src/generated/pg/$values.ts)
-- [`src/generated/mysql/$values.ts`](../src/generated/mysql/$values.ts)
-- [`src/generated/sqlite/$values.ts`](../src/generated/sqlite/$values.ts)
+- [`src/extensions/$values.ts`](https://github.com/alloc/drizzle-plus/blob/main/src/extensions/$values.ts)
+- [`src/generated/pg/$values.ts`](https://github.com/alloc/drizzle-plus/blob/main/src/generated/pg/$values.ts)
+- [`src/generated/mysql/$values.ts`](https://github.com/alloc/drizzle-plus/blob/main/src/generated/mysql/$values.ts)
+- [`src/generated/sqlite/$values.ts`](https://github.com/alloc/drizzle-plus/blob/main/src/generated/sqlite/$values.ts)
 
 `ValuesList.as()` exposes fields using the caller's object keys, while SQL
 identifiers must use the dialect-converted column names. It therefore computes
