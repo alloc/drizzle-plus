@@ -71,7 +71,3 @@ These helpers extend `db`, tables, or the select builder.
 | [Merge query options](features/utilities/merge-queries.md) | Reusable filters and selections need a type-safe merge.                    |
 | [`toSelection()`](features/utilities/to-selection.md)      | A reusable plain object should become a select selection.                  |
 | [Types](features/utilities/types.md)                       | A helper type should be derived from an existing relational query builder. |
-
-The [upstream subquery note](drizzle-orm-subquery-column-list.md) records a
-Drizzle ORM behavior that affects the `$values` feature. It is a maintainer
-note rather than a usage guide.

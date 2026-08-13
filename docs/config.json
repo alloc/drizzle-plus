@@ -10,8 +10,7 @@
       "features/query/",
       "features/select/",
       "features/sql/",
-      "features/utilities/",
-      "drizzle-orm-subquery-column-list.md"
+      "features/utilities/"
     ]
   }
 }
