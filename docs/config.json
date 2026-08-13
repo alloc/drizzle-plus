@@ -1,6 +1,9 @@
 {
   "$schema": "https://raw.githubusercontent.com/aleclarson/lildocs/main/schemas/config.schema.json",
   "projectName": "drizzle-plus",
+  "reference": {
+    "enabled": false
+  },
   "navigation": {
     "order": [
       "getting-started.md",

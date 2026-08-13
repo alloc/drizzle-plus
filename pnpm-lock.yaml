@@ -30,8 +30,8 @@ importers:
         specifier: 'link:'
         version: 'link:'
       lildocs:
-        specifier: ^0.1.25
-        version: 0.1.25
+        specifier: ^0.1.26
+        version: 0.1.26
       picorun:
         specifier: ^0.1.5
         version: 0.1.5
@@ -1181,8 +1181,8 @@ packages:
     cpu: [x64, arm64, wasm32, arm]
     os: [darwin, linux, win32]
 
-  lildocs@0.1.25:
-    resolution: {integrity: sha512-GCGpvIL5VrSXbXOF4m5MKz+BN+nsGsJl3bvr3keitvdbyXWewe6+N0lV2wdhOIQbxYIYjx9bcsAkWdX3cw4sLg==}
+  lildocs@0.1.26:
+    resolution: {integrity: sha512-fmrf9N4Ll6HWnEc7Jq9GEfy1mCJneGkfn4rux7K9suAEM7/z9xfg19I9H17YmV0rNjco6M0Gcdw+n8aJu4wXjg==}
     engines: {node: ^22.18.0 || >=24.3.0}
     hasBin: true
 
@@ -2384,7 +2384,7 @@ snapshots:
       '@libsql/linux-x64-musl': 0.5.13
       '@libsql/win32-x64-msvc': 0.5.13
 
-  lildocs@0.1.25:
+  lildocs@0.1.26:
     dependencies:
       beautiful-mermaid: 1.1.3
       shiki: 4.4.3

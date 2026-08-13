@@ -1,4 +1,6 @@
 allowBuilds:
   esbuild: true
+minimumReleaseAgeExclude:
+  - lildocs@0.1.26
 onlyBuiltDependencies:
   - esbuild

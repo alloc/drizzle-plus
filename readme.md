@@ -10,7 +10,7 @@
 `updateMany()`, and cursor pagination. It also provides typed SQL expressions
 for common functions, JSON aggregation, timestamps, subqueries, and more.
 
-It supports PostgreSQL, MySQL, and SQLite. The [documentation](docs/content/index.md)
+It supports PostgreSQL, MySQL, and SQLite. The [documentation](docs/index.md)
 has one page for each extension and helper family, with the supported import
 path and a working starting example.
 
@@ -52,38 +52,38 @@ import { jsonAgg } from 'drizzle-plus/pg'
 
 ### Query extensions
 
-- [Create rows](docs/content/features/query/create.md)
-- [Upsert rows](docs/content/features/query/upsert.md)
-- [Update many rows](docs/content/features/query/update-many.md)
-- [Count rows](docs/content/features/query/count.md)
-- [Find a unique row](docs/content/features/query/find-unique.md)
-- [Find many and count](docs/content/features/query/find-many-and-count.md)
-- [Cursor pagination](docs/content/features/query/cursor-pagination.md)
-- [Query composition](docs/content/features/query/query-composition.md)
+- [Create rows](docs/features/query/create.md)
+- [Upsert rows](docs/features/query/upsert.md)
+- [Update many rows](docs/features/query/update-many.md)
+- [Count rows](docs/features/query/count.md)
+- [Find a unique row](docs/features/query/find-unique.md)
+- [Find many and count](docs/features/query/find-many-and-count.md)
+- [Cursor pagination](docs/features/query/cursor-pagination.md)
+- [Query composition](docs/features/query/query-composition.md)
 
 ### Database and select helpers
 
-- [Build selections with `$select()`](docs/content/features/select/select.md)
-- [Build `VALUES` relations with `$values()`](docs/content/features/select/values.md)
-- [Use queries as subqueries with `.as()`](docs/content/features/select/aliases.md)
-- [Build recursive CTEs](docs/content/features/select/recursive-ctes.md)
-- [Control PostgreSQL CTE materialization](docs/content/features/select/materialized-ctes.md)
-- [Omit table columns with `$without()`](docs/content/features/select/without-columns.md)
-- [Keep one base row with `fromSingle()`](docs/content/features/select/from-single.md)
-- [Select expressions without `FROM`](docs/content/features/select/without-from.md)
+- [Build selections with `$select()`](docs/features/select/select.md)
+- [Build `VALUES` relations with `$values()`](docs/features/select/values.md)
+- [Use queries as subqueries with `.as()`](docs/features/select/aliases.md)
+- [Build recursive CTEs](docs/features/select/recursive-ctes.md)
+- [Control PostgreSQL CTE materialization](docs/features/select/materialized-ctes.md)
+- [Omit table columns with `$without()`](docs/features/select/without-columns.md)
+- [Keep one base row with `fromSingle()`](docs/features/select/from-single.md)
+- [Select expressions without `FROM`](docs/features/select/without-from.md)
 
 ### SQL helpers and utilities
 
-- [Conditional expressions](docs/content/features/sql/case-when.md)
-- [Scalar subqueries](docs/content/features/sql/nested-subqueries.md)
-- [SQL value coercion](docs/content/features/sql/to-sql.md)
-- [Universal SQL functions](docs/content/features/sql/universal-functions.md)
-- [Dialect-specific SQL functions](docs/content/features/sql/dialect-functions.md)
-- [Database timestamps](docs/content/features/sql/timestamps.md)
-- [Require a result with `orThrow()`](docs/content/features/utilities/or-throw.md)
-- [Merge query options](docs/content/features/utilities/merge-queries.md)
-- [Convert plain values with `toSelection()`](docs/content/features/utilities/to-selection.md)
-- [Derived types](docs/content/features/utilities/types.md)
+- [Conditional expressions](docs/features/sql/case-when.md)
+- [Scalar subqueries](docs/features/sql/nested-subqueries.md)
+- [SQL value coercion](docs/features/sql/to-sql.md)
+- [Universal SQL functions](docs/features/sql/universal-functions.md)
+- [Dialect-specific SQL functions](docs/features/sql/dialect-functions.md)
+- [Database timestamps](docs/features/sql/timestamps.md)
+- [Require a result with `orThrow()`](docs/features/utilities/or-throw.md)
+- [Merge query options](docs/features/utilities/merge-queries.md)
+- [Convert plain values with `toSelection()`](docs/features/utilities/to-selection.md)
+- [Derived types](docs/features/utilities/types.md)
 
 ## Development
 
@@ -93,7 +93,7 @@ pnpm run lint
 pnpm run docs:build
 ```
 
-Contributions are welcome. See the [full documentation](docs/content/index.md) for
+Contributions are welcome. See the [full documentation](docs/index.md) for
 feature boundaries and dialect support.
 
 ## License
