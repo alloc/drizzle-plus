@@ -1,4 +1,4 @@
-# Create rows with `create()`
+# Create rows
 
 > Insert one or more rows through `db.query.<table>.create()` and choose whether the result is a row, rows, or an insert count.
 

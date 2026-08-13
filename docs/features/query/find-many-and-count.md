@@ -1,4 +1,4 @@
-# Fetch a page and its total with `findManyAndCount()`
+# Page and count
 
 > Run a `findMany()` query and a matching count together, returning page data and the total number of matching rows in one result.
 

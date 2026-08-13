@@ -1,4 +1,4 @@
-# Decode database timestamps as `Date` values
+# Timestamps as `Date`
 
 > Keep database-generated date and timestamp expressions as SQL until selection, then opt into JavaScript `Date` decoding with `.toDate()`.
 

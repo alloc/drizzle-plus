@@ -1,4 +1,4 @@
-# Build selections with `$select()`
+# Selections with `$select()`
 
 > Convert a plain JavaScript object into a selection that `db.select()` can use while preserving aliases and result types.
 

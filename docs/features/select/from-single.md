@@ -1,4 +1,4 @@
-# Keep one base row with `fromSingle()`
+# Single base row
 
 > Start a select from a single placeholder row so optional left joins do not make an aggregate result disappear when every joined relation is empty.
 

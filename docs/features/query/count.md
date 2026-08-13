@@ -1,4 +1,4 @@
-# Count rows with `count()`
+# Count rows
 
 > Get a numeric row count from a relational query builder, with the same filter shape used by `findMany()`.
 

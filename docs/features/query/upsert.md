@@ -1,4 +1,4 @@
-# Upsert rows with `upsert()`
+# Upsert rows
 
 > Insert a row when its conflict key is new, or update the existing row when that key already exists.
 

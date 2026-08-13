@@ -1,4 +1,4 @@
-# Select expressions without `FROM`
+# Select without `FROM`
 
 > Build a `SELECT` statement from SQL expressions alone when no table source is needed.
 

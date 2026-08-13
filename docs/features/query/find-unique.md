@@ -1,4 +1,4 @@
-# Find one row with `findUnique()`
+# Find one row
 
 > Find a row through a primary key or unique constraint and fail early when the filter does not identify a unique key.
 

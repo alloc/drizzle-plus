@@ -1,4 +1,4 @@
-# Build conditional expressions with `caseWhen()`
+# `caseWhen()` expressions
 
 > Compose a SQL `CASE` expression incrementally while TypeScript collects the possible result types.
 

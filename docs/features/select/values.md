@@ -1,4 +1,4 @@
-# Build `VALUES` relations with `$values()`
+# `VALUES` relations
 
 > Turn an in-memory list of rows into a typed SQL `VALUES` relation or CTE that can be selected, joined, or reused in a larger query.
 

@@ -1,4 +1,4 @@
-# Update many rows with `updateMany()`
+# Bulk updates
 
 > Update multiple rows through the relational query builder, with filters, ordering, limits, and typed returned rows where the dialect supports them.
 

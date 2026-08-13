@@ -1,4 +1,4 @@
-# Use one-column queries as expressions with `nest()`
+# Scalar subqueries
 
 > Wrap a one-column select or relational query in parentheses and preserve its Drizzle result decoder when it becomes a scalar SQL expression.
 

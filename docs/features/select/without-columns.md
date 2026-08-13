@@ -1,4 +1,4 @@
-# Omit table columns with `$without()`
+# Omit columns
 
 > Derive a selection from a table while leaving out sensitive, large, or otherwise unnecessary columns.
 

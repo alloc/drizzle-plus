@@ -1,4 +1,4 @@
-# Require a result with `orThrow()`
+# Throw on empty results
 
 > Turn an empty query result into a `DrizzleError` while narrowing the awaited TypeScript result to a non-null value.
 

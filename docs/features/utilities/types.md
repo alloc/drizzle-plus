@@ -1,4 +1,4 @@
-# Derive types from a relational query builder
+# Relational query types
 
 > Reuse the argument, filter, ordering, and SQL-result types that Drizzle already inferred for a table.
 

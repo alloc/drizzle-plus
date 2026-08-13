@@ -1,4 +1,4 @@
-# Control PostgreSQL CTE materialization
+# CTE materialization
 
 > Tell PostgreSQL to materialize a CTE once or to keep it eligible for inlining when the planner would otherwise choose for you.
 

@@ -1,4 +1,4 @@
-# Use universal SQL functions
+# Universal SQL functions
 
 > Call common SQL functions through typed helpers that work across PostgreSQL, MySQL, and SQLite.
 

@@ -1,4 +1,4 @@
-# Use queries as named subqueries with `.as()`
+# Named subqueries
 
 > Give a select or relational query a name so its selected fields can be referenced from another query with type-safe aliases.
 

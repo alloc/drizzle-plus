@@ -1,4 +1,4 @@
-# Convert plain values with `toSelection()`
+# Selections with `toSelection()`
 
 > Turn a record of columns, expressions, and JSON-safe values into a Drizzle select selection without requiring a database helper instance.
 

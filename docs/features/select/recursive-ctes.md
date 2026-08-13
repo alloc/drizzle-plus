@@ -1,4 +1,4 @@
-# Build recursive CTEs with `$withRecursive()`
+# Recursive CTEs
 
 > Create a `WITH RECURSIVE` query whose callback can reference the CTE while its result shape is being defined.
 

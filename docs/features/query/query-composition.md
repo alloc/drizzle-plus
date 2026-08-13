@@ -1,4 +1,4 @@
-# Compose `findMany()` options with `$findMany()`
+# Query composition
 
 > Build reusable, type-checked relational query configs without executing a query until you pass the config to `findMany()`.
 

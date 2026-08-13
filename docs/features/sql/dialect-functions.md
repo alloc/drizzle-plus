@@ -1,4 +1,4 @@
-# Use dialect-specific SQL functions
+# Dialect-specific functions
 
 > Use the database's native function names through a dialect subpath while keeping selected results decoded by Drizzle.
 

@@ -1,4 +1,4 @@
-# Build cursor pagination with `$cursor()`
+# Cursor pagination
 
 > Turn a sort order and the last row you saw into the `where` and `orderBy` options for the next relational query.
 
