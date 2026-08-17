@@ -38,7 +38,12 @@ RelationalQuery.prototype.as = function (alias: string): any {
   for (const item of selection) {
     decodedFields[item.key] = {
       mapFromDriverValue(value: unknown) {
-        return mapRelationalRow({ [item.key]: value }, [item])[item.key]
+        const row = mapRelationalRow(
+          { [item.key]: value },
+          true,
+          [item]
+        ) as Record<string, unknown>
+        return row[item.key]
       },
     }
   }

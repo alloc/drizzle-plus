@@ -258,9 +258,7 @@ export type InferDialect<TTable extends Table> = TTable['_'] extends {
   dialect: infer TDialect
 }
   ? TDialect
-  : TTable['_']['config'] extends { dialect: infer TDialect }
-    ? TDialect
-    : never
+  : never
 
 export type ExcludeDialect<TTable extends Table, TDialect extends string, T> =
   InferDialect<TTable> extends TDialect ? never : T
