@@ -21,6 +21,7 @@ export const features = [
   feature('findUnique'),
   feature('fromSingle'),
   feature('internal'),
+  feature('orThrow'),
   feature('types'),
   feature('updateMany'),
   feature('upsert', ['pg', 'sqlite']),

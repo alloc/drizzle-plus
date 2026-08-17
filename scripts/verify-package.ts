@@ -7,8 +7,6 @@ import { dialects } from '../src/codegen/registry'
 const requiredFiles = [
   'dist/index.js',
   'dist/index.d.ts',
-  'dist/orThrow.js',
-  'dist/orThrow.d.ts',
   'dist/utils.js',
   'dist/utils.d.ts',
   'dist/types.js',

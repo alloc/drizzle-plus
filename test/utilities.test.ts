@@ -1,6 +1,6 @@
 import { eq, sql } from 'drizzle-orm'
 import { mergeFindManyArgs, mergeRelationsFilter } from 'drizzle-plus'
-import 'drizzle-plus/orThrow'
+import 'drizzle-plus/sqlite/orThrow'
 import { db } from './config/client'
 import { user } from './config/schema'
 

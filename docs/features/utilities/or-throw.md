@@ -4,11 +4,13 @@
 
 ## Enable it
 
-`orThrow()` is a query-promise extension, so import it once wherever query
-promises are configured:
+`orThrow()` patches Drizzle's query prototypes, so import the module for the
+dialect used by the database:
 
 ```ts
-import 'drizzle-plus/orThrow'
+import 'drizzle-plus/pg/orThrow'
+// or 'drizzle-plus/mysql/orThrow'
+// or 'drizzle-plus/sqlite/orThrow'
 ```
 
 ## Require one row

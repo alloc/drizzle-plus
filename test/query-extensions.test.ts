@@ -1,13 +1,23 @@
 import 'drizzle-plus/mysql/findManyAndCount'
+import 'drizzle-plus/mysql/orThrow'
 import 'drizzle-plus/mysql/updateMany'
 import 'drizzle-plus/pg/create'
 import 'drizzle-plus/pg/findManyAndCount'
+import 'drizzle-plus/pg/orThrow'
 import 'drizzle-plus/pg/updateMany'
 import 'drizzle-plus/pg/upsert'
 import 'drizzle-plus/sqlite/$findMany'
 import 'drizzle-plus/sqlite/findUnique'
+import 'drizzle-plus/sqlite/orThrow'
 import { db } from './config/client'
-import { mysqlDb, pgDb, sqliteDb } from './config/dialects'
+import {
+  mysqlDb,
+  mysqlUser,
+  pgDb,
+  pgUser,
+  sqliteDb,
+  sqliteUser,
+} from './config/dialects'
 import { orderItem, user } from './config/schema'
 
 beforeAll(async () => {
@@ -108,6 +118,23 @@ describe('query composition', () => {
 })
 
 describe('dialect query extensions', () => {
+  test('registers orThrow on each dialect query prototype', () => {
+    const relationalQueries = [
+      pgDb.query.user.findFirst(),
+      mysqlDb.query.user.findFirst(),
+      sqliteDb.query.user.findFirst(),
+    ]
+    const selectQueries = [
+      pgDb.select({ id: pgUser.id }).from(pgUser),
+      mysqlDb.select({ id: mysqlUser.id }).from(mysqlUser),
+      sqliteDb.select({ id: sqliteUser.id }).from(sqliteUser),
+    ]
+
+    for (const query of [...relationalQueries, ...selectQueries]) {
+      expect(typeof query.orThrow).toBe('function')
+    }
+  })
+
   test('updateMany uses PostgreSQL limited-update selection', () => {
     const query = pgDb.query.user.updateMany({
       set: { name: 'Ada' },
