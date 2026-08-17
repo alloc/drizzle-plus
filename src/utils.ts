@@ -34,9 +34,10 @@ export function getOriginalTableName<T extends Table>(
 }
 
 export function getSelectedFields(query: AnyQuery): Record<string, unknown> {
-  if (query instanceof QueryPromise) {
+  const value = query as any
+  if (query instanceof QueryPromise || (value.config && value.table)) {
     const { config, table }: { config: DBQueryConfig; table: Table } =
-      query as any
+      value
 
     return {
       ...(config.columns || getColumns(table)),
@@ -44,7 +45,21 @@ export function getSelectedFields(query: AnyQuery): Record<string, unknown> {
       ...config.extras,
     }
   }
-  return query._.selectedFields
+  if (value._?.selectedFields) {
+    return value._.selectedFields
+  }
+
+  const selection = value._getQuery?.().selection
+  if (selection) {
+    return Object.fromEntries(
+      selection.map((field: { key: string; field: unknown }) => [
+        field.key,
+        field.field,
+      ])
+    )
+  }
+
+  throw new Error('Unable to determine selected fields for query')
 }
 
 // https://github.com/drizzle-team/drizzle-orm/blob/c0277c07720f3717da8068a65c776fe343cbe2fa/drizzle-orm/src/relations.ts#L786-L794
@@ -80,7 +95,7 @@ export function getDialect(value: AnyQuery): AnyDialect {
   return (value as any).dialect
 }
 
-export function buildRelationalQuery(value: QueryPromise<any>) {
+export function buildRelationalQuery(value: AnyQuery) {
   const getQuery = (value as any)._getQuery as () => BuildRelationalQueryResult
   return getQuery.call(value)
 }

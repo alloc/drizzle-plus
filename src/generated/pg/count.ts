@@ -16,6 +16,7 @@ declare module 'drizzle-orm/pg-core/query-builders/query' {
   export interface RelationalQueryBuilder<
     TSchema extends TablesRelationalConfig,
     TFields extends TableRelationalConfig,
+    TBuilderHKT extends PgRelationalQueryHKTBase,
   > {
     count(filter?: RelationsFilter<TFields, TSchema>): CountQueryPromise
   }
@@ -46,7 +47,7 @@ export class CountQueryPromise extends QueryPromise<number> {
 
   async execute() {
     const query = this.getSQL()
-    const [result] = (await this.session.all(query)) as [any]
+    const [result] = (await this.session.objects(query)) as [any]
     return Number(result.count)
   }
 

@@ -55,9 +55,9 @@ export interface DBUpdateManyConfig<
 
 declare module 'drizzle-orm/mysql-core/query-builders/query' {
   export interface RelationalQueryBuilder<
-    TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase,
     TSchema extends TablesRelationalConfig,
     TFields extends TableRelationalConfig,
+    TBuilderHKT extends MySqlRelationalQueryHKTBase,
   > {
     updateMany<TReturning extends ReturningClause<ExtractTable<TFields>> = {}>(
       config: DBUpdateManyConfig<

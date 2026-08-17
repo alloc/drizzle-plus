@@ -12,7 +12,6 @@ import {
   TablesRelationalConfig,
   WithSubquery,
 } from 'drizzle-orm'
-import { CasingCache } from 'drizzle-orm/casing'
 import {
   getTableConfig,
   Column,
@@ -36,7 +35,7 @@ export function getContext(rqb: RelationalQueryBuilder<any, any, any>) {
     tableNamesMap: Record<string, string>
     table: Table
     tableConfig: TableRelationalConfig
-    dialect: Dialect & { casing: CasingCache }
+    dialect: Dialect
     session: Session
   }
 }
@@ -50,9 +49,7 @@ export function getFilterSQL(
     ctx.table,
     filter,
     ctx.tableConfig.relations,
-    ctx.schema,
-    ctx.tableNamesMap,
-    ctx.dialect.casing
+    ctx.schema
   )
 }
 

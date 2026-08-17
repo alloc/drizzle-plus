@@ -1,18 +1,15 @@
 // @ts-nocheck
 import { AnyRelations, TablesRelationalConfig } from 'drizzle-orm'
 import type * as V1 from 'drizzle-orm/_relations'
-import { BaseSQLiteDatabase as Database } from 'drizzle-orm/sqlite-core/db'
+import { SQLiteAsyncDatabase as Database } from 'drizzle-orm/sqlite-core/async/db'
 import { toSelection } from 'drizzle-plus'
 import { RawFieldsToSelection } from 'drizzle-plus/types'
 
-declare module 'drizzle-orm/sqlite-core/db' {
-  interface BaseSQLiteDatabase<
+declare module 'drizzle-orm/sqlite-core/async/db' {
+  interface SQLiteAsyncDatabase<
     TResultKind extends 'sync' | 'async',
     TRunResult,
-    TFullSchema extends Record<string, unknown>,
     TRelations extends AnyRelations,
-    TTablesConfig extends TablesRelationalConfig,
-    TSchema extends V1.TablesRelationalConfig,
   > {
     /**
      * Create a "selection" object compatible with `db.select` from a plain

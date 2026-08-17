@@ -57,6 +57,7 @@ declare module 'drizzle-orm/pg-core/query-builders/query' {
   export interface RelationalQueryBuilder<
     TSchema extends TablesRelationalConfig,
     TFields extends TableRelationalConfig,
+    TBuilderHKT extends PgRelationalQueryHKTBase,
   > {
     updateMany<TReturning extends ReturningClause<ExtractTable<TFields>> = {}>(
       config: DBUpdateManyConfig<

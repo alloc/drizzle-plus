@@ -1,17 +1,15 @@
 // @ts-nocheck
 import { ColumnsSelection } from 'drizzle-orm'
 import type * as V1 from 'drizzle-orm/_relations'
-import { PgDatabase as Database, WithBuilder } from 'drizzle-orm/pg-core'
+import { WithBuilder } from 'drizzle-orm/pg-core'
+import { PgAsyncDatabase as Database } from 'drizzle-orm/pg-core/async/db'
 import { AnyRelations, TablesRelationalConfig } from 'drizzle-orm/relations'
 import { injectWithSubqueryAddons } from './internal'
 
-declare module 'drizzle-orm/pg-core' {
-  interface PgDatabase<
+declare module 'drizzle-orm/pg-core/async/db' {
+  interface PgAsyncDatabase<
     TQueryResult extends import('drizzle-orm/pg-core').PgQueryResultHKT,
-    TFullSchema extends Record<string, unknown>,
     TRelations extends AnyRelations,
-    TTablesConfig extends TablesRelationalConfig,
-    TSchema extends V1.TablesRelationalConfig,
   > {
     /**
      * Similar to `$with()` but the CTE is materialized.

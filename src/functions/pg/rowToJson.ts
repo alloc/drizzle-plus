@@ -72,5 +72,7 @@ export function rowToJson<T extends Subquery | Table | View | SQLWrapper>(
     decoder = getDecoder(subquery as SQLWrapper)
   }
 
-  return sql`row_to_json(${subquery})`.mapWith(decoder) as SQL<RowToJson<T>>
+  return sql`row_to_json(${subquery})`.mapWith(
+    decoder as DriverValueDecoder<any, unknown>
+  ) as SQL<RowToJson<T>>
 }

@@ -27,7 +27,7 @@ import { orderSelectedFields } from 'drizzle-plus/utils'
 declare module 'drizzle-orm/mysql-core' {
   interface MySqlSelectBuilder<
     TSelection extends SelectedFields | undefined,
-    TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase,
+    TPreparedQueryHKT extends import('drizzle-orm/mysql-core').MySqlPreparedQueryHKT,
     TBuilderMode extends 'db' | 'qb',
   > {
     withoutFrom(): TSelection extends SelectedFields

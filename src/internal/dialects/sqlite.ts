@@ -8,25 +8,45 @@ import {
   Table,
 } from 'drizzle-orm'
 import type {
-  SQLiteDeleteBase,
+  AnySQLiteDeleteBase,
   SQLiteInsertBase,
-  SQLiteUpdateBase,
+  AnySQLiteUpdate,
 } from 'drizzle-orm/sqlite-core'
-import { SQLiteRelationalQuery } from 'drizzle-orm/sqlite-core/query-builders/query'
+import {
+  SQLiteAsyncInsertBase,
+  SQLiteInsertBuilder,
+} from 'drizzle-orm/sqlite-core'
+import {
+  SQLiteRelationalQuery,
+  SQLiteRelationalQueryHKTBase,
+} from 'drizzle-orm/sqlite-core/query-builders/query'
 import { getReturningFields } from '../../generated/sqlite/internal'
 
 export type RelationalQuery<TResult> = SQLiteRelationalQuery<
-  'sync' | 'async',
+  SQLiteRelationalQueryHKTBase,
   TResult
 >
 
 export type InsertQuery = SQLiteInsertBase<any, any, any>
 
+export function createInsertBuilder(
+  table: Table,
+  session: any,
+  dialect: any,
+  withList?: Subquery[]
+) {
+  return new SQLiteInsertBuilder(
+    table as any,
+    session,
+    dialect,
+    withList,
+    SQLiteAsyncInsertBase as any
+  )
+}
+
 export function limitUpdateOrDelete(
   table: Table,
-  query:
-    | SQLiteUpdateBase<Table>
-    | SQLiteDeleteBase<Table, 'sync' | 'async', any>,
+  query: AnySQLiteUpdate | AnySQLiteDeleteBase,
   limit?: number,
   orderBy?: OrderBy | SQL
 ): any {

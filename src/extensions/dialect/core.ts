@@ -30,16 +30,13 @@ export declare function getTableConfig(table: Table): {
 }
 
 export declare class Dialect {
-  casing: {
-    getColumnCasing(column: Column): string
-  }
   sqlToQuery(sql: SQL): Query
   buildSelection(fields: SelectedFieldsOrdered): SQL
   buildWithCTE(withList: Subquery[] | undefined): SQL | undefined
 }
 
 export declare class Session {
-  all(query: SQL): Promise<unknown[]>
+  objects<T = unknown>(query: SQL): Promise<T[]> | T[]
 }
 
 export type SelectedFields = DrizzleSelectedFields<Column, Table>

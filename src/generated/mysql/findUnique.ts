@@ -20,9 +20,9 @@ export type FindUniqueConfig<
 
 declare module 'drizzle-orm/mysql-core/query-builders/query' {
   export interface RelationalQueryBuilder<
-    TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase,
     TSchema extends TablesRelationalConfig,
     TFields extends TableRelationalConfig,
+    TBuilderHKT extends MySqlRelationalQueryHKTBase,
   > {
     /**
      * Find a unique record by its primary key or unique constraint.

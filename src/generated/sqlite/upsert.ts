@@ -13,7 +13,6 @@ import {
 } from 'drizzle-orm'
 import {
   SQLiteColumn as Column,
-  SQLiteInsertBuilder as InsertBuilder,
   SQLiteInsertSelectQueryBuilder as InsertSelectQueryBuilder,
   SQLiteInsertValue as InsertValue,
   SQLiteTable as Table,
@@ -125,6 +124,7 @@ declare module 'drizzle-orm/sqlite-core/query-builders/query' {
     TMode extends 'sync' | 'async',
     TSchema extends TablesRelationalConfig,
     TFields extends TableRelationalConfig,
+    TBuilderHKT extends SQLiteRelationalQueryHKTBase,
   > {
     upsert<TReturning extends ReturningClause<ExtractTable<TFields>>>(
       config: DBUpsertConfig<
@@ -157,7 +157,7 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
   const { table, dialect, session } = getContext(this)
   const columns = getColumns(table)
 
-  const qb = new InsertBuilder(table, session, dialect, config.with)
+  const qb = adapter.createInsertBuilder(table, session, dialect, config.with)
 
   let selection: Record<string, unknown> | undefined
   let query: adapter.InsertQuery
@@ -214,8 +214,7 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
         get(_, prop: string) {
           const column = updateCandidates[prop]
           if (column) {
-            const name = dialect.casing.getColumnCasing(column)
-            return excluded(name)
+            return excluded(column.name)
           }
         },
       }),
@@ -229,8 +228,7 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
         if (target.includes(column)) {
           return null
         }
-        const name = dialect.casing.getColumnCasing(column)
-        return [key, excluded(name)]
+        return [key, excluded(column.name)]
       })
 
   const returning = config.returning
@@ -240,8 +238,7 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
   // If a returning clause is defined, ensure a column is updated so that the
   // result set isn't empty on conflict.
   if (returning && updatedEntries.length === 0) {
-    const name = dialect.casing.getColumnCasing(target[0])
-    updatedEntries.push([target[0].name, excluded(name)])
+    updatedEntries.push([target[0].name, excluded(target[0].name)])
   }
 
   if (updatedEntries.length > 0) {

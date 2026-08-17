@@ -23,7 +23,7 @@ export type SQLiteRelationalSubquery<
 
 declare module 'drizzle-orm/sqlite-core/query-builders/query' {
   interface SQLiteRelationalQuery<
-    TType extends 'sync' | 'async',
+    THKT extends SQLiteRelationalQueryHKTBase,
     TResult,
   > {
     as<TAlias extends string>(

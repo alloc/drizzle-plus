@@ -26,7 +26,6 @@ const user = sqliteTable('user', {
 const schema = { user }
 const relations = defineRelations(schema, () => ({ user: {} }))
 const db = drizzle(async () => ({ rows: [] }), {
-  schema,
   relations,
 })
 

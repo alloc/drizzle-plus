@@ -12,7 +12,7 @@ declare module 'drizzle-orm/mysql-core' {
   interface MySqlSelectBuilder<
     TSelection extends SelectedFields | undefined,
     THKT extends SelectHKTBase,
-    TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase,
+    TPreparedQueryHKT extends import('drizzle-orm/mysql-core').MySqlPreparedQueryHKT,
   > {
     /**
      * Creates a single-row placeholder base that can be left-joined with other

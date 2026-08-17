@@ -16,6 +16,8 @@ export type RelationalQuery<TSelection = unknown, TResult = unknown> = {
 
 export type { InsertQuery }
 
+export declare function createInsertBuilder(...args: any[]): any
+
 export declare function selectRowsToUpdateOrDelete(
   rqb: unknown,
   limit: number,

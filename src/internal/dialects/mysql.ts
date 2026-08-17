@@ -7,26 +7,43 @@ import {
   Table,
 } from 'drizzle-orm'
 import type {
-  MySqlDeleteBase,
+  AnyMySqlDelete,
   MySqlInsertBase,
-  MySqlTable,
-  MySqlUpdateBase,
-  PreparedQueryHKTBase,
+  AnyMySqlUpdate,
 } from 'drizzle-orm/mysql-core'
-import { MySqlRelationalQuery } from 'drizzle-orm/mysql-core/query-builders/query'
+import {
+  MySqlAsyncInsertBase,
+  MySqlInsertBuilder,
+} from 'drizzle-orm/mysql-core'
+import {
+  MySqlRelationalQuery,
+  MySqlRelationalQueryHKTBase,
+} from 'drizzle-orm/mysql-core/query-builders/query'
 
 export type RelationalQuery<TResult> = MySqlRelationalQuery<
-  PreparedQueryHKTBase,
+  MySqlRelationalQueryHKTBase,
   TResult
 >
 
 export type InsertQuery = MySqlInsertBase<any, any, any>
 
+export function createInsertBuilder(
+  table: Table,
+  session: any,
+  dialect: any,
+  withList?: Subquery[]
+) {
+  return new MySqlInsertBuilder(
+    table as any,
+    session,
+    dialect,
+    MySqlAsyncInsertBase as any
+  )
+}
+
 export function limitUpdateOrDelete(
   table: Table,
-  query:
-    | MySqlUpdateBase<MySqlTable, any, any>
-    | MySqlDeleteBase<MySqlTable, any, any>,
+  query: AnyMySqlUpdate | AnyMySqlDelete,
   limit?: number,
   orderBy?: OrderBy | SQL
 ): any {

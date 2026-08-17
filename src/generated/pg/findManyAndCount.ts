@@ -26,6 +26,7 @@ declare module 'drizzle-orm/pg-core/query-builders/query' {
   export interface RelationalQueryBuilder<
     TSchema extends TablesRelationalConfig,
     TFields extends TableRelationalConfig,
+    TBuilderHKT extends PgRelationalQueryHKTBase,
   > {
     findManyAndCount<TConfig extends DBQueryConfig<'many', TSchema, TFields>>(
       config?: KnownKeysOnly<TConfig, DBQueryConfig<'many', TSchema, TFields>>

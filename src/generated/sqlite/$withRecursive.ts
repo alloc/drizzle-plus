@@ -3,10 +3,10 @@ import { ColumnsSelection, Name, SQL, StringChunk, Subquery } from 'drizzle-orm'
 import type * as V1 from 'drizzle-orm/_relations'
 import {
   SQLiteColumn as Column,
-  BaseSQLiteDatabase as Database,
   SelectedFields,
   WithSubqueryWithSelection,
 } from 'drizzle-orm/sqlite-core'
+import { SQLiteAsyncDatabase as Database } from 'drizzle-orm/sqlite-core/async/db'
 import { TypedQueryBuilder } from 'drizzle-orm/query-builders/query-builder'
 import { AnyRelations, TablesRelationalConfig } from 'drizzle-orm/relations'
 import type { DecodedFields } from 'drizzle-plus/types'
@@ -16,14 +16,11 @@ import {
 } from 'drizzle-plus/utils'
 import { setWithSubqueryAddons } from './internal'
 
-declare module 'drizzle-orm/sqlite-core' {
-  interface BaseSQLiteDatabase<
+declare module 'drizzle-orm/sqlite-core/async/db' {
+  interface SQLiteAsyncDatabase<
     TResultKind extends 'sync' | 'async',
     TRunResult,
-    TFullSchema extends Record<string, unknown>,
     TRelations extends AnyRelations,
-    TTablesConfig extends TablesRelationalConfig,
-    TSchema extends V1.TablesRelationalConfig,
   > {
     /**
      * Use this instead of `$with()` to create a subquery that can reference

@@ -35,9 +35,9 @@ export interface RelationalQueryCursor<
 
 declare module 'drizzle-orm/mysql-core/query-builders/query' {
   export interface RelationalQueryBuilder<
-    TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase,
     TSchema extends TablesRelationalConfig,
     TFields extends TableRelationalConfig,
+    TBuilderHKT extends MySqlRelationalQueryHKTBase,
   > {
     $cursor<
       TOrderBy extends Exclude<InferOrderBy<this>, Function>,

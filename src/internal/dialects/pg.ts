@@ -11,8 +11,10 @@ import {
   WithSubquery,
 } from 'drizzle-orm'
 import {
+  PgAsyncInsertBase,
   type PgDeleteBase,
   type PgInsertBase,
+  PgInsertBuilder,
   PgSelectBase,
   PgUpdateBase,
 } from 'drizzle-orm/pg-core'
@@ -24,6 +26,22 @@ export type { PgRelationalQuery as RelationalQuery }
 
 export type InsertQuery = PgInsertBase<any, any, any>
 
+export function createInsertBuilder(
+  table: Table,
+  session: any,
+  dialect: any,
+  withList?: Subquery[]
+) {
+  return new PgInsertBuilder(
+    table as any,
+    session,
+    dialect,
+    withList,
+    undefined,
+    PgAsyncInsertBase as any
+  )
+}
+
 export function selectRowsToUpdateOrDelete(
   rqb: RelationalQueryBuilder<any, any>,
   limit: number,
@@ -33,9 +51,11 @@ export function selectRowsToUpdateOrDelete(
   const ctx = getContext(rqb)
 
   const builder = new PgSelectBase({
+    table: ctx.table,
     fields: {
       ctid: sql.raw('ctid') as any,
     },
+    isPartialSelect: true,
     dialect: ctx.dialect,
     session: ctx.session,
     distinct: undefined,
@@ -96,7 +116,7 @@ export function setReturningClauseForUpdateOrDelete(
   columns: Record<string, Column>
 ) {
   const returning =
-    returningOption && getReturningFields(returningOption, columns)
+    returningOption && getReturningFields(returningOption, columns as any)
   if (returning) {
     query.returning(returning)
   }

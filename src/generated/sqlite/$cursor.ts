@@ -38,6 +38,7 @@ declare module 'drizzle-orm/sqlite-core/query-builders/query' {
     TMode extends 'sync' | 'async',
     TSchema extends TablesRelationalConfig,
     TFields extends TableRelationalConfig,
+    TBuilderHKT extends SQLiteRelationalQueryHKTBase,
   > {
     $cursor<
       TOrderBy extends Exclude<InferOrderBy<this>, Function>,

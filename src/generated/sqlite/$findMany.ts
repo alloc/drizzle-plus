@@ -13,6 +13,7 @@ declare module 'drizzle-orm/sqlite-core/query-builders/query' {
     TMode extends 'sync' | 'async',
     TSchema extends TablesRelationalConfig,
     TFields extends TableRelationalConfig,
+    TBuilderHKT extends SQLiteRelationalQueryHKTBase,
   > {
     $findMany<const TConfig extends DBQueryConfig<'many', TSchema, TFields>>(
       config: TConfig

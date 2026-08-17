@@ -23,6 +23,7 @@ declare module 'drizzle-orm/sqlite-core/query-builders/query' {
     TMode extends 'sync' | 'async',
     TSchema extends TablesRelationalConfig,
     TFields extends TableRelationalConfig,
+    TBuilderHKT extends SQLiteRelationalQueryHKTBase,
   > {
     /**
      * Find a unique record by its primary key or unique constraint.

@@ -2,10 +2,10 @@ import { ColumnsSelection, Name, SQL, StringChunk, Subquery } from 'drizzle-orm'
 import type * as V1 from 'drizzle-orm/_relations'
 import {
   Column,
-  Database,
   SelectedFields,
   WithSubqueryWithSelection,
 } from '#dialect/core'
+import { Database } from '#dialect/db'
 import { TypedQueryBuilder } from 'drizzle-orm/query-builders/query-builder'
 import { AnyRelations, TablesRelationalConfig } from 'drizzle-orm/relations'
 import type { DecodedFields } from 'drizzle-plus/types'
@@ -15,7 +15,7 @@ import {
 } from 'drizzle-plus/utils'
 import { setWithSubqueryAddons } from './internal'
 
-declare module '#dialect/core' {
+declare module '#dialect/db' {
   interface Database<
     TQueryResult = unknown,
     TFullSchema extends Record<string, unknown> = Record<string, unknown>,

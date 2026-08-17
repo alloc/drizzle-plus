@@ -11,11 +11,11 @@ import {
 import type * as V1 from 'drizzle-orm/_relations'
 import {
   Column,
-  Database,
   Table,
   TableConfig,
   WithSubqueryWithSelection,
 } from '#dialect/core'
+import { Database } from '#dialect/db'
 import { noopDecoder, sql, SQLWrapper } from 'drizzle-orm/sql'
 import type { SQLType } from 'drizzle-plus/#dialect'
 import { DecodedFields, RawFieldsToSelection } from 'drizzle-plus/types'
@@ -26,7 +26,7 @@ type TableWithTheseColumns<K extends string> = Table<
   Omit<TableConfig, 'columns'> & { columns: Record<K, Column> }
 >
 
-declare module '#dialect/core' {
+declare module '#dialect/db' {
   interface Database<
     TQueryResult = unknown,
     TFullSchema extends Record<string, unknown> = Record<string, unknown>,
@@ -93,8 +93,9 @@ Database.prototype.$values = function (
   if (!rows.length) {
     throw new DrizzleError({ message: 'No rows provided' })
   }
-  const casing = (this as any).dialect.casing
-  return new ValuesList(casing, Object.keys(rows[0]), rows, typings)
+  const getColumnName = (key: string) =>
+    is(typings, Table) ? getColumns(typings)[key]?.name || key : key
+  return new ValuesList(getColumnName, Object.keys(rows[0]), rows, typings)
 }
 
 Database.prototype.$withValues = function (
@@ -134,7 +135,7 @@ export class ValuesList<
   private shouldInlineParams = false
   private typings?: Partial<Record<string, SQLType | Column>>
   constructor(
-    private casing: { convert: (key: string) => string },
+    private getColumnName: (key: string) => string,
     private keys: string[],
     private rows: readonly object[],
     typings?: Partial<Record<string, SQLType>> | Table
@@ -146,7 +147,7 @@ export class ValuesList<
   as<TAlias extends string>(
     alias: TAlias
   ): ValuesListSubquery<TAlias, TValues> {
-    const columnList = this.keys.map(key => this.casing.convert(key))
+    const columnList = this.keys.map(key => this.getColumnName(key))
     const selectedFields: Record<string, unknown> = {}
     this.keys.forEach((key, index) => {
       const field = (selectedFields[key] =

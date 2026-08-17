@@ -1,10 +1,11 @@
 import { ColumnsSelection } from 'drizzle-orm'
 import type * as V1 from 'drizzle-orm/_relations'
-import { Database, WithBuilder } from '#dialect/core'
+import { WithBuilder } from '#dialect/core'
+import { Database } from '#dialect/db'
 import { AnyRelations, TablesRelationalConfig } from 'drizzle-orm/relations'
 import { injectWithSubqueryAddons } from './internal'
 
-declare module '#dialect/core' {
+declare module '#dialect/db' {
   interface Database<
     TQueryResult = unknown,
     TFullSchema extends Record<string, unknown> = Record<string, unknown>,

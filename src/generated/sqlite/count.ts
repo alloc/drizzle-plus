@@ -17,6 +17,7 @@ declare module 'drizzle-orm/sqlite-core/query-builders/query' {
     TMode extends 'sync' | 'async',
     TSchema extends TablesRelationalConfig,
     TFields extends TableRelationalConfig,
+    TBuilderHKT extends SQLiteRelationalQueryHKTBase,
   > {
     count(filter?: RelationsFilter<TFields, TSchema>): CountQueryPromise
   }
@@ -47,7 +48,7 @@ export class CountQueryPromise extends QueryPromise<number> {
 
   async execute() {
     const query = this.getSQL()
-    const [result] = (await this.session.all(query)) as [any]
+    const [result] = (await this.session.objects(query)) as [any]
     return Number(result.count)
   }
 

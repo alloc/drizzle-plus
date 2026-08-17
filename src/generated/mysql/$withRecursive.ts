@@ -3,10 +3,10 @@ import { ColumnsSelection, Name, SQL, StringChunk, Subquery } from 'drizzle-orm'
 import type * as V1 from 'drizzle-orm/_relations'
 import {
   MySqlColumn as Column,
-  MySqlDatabase as Database,
   SelectedFields,
   WithSubqueryWithSelection,
 } from 'drizzle-orm/mysql-core'
+import { MySqlAsyncDatabase as Database } from 'drizzle-orm/mysql-core/async/db'
 import { TypedQueryBuilder } from 'drizzle-orm/query-builders/query-builder'
 import { AnyRelations, TablesRelationalConfig } from 'drizzle-orm/relations'
 import type { DecodedFields } from 'drizzle-plus/types'
@@ -16,13 +16,10 @@ import {
 } from 'drizzle-plus/utils'
 import { setWithSubqueryAddons } from './internal'
 
-declare module 'drizzle-orm/mysql-core' {
-  interface MySqlDatabase<
-    TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase,
-    TFullSchema extends Record<string, unknown>,
+declare module 'drizzle-orm/mysql-core/async/db' {
+  interface MySqlAsyncDatabase<
+    TQueryResult extends import('drizzle-orm/mysql-core').MySqlQueryResultHKT,
     TRelations extends AnyRelations,
-    TTablesConfig extends TablesRelationalConfig,
-    TSchema extends V1.TablesRelationalConfig,
   > {
     /**
      * Use this instead of `$with()` to create a subquery that can reference

@@ -1,17 +1,14 @@
 // @ts-nocheck
 import { AnyRelations, TablesRelationalConfig } from 'drizzle-orm'
 import type * as V1 from 'drizzle-orm/_relations'
-import { MySqlDatabase as Database } from 'drizzle-orm/mysql-core/db'
+import { MySqlAsyncDatabase as Database } from 'drizzle-orm/mysql-core/async/db'
 import { toSelection } from 'drizzle-plus'
 import { RawFieldsToSelection } from 'drizzle-plus/types'
 
-declare module 'drizzle-orm/mysql-core/db' {
-  interface MySqlDatabase<
-    TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase,
-    TFullSchema extends Record<string, unknown>,
+declare module 'drizzle-orm/mysql-core/async/db' {
+  interface MySqlAsyncDatabase<
+    TQueryResult extends import('drizzle-orm/mysql-core').MySqlQueryResultHKT,
     TRelations extends AnyRelations,
-    TTablesConfig extends TablesRelationalConfig,
-    TSchema extends V1.TablesRelationalConfig,
   > {
     /**
      * Create a "selection" object compatible with `db.select` from a plain

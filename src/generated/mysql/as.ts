@@ -51,7 +51,7 @@ declare module 'drizzle-orm/mysql-core' {
   interface MySqlSelectBuilder<
     TSelection extends SelectedFields | undefined,
     THKT extends SelectHKTBase,
-    TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase,
+    TPreparedQueryHKT extends import('drizzle-orm/mysql-core').MySqlPreparedQueryHKT,
   > {
     as<TAlias extends string>(
       alias: TAlias

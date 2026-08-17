@@ -25,9 +25,6 @@ describe('count', () => {
           100,
         ],
         "sql": "select count(*) AS "count" from "user" where "user"."id" > ?",
-        "typings": [
-          "none",
-        ],
       }
     `)
   })

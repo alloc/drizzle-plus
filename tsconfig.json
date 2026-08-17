@@ -11,7 +11,7 @@
     "emitDeclarationOnly": true,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
-    "types": [],
+    "types": ["node"],
     "paths": {
       "drizzle-plus": ["./src/index.ts"],
       "drizzle-plus/pg": ["./src/functions/pg/types.ts"],

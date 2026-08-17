@@ -14,9 +14,9 @@ import { getContext, getFilterSQL } from './internal'
 
 declare module 'drizzle-orm/mysql-core/query-builders/query' {
   export interface RelationalQueryBuilder<
-    TPreparedQueryHKT extends import('drizzle-orm/mysql-core').PreparedQueryHKTBase,
     TSchema extends TablesRelationalConfig,
     TFields extends TableRelationalConfig,
+    TBuilderHKT extends MySqlRelationalQueryHKTBase,
   > {
     count(filter?: RelationsFilter<TFields, TSchema>): CountQueryPromise
   }
@@ -47,7 +47,7 @@ export class CountQueryPromise extends QueryPromise<number> {
 
   async execute() {
     const query = this.getSQL()
-    const [result] = (await this.session.all(query)) as [any]
+    const [result] = (await this.session.objects(query)) as [any]
     return Number(result.count)
   }
 
