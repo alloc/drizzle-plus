@@ -31,6 +31,7 @@ export default defineConfig({
     {
       dir: 'dist',
       format: 'es',
+      sanitizeFileName: false,
       // preserveModules: true,
       // preserveModulesRoot: 'src',
     },

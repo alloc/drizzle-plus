@@ -34,6 +34,33 @@ describe('$cursor', () => {
       `)
   })
 
+  test('without a cursor', () => {
+    expect(db.query.user.$cursor({ id: 'asc' }, undefined)).toEqual({
+      where: undefined,
+      orderBy: { id: 'asc' },
+    })
+    expect(db.query.user.$cursor({ id: 'desc' }, null)).toEqual({
+      where: undefined,
+      orderBy: { id: 'desc' },
+    })
+  })
+
+  test('with undefined order columns and a missing cursor value', () => {
+    expect(
+      db.query.user.$cursor({ id: 'asc', name: undefined }, { id: 99 })
+    ).toEqual({
+      where: { id: { gt: 99 } },
+      orderBy: { id: 'asc', name: undefined },
+    })
+
+    expect(
+      db.query.user.$cursor({ name: 'asc', id: 'asc' }, { id: 99 })
+    ).toEqual({
+      where: { name: { gte: null }, id: { gt: 99 } },
+      orderBy: { name: 'asc', id: 'asc' },
+    })
+  })
+
   test('with multiple columns', () => {
     expect(
       db.query.user.$cursor(

@@ -117,7 +117,7 @@ describe('upsert', () => {
     `)
   })
 
-  test('do nothing on conflict', () => {
+  test('updates the conflict target when no other fields are supplied', () => {
     const query = db.query.user.upsert({
       data: {
         id: 100,
