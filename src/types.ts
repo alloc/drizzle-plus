@@ -112,6 +112,11 @@ export type QueryToSQL<
 export interface AnyRelationsFilter {
   [key: string]:
     | boolean
+    | string
+    | number
+    | bigint
+    | Date
+    | null
     | RelationsFieldFilter<unknown>
     | undefined
     // Nested relations / NOT operator

@@ -1,9 +1,10 @@
 import type { SQL, SQLWrapper } from 'drizzle-orm'
 
 type MergedOperators = {
+  [key: string]: unknown
   OR?: object[]
   AND?: object[]
-  NOT?: object
+  NOT?: MergedOperators
   RAW?: SQLWrapper | ((table: any, operators: any) => SQL)
 }
 

@@ -95,13 +95,21 @@ export class SelectWithoutFrom<TSelection extends SelectedFields>
     return sql`${withSql}select ${dialect.buildSelection(orderedFields)}`
   }
   execute(placeholderValues?: Record<string, unknown>) {
-    return this._prepare().execute(placeholderValues)
-  }
-  // Inherited from SelectBase.
-  declare private _prepare: () => {
-    execute: (
-      placeholderValues?: Record<string, unknown>
-    ) => Promise<SelectResultFields<TSelection>[]>
+    const query = this.dialect.sqlToQuery(this.getSQL())
+    const orderedFields = orderSelectedFields<Column>(this._.selectedFields)
+    const mapper = (this.dialect as any).mapperGenerators?.rows(
+      orderedFields,
+      {}
+    )
+    const session = this.session as any
+    const metadata = { type: 'select', tables: [] }
+    const dialectClassName = this.dialect.constructor.name
+    const prepared = dialectClassName.startsWith('SQLite')
+      ? session.prepareQuery(query, 'arrays', false, 'all', mapper, metadata)
+      : dialectClassName.startsWith('Pg')
+        ? session.prepareQuery(query, 'arrays', false, mapper, metadata)
+        : session.prepareQuery(query, 'arrays', mapper, metadata)
+    return prepared.execute(placeholderValues)
   }
 }
 
@@ -110,8 +118,14 @@ export interface SelectWithoutFrom<TSelection extends SelectedFields>
   execute(): Promise<SelectResultFields<TSelection>[]>
 }
 
+const selectBaseDescriptors = Object.getOwnPropertyDescriptors(
+  SelectBase.prototype
+)
+delete selectBaseDescriptors.getSQL
+
 Object.defineProperties(SelectWithoutFrom.prototype, {
-  ...Object.getOwnPropertyDescriptors(SelectBase.prototype),
+  ...Object.getOwnPropertyDescriptors(QueryPromise.prototype),
+  ...selectBaseDescriptors,
   constructor: {
     value: SelectWithoutFrom,
   },

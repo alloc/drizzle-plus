@@ -6,7 +6,7 @@ import {
   type TableRelationalConfig,
   type TablesRelationalConfig,
 } from 'drizzle-orm'
-import { PgInsertBase as InsertBase, PgInsertConfig as InsertConfig, PgInsertValue as InsertValue, PgTable as Table } from 'drizzle-orm/pg-core'
+import { PgInsertBuilder as InsertBuilder, PgInsertValue as InsertValue, PgTable as Table } from 'drizzle-orm/pg-core'
 import { RelationalQueryBuilder } from 'drizzle-orm/pg-core/query-builders/query'
 import {
   ExtractTable,
@@ -61,18 +61,15 @@ RelationalQueryBuilder.prototype.create = function (
   const { table, dialect, session } = getContext(this)
   const columns = getColumns(table)
 
-  const query = new InsertBase(
-    table,
-    config.data as InsertConfig['values'],
-    session,
-    dialect
-  )
+  const query = new InsertBuilder(table, session, dialect).values(config.data)
 
   if (config.skipDuplicates) {
     query.onConflictDoNothing()
   }
 
-  const returning = getReturningFields(config.returning, columns)
+  const returning = config.returning
+    ? getReturningFields(config.returning, columns)
+    : null
   if (returning) {
     query.returning(returning)
   }

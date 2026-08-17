@@ -1,4 +1,13 @@
 import { DrizzleError } from 'drizzle-orm'
+import { MySqlAsyncRelationalQuery } from 'drizzle-orm/mysql-core/async/query'
+import { MySqlAsyncSelectBase } from 'drizzle-orm/mysql-core/async/select'
+import { PgAsyncRelationalQuery } from 'drizzle-orm/pg-core/async/query'
+import { PgAsyncSelectBase } from 'drizzle-orm/pg-core/async/select'
+import {
+  SQLiteAsyncRelationalQuery,
+  SQLiteSyncRelationalQuery,
+} from 'drizzle-orm/sqlite-core/async/query'
+import { SQLiteAsyncSelectBase } from 'drizzle-orm/sqlite-core/async/select'
 import { QueryPromise } from 'drizzle-orm/query-promise'
 
 declare module 'drizzle-orm/query-promise' {
@@ -12,7 +21,7 @@ declare module 'drizzle-orm/query-promise' {
   }
 }
 
-QueryPromise.prototype.orThrow = function (message?: string) {
+function orThrow<T>(this: QueryPromise<T>, message?: string) {
   const execute = this.execute
   this.execute = function () {
     return execute.call(this).then(result => {
@@ -24,6 +33,21 @@ QueryPromise.prototype.orThrow = function (message?: string) {
   }
 
   return this
+}
+
+QueryPromise.prototype.orThrow = orThrow
+
+for (const prototype of [
+  PgAsyncRelationalQuery.prototype,
+  PgAsyncSelectBase.prototype,
+  MySqlAsyncRelationalQuery.prototype,
+  MySqlAsyncSelectBase.prototype,
+  SQLiteAsyncRelationalQuery.prototype,
+  SQLiteSyncRelationalQuery.prototype,
+  SQLiteAsyncSelectBase.prototype,
+]) {
+  const target = prototype as any
+  target.orThrow = orThrow
 }
 
 // HACK: Ensure the .d.ts file is interpreted as a module >.<

@@ -102,6 +102,7 @@ export type InsertQuery = QueryPromise<unknown> & {
   onConflictDoUpdate(config: unknown): unknown
   onConflictDoNothing(): unknown
   returning(fields: unknown): unknown
+  toSQL(): Query
 }
 
 export type UpdateSetSource<TTable extends Table> = Partial<

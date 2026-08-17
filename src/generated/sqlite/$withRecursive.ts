@@ -80,9 +80,9 @@ function createRecursiveSelection(
       if (prop === '_') {
         return subquery[prop]
       }
-      return new SQL([aliasName, new StringChunk('.'), new Name(prop)]).mapWith(
-        value => decoder(value, prop)
-      )
+      return new SQL([aliasName, new StringChunk('.'), new Name(prop)])
+        .mapWith(value => decoder(value, prop))
+        .as(prop)
     },
   })
 }
