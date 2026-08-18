@@ -4,6 +4,7 @@ import {
   OrderBy,
   RelationsFilter,
   relationsOrderToSQL,
+  type Query,
   sql,
   SQL,
   Subquery,
@@ -19,7 +20,11 @@ import {
   PgUpdateBase,
 } from 'drizzle-orm/pg-core'
 import { PgRelationalQuery } from 'drizzle-orm/pg-core/query-builders/query'
-import { getContext, getFilterSQL, getReturningFields } from '../../generated/pg/internal'
+import {
+  getContext,
+  getFilterSQL,
+  getReturningFields,
+} from '../../generated/pg/internal'
 import { RelationalQueryBuilder } from '../../generated/pg/types'
 
 export type { PgRelationalQuery as RelationalQuery }
@@ -124,3 +129,15 @@ export function setReturningClauseForUpdateOrDelete(
 
 // Not supported in Postgres.
 export declare function limitUpdateOrDelete(...args: any): void
+
+export function executeSelect(
+  session: any,
+  query: Query,
+  mapper: any,
+  metadata: any,
+  placeholderValues?: Record<string, unknown>
+) {
+  return session
+    .prepareQuery(query, 'arrays', false, mapper, metadata)
+    .execute(placeholderValues)
+}

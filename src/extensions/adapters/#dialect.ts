@@ -1,5 +1,6 @@
 import type {
   OrderBy,
+  Query,
   RelationsFilter,
   SQL,
   Subquery,
@@ -42,3 +43,11 @@ export declare function setReturningClauseForUpdateOrDelete(
     | undefined,
   columns: Record<string, unknown>
 ): void
+
+export declare function executeSelect(
+  session: any,
+  query: Query,
+  mapper: any,
+  metadata: any,
+  placeholderValues?: Record<string, unknown>
+): any

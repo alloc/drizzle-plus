@@ -3,6 +3,7 @@ import {
   OrderBy,
   relationsOrderToSQL,
   SQL,
+  type Query,
   Subquery,
   Table,
 } from 'drizzle-orm'
@@ -62,3 +63,15 @@ export function limitUpdateOrDelete(
 export declare function selectRowsToUpdateOrDelete(...args: any): Subquery[]
 export declare function innerJoinMatchedRows(...args: any): void
 export declare function setReturningClauseForUpdateOrDelete(...args: any): void
+
+export function executeSelect(
+  session: any,
+  query: Query,
+  mapper: any,
+  metadata: any,
+  placeholderValues?: Record<string, unknown>
+) {
+  return session
+    .prepareQuery(query, 'arrays', mapper, metadata)
+    .execute(placeholderValues)
+}

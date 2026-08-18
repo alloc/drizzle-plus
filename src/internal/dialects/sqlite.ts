@@ -4,6 +4,7 @@ import {
   OrderBy,
   relationsOrderToSQL,
   SQL,
+  type Query,
   Subquery,
   Table,
 } from 'drizzle-orm'
@@ -79,3 +80,15 @@ export function setReturningClauseForUpdateOrDelete(
 // Not needed by SQLite.
 export declare function selectRowsToUpdateOrDelete(...args: any): Subquery[]
 export declare function innerJoinMatchedRows(...args: any): void
+
+export function executeSelect(
+  session: any,
+  query: Query,
+  mapper: any,
+  metadata: any,
+  placeholderValues?: Record<string, unknown>
+) {
+  return session
+    .prepareQuery(query, 'arrays', false, 'all', mapper, metadata)
+    .execute(placeholderValues)
+}

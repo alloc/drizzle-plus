@@ -22,6 +22,7 @@ import {
 import { TypedQueryBuilder } from 'drizzle-orm/query-builders/query-builder'
 import { SelectResultFields } from 'drizzle-orm/query-builders/select.types'
 import { orderSelectedFields } from 'drizzle-plus/utils'
+import * as adapter from './adapters/#dialect'
 
 declare module '#dialect/core' {
   interface SelectBuilder<
@@ -103,13 +104,13 @@ export class SelectWithoutFrom<TSelection extends SelectedFields>
     )
     const session = this.session as any
     const metadata = { type: 'select', tables: [] }
-    const dialectClassName = this.dialect.constructor.name
-    const prepared = dialectClassName.startsWith('SQLite')
-      ? session.prepareQuery(query, 'arrays', false, 'all', mapper, metadata)
-      : dialectClassName.startsWith('Pg')
-        ? session.prepareQuery(query, 'arrays', false, mapper, metadata)
-        : session.prepareQuery(query, 'arrays', mapper, metadata)
-    return prepared.execute(placeholderValues)
+    return adapter.executeSelect(
+      session,
+      query,
+      mapper,
+      metadata,
+      placeholderValues
+    )
   }
 }
 
