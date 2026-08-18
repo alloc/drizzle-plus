@@ -50,6 +50,7 @@
   },
   "files": [
     "dist",
+    "docs",
     "!**/*.map"
   ],
   "exports": {

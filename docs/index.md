@@ -14,6 +14,7 @@ root package.
 ## Start here
 
 - [Getting started](getting-started.md) — install the package, enable an extension, and choose the right import path.
+- [Agent reference](agent-reference.md) — inventory every capability and link to the guide that owns it.
 - [Create rows](features/query/create.md) — insert one or more rows with typed results.
 - [Upsert rows](features/query/upsert.md) — insert or update rows based on a primary key or unique constraint.
 - [Build a paginated query](features/query/cursor-pagination.md) — derive the next-page filter from a cursor and sort order.

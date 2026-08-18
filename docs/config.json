@@ -10,7 +10,8 @@
       "features/query/",
       "features/select/",
       "features/sql/",
-      "features/utilities/"
+      "features/utilities/",
+      "agent-reference.md"
     ]
   }
 }

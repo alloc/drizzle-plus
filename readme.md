@@ -48,42 +48,10 @@ import { caseWhen, upper } from 'drizzle-plus'
 import { jsonAgg } from 'drizzle-plus/pg'
 ```
 
-## Feature map
+## Documentation
 
-### Query extensions
-
-- [Create rows](docs/features/query/create.md)
-- [Upsert rows](docs/features/query/upsert.md)
-- [Update many rows](docs/features/query/update-many.md)
-- [Count rows](docs/features/query/count.md)
-- [Find a unique row](docs/features/query/find-unique.md)
-- [Find many and count](docs/features/query/find-many-and-count.md)
-- [Cursor pagination](docs/features/query/cursor-pagination.md)
-- [Query composition](docs/features/query/query-composition.md)
-
-### Database and select helpers
-
-- [Build selections with `$select()`](docs/features/select/select.md)
-- [Build `VALUES` relations with `$values()`](docs/features/select/values.md)
-- [Use queries as subqueries with `.as()`](docs/features/select/aliases.md)
-- [Build recursive CTEs](docs/features/select/recursive-ctes.md)
-- [Control PostgreSQL CTE materialization](docs/features/select/materialized-ctes.md)
-- [Omit table columns with `$without()`](docs/features/select/without-columns.md)
-- [Keep one base row with `fromSingle()`](docs/features/select/from-single.md)
-- [Select expressions without `FROM`](docs/features/select/without-from.md)
-
-### SQL helpers and utilities
-
-- [Conditional expressions](docs/features/sql/case-when.md)
-- [Scalar subqueries](docs/features/sql/nested-subqueries.md)
-- [SQL value coercion](docs/features/sql/to-sql.md)
-- [Universal SQL functions](docs/features/sql/universal-functions.md)
-- [Dialect-specific SQL functions](docs/features/sql/dialect-functions.md)
-- [Database timestamps](docs/features/sql/timestamps.md)
-- [Require a result with `orThrow()`](docs/features/utilities/or-throw.md)
-- [Merge query options](docs/features/utilities/merge-queries.md)
-- [Convert plain values with `toSelection()`](docs/features/utilities/to-selection.md)
-- [Derived types](docs/features/utilities/types.md)
+- [Getting started](docs/getting-started.md) — install the package and enable an extension.
+- [Full documentation](docs/index.md) — task-oriented guides for every feature.
 
 ## Development
 
@@ -95,6 +63,13 @@ pnpm run docs:build
 
 Contributions are welcome. See the [full documentation](docs/index.md) for
 feature boundaries and dialect support.
+
+## Agent reference
+
+The [agent reference](docs/agent-reference.md) is a complete, non-tutorial
+inventory of the package's query extensions, select helpers, SQL functions,
+utilities, types, and dialect boundaries. Use it to find the relevant guide
+before choosing an API.
 
 ## License
 
