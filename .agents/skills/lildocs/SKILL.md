@@ -42,6 +42,55 @@ Give each page one durable job. Before drafting, decide what the reader is
 trying to do, what they already know, what decision the page must support, and
 where they should go next.
 
+## General Technical Documentation Guidelines
+
+Apply these guidelines to explanatory content throughout the docs. The home
+page's established slogan remains the intentional branding exception described
+below.
+
+1. Start with the reader's problem, decision, or task.
+2. Explain when the tool is useful and how it differs from common alternatives.
+3. Use plain, direct language; avoid slogans, marketing, and unnecessary
+   jargon.
+4. State limits, costs, prerequisites, and failure cases beside the benefits
+   they qualify.
+5. Support important claims with runnable examples, output, or observable
+   results.
+6. Make examples complete, internally consistent, and safe to copy.
+7. Explain placeholders clearly and never present incomplete commands as
+   pasteable.
+8. Show how readers can verify both successful and failed operations.
+9. Organize content as a funnel: quick orientation, working example, mental
+   model, then reference.
+10. Give each page one clear purpose and direct readers to the page that owns
+    deeper concepts.
+11. Keep advanced internals and optional workflows out of the required beginner
+    path.
+12. Use consistent terminology across pages.
+13. Add diagrams only when relationships, ownership, flow, or branching are
+    easier to understand visually.
+14. Validate commands, links, examples, formatting, and the generated
+    documentation site before publishing.
+
+## Home Page
+
+Treat the home page as the project's introduction, not as a map of the docs.
+Use the project's canonical display name as the H1 and its established
+slogan/tagline as the plain blockquote immediately below it. Prefer wording
+from the project's README or package metadata, and do not replace it with a
+generic title such as `Introducing <name>` or `<name> Documentation`.
+
+```md
+# lildocs
+
+> A lightweight CLI that turns Markdown docs into a static searchable
+> documentation site.
+```
+
+This branding blockquote takes precedence over the general purpose-blockquote
+rule below; the rest of the home page can orient readers and link to the next
+steps.
+
 For new pages in this project, follow the H1 with a purpose blockquote unless
 nearby docs use a different contract. The blockquote should clarify the page's
 real job: the decision it supports, the task it helps complete, or the boundary
