@@ -6,6 +6,24 @@ This guide assumes that you already have a Drizzle database instance with a
 schema and relations. `drizzle-plus` adds methods to that instance; it does
 not create the database connection or define your tables.
 
+## Package entry points
+
+The package is organized around a root entry point, dialect entry points, and
+side-effect extension modules:
+
+- `drizzle-plus` — shared SQL helpers and query utilities.
+- `drizzle-plus/<dialect>` — named helpers for PostgreSQL (`pg`), MySQL
+  (`mysql`), or SQLite (`sqlite`).
+- `drizzle-plus/<dialect>/<extension>` — modules that install a query,
+  database, table, or select-builder extension when imported.
+- `drizzle-plus/types` — types derived from relational query builders and SQL
+  expressions.
+- `drizzle-plus/types/json` — JSON-serializable value types.
+- `drizzle-plus/utils` — advanced query, decoder, and selection utilities.
+
+The sections below explain when to use each entry point and how to choose the
+matching dialect prefix.
+
 ## Install the packages
 
 Install `drizzle-plus` alongside a compatible v1 release of `drizzle-orm`:
