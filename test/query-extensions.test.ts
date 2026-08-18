@@ -9,6 +9,7 @@ import 'drizzle-plus/pg/upsert'
 import 'drizzle-plus/sqlite/$findMany'
 import 'drizzle-plus/sqlite/findUnique'
 import 'drizzle-plus/sqlite/orThrow'
+import 'drizzle-plus/sqlite/upsert'
 import { db } from './config/client'
 import {
   mysqlDb,
@@ -188,5 +189,14 @@ describe('dialect query extensions', () => {
     })
 
     expect(query.toSQL().sql).toContain('on conflict ("handle") do update')
+  })
+
+  test('upsert rejects an explicit non-unique conflict target', () => {
+    expect(() =>
+      sqliteDb.query.user.upsert({
+        data: { name: 'Ada' },
+        target: ['name'],
+      })
+    ).toThrow('No matching primary key or unique constraint found')
   })
 })

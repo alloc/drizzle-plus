@@ -37,14 +37,14 @@ function listUsers(where: UserFilter, orderBy?: UserOrderBy) {
 
 The same module includes types for SQL helpers and scalar subqueries:
 
-| Type                 | Use it for                                                       |
-| -------------------- | ---------------------------------------------------------------- |
-| `SQLValue<T>`        | A value or SQL expression that produces `T`.                     |
-| `SQLExpression<T>`   | A column or SQL wrapper producing `T`.                           |
-| `SQLResult<T>`       | The value returned by an expression, including nullable columns. |
-| `QueryToResult<T>`   | The result shape of a select or query promise.                   |
-| `QueryToSQL<T>`      | A query converted to a scalar SQL expression.                    |
-| `ReturningClause<T>` | A typed `returning` selection for a table.                       |
+| Type                 | Use it for                                                                                 |
+| -------------------- | ------------------------------------------------------------------------------------------ |
+| `SQLValue<T>`        | A value or SQL expression that produces `T`.                                               |
+| `SQLExpression<T>`   | A column or SQL wrapper producing `T`.                                                     |
+| `SQLResult<T>`       | The value returned by an expression, including nullable columns.                           |
+| `QueryToResult<T>`   | The result shape of a select or query promise.                                             |
+| `QueryToSQL<T>`      | A query converted to a typed SQL expression; use `{ scalar: true }` for a scalar subquery. |
+| `ReturningClause<T>` | A typed `returning` selection for a table.                                                 |
 
 Prefer these helpers when a utility accepts a Drizzle query object rather than
 when a concrete application function can simply infer its parameters.

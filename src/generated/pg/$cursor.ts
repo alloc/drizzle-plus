@@ -1,6 +1,7 @@
 // @ts-nocheck
 import {
   RelationFieldsFilterInternals,
+  type RelationsFilter,
   type TableRelationalConfig,
   type TablesRelationalConfig,
 } from 'drizzle-orm'
@@ -12,24 +13,26 @@ import type { InferColumns } from './types'
 export type InferCursor<T extends RelationalQueryBuilder<any, any, any>> =
   Partial<SelectResultFields<InferColumns<T>>>
 
+type CursorFieldFilters<TCursor extends object> = {
+  [K in keyof TCursor]?: RelationFieldsFilterInternals<
+    Exclude<TCursor[K], undefined>
+  >
+}
+
 /**
  * The return type of the `$cursor` method.
+ *
+ * For multiple order-by columns, `where` contains lexicographic `OR`/`AND`
+ * branches so each later column is compared only after preceding columns tie.
  *
  * @see https://github.com/alloc/drizzle-plus
  */
 export interface RelationalQueryCursor<
   TOrderBy extends object,
   TCursor extends object | null | undefined,
+  TWhere = TCursor extends object ? CursorFieldFilters<TCursor> : undefined,
 > {
-  where: TCursor extends object
-    ? {
-        [K in keyof TCursor]?: RelationFieldsFilterInternals<
-          Exclude<TCursor[K], undefined>
-        >
-      }
-    : TCursor extends null | undefined
-      ? undefined
-      : never
+  where: TWhere
   orderBy: TOrderBy
 }
 
@@ -48,36 +51,55 @@ declare module 'drizzle-orm/pg-core/query-builders/query' {
     >(
       orderBy: TOrderBy,
       cursor: TCursor
-    ): RelationalQueryCursor<TOrderBy, TCursor>
+    ): RelationalQueryCursor<
+      TOrderBy,
+      TCursor,
+      TCursor extends object ? RelationsFilter<TFields, TSchema> : undefined
+    >
   }
 }
 
 RelationalQueryBuilder.prototype.$cursor = function (
   orderBy: any,
   cursor: any
-): RelationalQueryCursor<any, any> {
+): RelationalQueryCursor<any, any, any> {
   if (!cursor) {
     return { where: undefined, orderBy }
   }
 
-  const where: Record<string, Record<string, any>> = {}
-  Object.keys(orderBy)
-    .filter(key => orderBy[key] !== undefined)
-    .forEach((column, index, columns) => {
-      const value = cursor[column]
-      const comparator =
-        index < columns.length - 1
-          ? orderBy[column] === 'asc'
-            ? 'gte'
-            : 'lte'
-          : orderBy[column] === 'asc'
-            ? 'gt'
-            : 'lt'
+  const columns = Object.keys(orderBy).filter(key => orderBy[key] !== undefined)
+  const where: Record<string, unknown> = {}
 
-      where[column] = {
-        [comparator]: value !== undefined ? value : null,
+  if (columns.length === 1) {
+    const [column] = columns
+    const comparator = orderBy[column] === 'asc' ? 'gt' : 'lt'
+    where[column] = {
+      [comparator]: cursor[column] !== undefined ? cursor[column] : null,
+    }
+  } else if (columns.length > 1) {
+    where.OR = columns.map((column, index) => {
+      const comparator = orderBy[column] === 'asc' ? 'gt' : 'lt'
+      const current = {
+        [column]: {
+          [comparator]: cursor[column] !== undefined ? cursor[column] : null,
+        },
+      }
+
+      if (index === 0) {
+        return current
+      }
+
+      return {
+        AND: [
+          ...columns.slice(0, index).map(previous => ({
+            [previous]:
+              cursor[previous] !== undefined ? cursor[previous] : null,
+          })),
+          current,
+        ],
       }
     })
+  }
 
   return { where, orderBy }
 }

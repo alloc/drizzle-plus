@@ -17,8 +17,8 @@ const rows = await db.select(selection).from(user)
 ```
 
 The object keys become aliases in the selection. `undefined` values are
-ignored, primitive values are parameterized, dates become ISO strings, and SQL
-wrappers or columns are preserved.
+ignored, strings, dates, and JSON values are parameterized, numbers, booleans,
+and `null` become SQL literals, and SQL wrappers or columns are preserved.
 
 Use the optional `addAliases` flag when a caller needs aliases added to the
 generated SQL explicitly:

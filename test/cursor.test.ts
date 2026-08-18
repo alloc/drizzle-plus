@@ -56,7 +56,12 @@ describe('$cursor', () => {
     expect(
       db.query.user.$cursor({ name: 'asc', id: 'asc' }, { id: 99 })
     ).toEqual({
-      where: { name: { gte: null }, id: { gt: 99 } },
+      where: {
+        OR: [
+          { name: { gt: null } },
+          { AND: [{ name: null }, { id: { gt: 99 } }] },
+        ],
+      },
       orderBy: { name: 'asc', id: 'asc' },
     })
   })
@@ -74,12 +79,25 @@ describe('$cursor', () => {
           "name": "asc",
         },
         "where": {
-          "age": {
-            "lt": 20,
-          },
-          "name": {
-            "gte": "John",
-          },
+          "OR": [
+            {
+              "name": {
+                "gt": "John",
+              },
+            },
+            {
+              "AND": [
+                {
+                  "name": "John",
+                },
+                {
+                  "age": {
+                    "lt": 20,
+                  },
+                },
+              ],
+            },
+          ],
         },
       }
     `)
@@ -97,12 +115,25 @@ describe('$cursor', () => {
           "name": "desc",
         },
         "where": {
-          "age": {
-            "gt": 20,
-          },
-          "name": {
-            "lte": "John",
-          },
+          "OR": [
+            {
+              "name": {
+                "lt": "John",
+              },
+            },
+            {
+              "AND": [
+                {
+                  "name": "John",
+                },
+                {
+                  "age": {
+                    "gt": 20,
+                  },
+                },
+              ],
+            },
+          ],
         },
       }
     `)
@@ -117,22 +148,41 @@ describe('$cursor', () => {
     expect(Object.entries(cursor.where)).toMatchInlineSnapshot(`
       [
         [
-          "name",
-          {
-            "lte": "John",
-          },
-        ],
-        [
-          "age",
-          {
-            "lte": 20,
-          },
-        ],
-        [
-          "id",
-          {
-            "lt": 99,
-          },
+          "OR",
+          [
+            {
+              "name": {
+                "lt": "John",
+              },
+            },
+            {
+              "AND": [
+                {
+                  "name": "John",
+                },
+                {
+                  "age": {
+                    "lt": 20,
+                  },
+                },
+              ],
+            },
+            {
+              "AND": [
+                {
+                  "name": "John",
+                },
+                {
+                  "age": 20,
+                },
+                {
+                  "id": {
+                    "lt": 99,
+                  },
+                },
+              ],
+            },
+          ],
         ],
       ]
     `)

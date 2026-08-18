@@ -191,8 +191,18 @@ RelationalQueryBuilder.prototype.upsert = function (config: {
     selection || (Array.isArray(config.data) ? config.data[0] : config.data),
   ])
 
-  let target = config.target?.map(column => columns[column])
-  if (!target) {
+  let target: Column[] | undefined
+  if (config.target) {
+    const requestedTarget = config.target.map(column => columns[column])
+    if (requestedTarget.some(column => !column)) {
+      throw new Error('No matching primary key or unique constraint found')
+    }
+
+    target = getTargetColumns(table, requestedTarget)
+    if (!target || target.length !== requestedTarget.length) {
+      throw new Error('No matching primary key or unique constraint found')
+    }
+  } else {
     target = getTargetColumns(table, Object.values(targetCandidates))
     if (!target) {
       throw new Error('No matching primary key or unique constraint found')

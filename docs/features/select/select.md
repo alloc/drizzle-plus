@@ -26,9 +26,10 @@ const selection = db.$select({
 const rows = await db.select(selection).from(user)
 ```
 
-The object keys become the result keys. Primitive values are bound as SQL
-parameters, and each value is aliased so the selection remains stable when it
-is passed to `db.select()`.
+The object keys become the result keys. Strings, dates, and JSON values are
+bound as SQL parameters. Numbers, booleans, and `null` are emitted as SQL
+literals. Each value is aliased so the selection remains stable when it is
+passed to `db.select()`.
 
 `undefined` properties are skipped. `Date` values are represented as ISO
 strings, and other objects must be JSON-serializable. Functions are rejected;

@@ -24,6 +24,10 @@ is, so callers can pass either a column/expression or a JavaScript value.
 `toSQL()` is for values and expressions:
 
 ```ts
+import 'drizzle-plus/pg/fromSingle'
+// or 'drizzle-plus/mysql/fromSingle'
+// or 'drizzle-plus/sqlite/fromSingle'
+
 const query = db
   .select({
     requested: toSQL('Ada'),

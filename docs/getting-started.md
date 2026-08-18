@@ -68,8 +68,8 @@ for each capability.
 
 ## Check dialect support before choosing a feature
 
-Most extensions are available for every supported dialect. These two have
-explicit limits:
+Most extensions are available for every supported dialect. The following
+features have explicit limits:
 
 | Feature                                            | PostgreSQL | MySQL | SQLite |
 | -------------------------------------------------- | ---------- | ----- | ------ |

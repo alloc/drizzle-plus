@@ -5,10 +5,11 @@
 ## Start a case expression
 
 ```ts
+import { gt, isNotNull } from 'drizzle-orm'
 import { caseWhen } from 'drizzle-plus'
 
 const status = caseWhen(user.active, 'active')
-  .when(user.deletedAt, 'deleted')
+  .when(isNotNull(user.deletedAt), 'deleted')
   .else('inactive')
 
 const rows = await db
@@ -20,21 +21,23 @@ const rows = await db
 ```
 
 Each `when(condition, value)` adds a `WHEN ... THEN ...` branch. The condition
-can be an SQL expression or `undefined`; an undefined condition is skipped,
-which is useful when a branch is optional.
+must evaluate to a SQL boolean and can be `undefined`; an undefined condition
+is skipped, which is useful when a branch is optional. Use helpers such as
+`isNotNull()`, `eq()`, or `gt()` rather than passing a nullable or numeric
+column directly.
 
 ## Choose the fallback
 
 Use `.else(value)` for an explicit fallback:
 
 ```ts
-const label = caseWhen(user.age, 'known age').else('unknown')
+const label = caseWhen(isNotNull(user.age), 'known age').else('unknown')
 ```
 
 Use `.elseNull()` when an unmatched row should produce SQL `NULL`:
 
 ```ts
-const bucket = caseWhen(user.age, 'adult').elseNull()
+const bucket = caseWhen(gt(user.age, 17), 'adult').elseNull()
 ```
 
 If every condition is skipped, `.else(value)` returns the fallback directly

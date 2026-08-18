@@ -40,8 +40,9 @@ const firstPage = db.query.user.$cursor({ id: 'asc' }, undefined)
 
 ## Use more than one sort column
 
-Property order is part of the cursor definition. All columns except the last
-allow equal values; the final column advances strictly:
+Property order is part of the cursor definition. The helper expands the sort
+order into lexicographic branches: a later column can advance only when every
+earlier column equals its cursor value.
 
 ```ts
 const cursor = db.query.user.$cursor(
@@ -50,9 +51,16 @@ const cursor = db.query.user.$cursor(
 )
 
 cursor.where
-// { name: { gte: 'John' }, age: { lt: 20 } }
+// {
+//   OR: [
+//     { name: { gt: 'John' } },
+//     { AND: [{ name: 'John' }, { age: { lt: 20 } }] },
+//   ],
+// }
 ```
 
 Keep the object key order the same in the query's `orderBy`, the cursor, and
-the `$cursor()` call. The helper does not choose a null-ordering policy for
-you; follow the behavior of your database and the ordering in your query.
+the `$cursor()` call. Use a unique final sort column, such as a primary key,
+when you need every row to have a stable position. The helper does not choose
+a null-ordering policy for you; follow the behavior of your database and the
+ordering in your query.

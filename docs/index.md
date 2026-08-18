@@ -1,6 +1,6 @@
 # drizzle-plus
 
-> Add focused query-builder extensions and SQL helpers to Drizzle ORM without changing the way you already model tables or execute queries.
+> Focused query-builder extensions and SQL helpers for Drizzle ORM.
 
 `drizzle-plus` fills a few practical gaps around Drizzle's relational query
 builder. Its extensions add methods such as `count()` and `updateMany()`;

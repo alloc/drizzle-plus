@@ -68,6 +68,13 @@ describe('generated SQLite helpers', () => {
     expectTypeOf(cursor).toHaveProperty('orderBy')
     expectTypeOf(cursor).toHaveProperty('where')
 
+    const multiColumnCursor = db.query.user.$cursor(
+      { name: 'asc', id: 'asc' },
+      { name: 'Ada', id: 1 }
+    )
+    const pagedUsers = db.query.user.findMany({ ...multiColumnCursor })
+    expectTypeOf(pagedUsers).toHaveProperty('execute')
+
     const findManyConfig = db.query.user.$findMany({ where: { id: 1 } })
     expectTypeOf(findManyConfig).toHaveProperty('where')
 

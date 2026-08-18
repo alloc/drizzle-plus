@@ -2,8 +2,9 @@ import { sql, SQL } from 'drizzle-orm'
 import { InferSQLNull, SQLValue } from 'drizzle-plus/types'
 
 /**
- * Performs a **case-insensitive** search for the first occurrence of a
- * substring in a string.
+ * Searches for the first occurrence of a substring in a string according to
+ * the collation rules of the arguments, which may be case-sensitive or
+ * case-insensitive.
  *
  * @param substring - The substring to search for.
  * @param string - The string to search in.

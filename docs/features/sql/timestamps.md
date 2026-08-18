@@ -27,12 +27,12 @@ const rows = await db
   .limit(1)
 ```
 
-The first two fields decode as `Date | null` when the database returns a
-non-nullable or nullable timestamp result as appropriate. `currentTime()`
-returns the database's time-only string expression; it does not convert a time
-without a date into a JavaScript `Date`. This example selects one existing row
-from `user`; use [`fromSingle()`](../select/from-single.md) when the query does
-not need a table source.
+The first two fields decode as `Date` because these built-in expressions are
+non-nullable. A nullable timestamp expression decodes as `Date | null`.
+`currentTime()` returns the database's time-only string expression; it does not
+convert a time without a date into a JavaScript `Date`. This example selects
+one existing row from `user`; use [`fromSingle()`](../select/from-single.md)
+when the query does not need a table source.
 
 ## Use the PostgreSQL UUID timestamp helper
 

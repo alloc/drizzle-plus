@@ -16,7 +16,8 @@ declare module 'drizzle-orm/sqlite-core/async/db' {
      * object containing almost any value.
      *
      * - `undefined` values are ignored
-     * - primitive values (including `null`) are wrapped with `sql` template
+     * - strings, dates, and JSON values are parameterized
+     * - numbers, booleans, and `null` are emitted as SQL literals
      * - `Date` values are treated as ISO strings
      * - subqueries and `SQL` objects are preserved
      * - everything else is coerced to a JSON string

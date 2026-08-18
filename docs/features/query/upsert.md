@@ -62,9 +62,10 @@ await db.query.user.upsert({
 })
 ```
 
-The target must name a primary key, unique constraint, or unique index that
-exists on the table. If no matching constraint can be found, the query throws
-before it is executed.
+The target must list the columns of a primary key, unique constraint, or unique
+index that exists on the table. drizzle-plus validates the target before it
+builds the query; if no matching constraint can be found, it throws before the
+query is executed.
 
 ## Return only the fields you need
 

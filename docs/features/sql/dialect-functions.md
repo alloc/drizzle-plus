@@ -57,10 +57,11 @@ null argument as an empty string; MySQL returns null when an argument is null.
 PostgreSQL's and SQLite's `concat()` functions accept the same value shape, but
 they still come from their respective subpaths.
 
-`position(substring, string)` returns a 1-based match position. PostgreSQL and
-SQLite perform a case-sensitive search; MySQL's `position()` is
-case-insensitive. SQLite also exposes `instr(string, substring)` with the
-arguments in that order.
+`position(substring, string)` returns a 1-based match position in PostgreSQL
+and MySQL. PostgreSQL performs a case-sensitive search. MySQL follows the
+collation rules of its arguments, which may be case-sensitive or
+case-insensitive. SQLite exposes `instr(string, substring)` instead, with the
+arguments in that order; its search is case-sensitive.
 
 ## Casts and PostgreSQL UUID helpers
 
