@@ -19,8 +19,6 @@ import { isFunction } from 'radashi'
 import * as adapter from './adapters/#dialect'
 import { ExcludeDialect, getContext, getFilterSQL } from './internal'
 
-const dialectName = '#dialect/name' as 'pg' | 'mysql' | 'sqlite'
-
 export interface DBUpdateManyConfig<
   TTable extends Table,
   TReturning extends ReturningClause<TTable> = ReturningClause<TTable>,
@@ -79,7 +77,7 @@ RelationalQueryBuilder.prototype.updateMany = function (
   // Since Postgres doesn't support LIMIT in UPDATE queries, we need to use a
   // CTE that selects the rows to update.
   const withList =
-    dialectName === 'pg' && config.limit !== undefined
+    DIALECT === 'pg' && config.limit !== undefined
       ? adapter.selectRowsToUpdateOrDelete(
           this,
           config.limit,
@@ -96,17 +94,17 @@ RelationalQueryBuilder.prototype.updateMany = function (
     withList
   )
 
-  if (dialectName === 'pg' && config.limit !== undefined) {
+  if (DIALECT === 'pg' && config.limit !== undefined) {
     adapter.innerJoinMatchedRows(table, query)
   } else if (config.where) {
     query.where(getFilterSQL(this, config.where))
   }
 
-  if (dialectName !== 'pg' && config.limit !== undefined) {
+  if (DIALECT !== 'pg' && config.limit !== undefined) {
     adapter.limitUpdateOrDelete(table, query, config.limit, config.orderBy)
   }
 
-  if (dialectName !== 'mysql') {
+  if (DIALECT !== 'mysql') {
     adapter.setReturningClauseForUpdateOrDelete(
       query,
       config.returning,

@@ -125,7 +125,7 @@ function rewritePlaceholderTypeParams(source: string, spec: DialectSpec) {
   out = rewriteSelectBuilderTypeParams(out, spec)
   out = rewriteSelectQueryBuilderBaseArgs(out, spec)
 
-  return rewriteDialectNamePlaceholder(out, spec)
+  return out
 }
 
 function rewriteInterfaceTypeParams(
@@ -163,16 +163,6 @@ function rewriteSelectBuilderTypeParams(source: string, spec: DialectSpec) {
 
 function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
-function rewriteDialectNamePlaceholder(source: string, spec: DialectSpec) {
-  return source
-    .replace(
-      /const dialectName = '#dialect\/name' as 'pg' \| 'mysql' \| 'sqlite'\n\n?/g,
-      ''
-    )
-    .replace(/\bdialectName\b/g, `'${spec.name}'`)
-    .replace(/'#dialect\/name'/g, `'${spec.name}'`)
 }
 
 function rewriteSelectQueryBuilderBaseArgs(source: string, spec: DialectSpec) {
