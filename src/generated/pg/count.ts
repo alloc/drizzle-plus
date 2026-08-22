@@ -1,6 +1,8 @@
 // @ts-nocheck
 import {
+  aliasedTable,
   BuildRelationalQueryResult,
+  getTableAsAliasSQL,
   QueryPromise,
   SQL,
   sql,
@@ -25,11 +27,15 @@ declare module 'drizzle-orm/pg-core/query-builders/query' {
 RelationalQueryBuilder.prototype.count = function (
   filter?: RelationsFilter<any, any>
 ): CountQueryPromise {
-  const { table, dialect, session } = getContext(this)
+  const originalTable = getContext(this).table
+  const aliased = Object.assign({}, this, {
+    table: aliasedTable(originalTable, 'dp0'),
+  })
+  const { table, dialect, session } = getContext(aliased)
 
   return new CountQueryPromise(
     table,
-    filter && getFilterSQL(this, filter),
+    filter && getFilterSQL(aliased, filter),
     session,
     dialect
   )
@@ -56,7 +62,7 @@ export class CountQueryPromise extends QueryPromise<number> {
   }
 
   getSQL() {
-    const query = sql`select count(*) AS "count" from ${this.table}`
+    const query = sql`select count(*) AS "count" from ${getTableAsAliasSQL(this.table)}`
     if (this.filter) {
       query.append(sql` where ${this.filter}`)
     }
