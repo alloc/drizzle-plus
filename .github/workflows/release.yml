@@ -1,0 +1,194 @@
+name: Release
+
+on:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Explicit version to release, such as 0.1.0 or v0.1.0.
+        required: false
+        type: string
+      publish_existing:
+        description: Publish an existing release tag without creating a release commit.
+        required: false
+        default: false
+        type: boolean
+      existing_tag:
+        description: Existing tag to publish, such as v1.0.0-rc.5.
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    if: >-
+      (github.event_name == 'workflow_run' &&
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_branch == 'main') ||
+      (github.event_name == 'workflow_dispatch' &&
+        github.ref == 'refs/heads/main')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.publish_existing == 'true' && github.event.inputs.existing_tag || github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Install git-cliff
+        uses: taiki-e/install-action@git-cliff
+
+      - name: Resolve release version
+        id: version
+        env:
+          VERSION_OVERRIDE: ${{ github.event.inputs.version || '' }}
+          PUBLISH_EXISTING: ${{ github.event.inputs.publish_existing || 'false' }}
+          EXISTING_TAG: ${{ github.event.inputs.existing_tag || '' }}
+        run: |
+          set -euo pipefail
+          current_version="$(node -p "require('./package.json').version")"
+
+          if [ "$PUBLISH_EXISTING" = "true" ]; then
+            if [ -z "$EXISTING_TAG" ]; then
+              echo "existing_tag is required when publish_existing is true" >&2
+              exit 1
+            fi
+            case "$EXISTING_TAG" in
+              v*) ;;
+              *)
+                echo "existing_tag must start with v: $EXISTING_TAG" >&2
+                exit 1
+                ;;
+            esac
+
+            next_version="${EXISTING_TAG#v}"
+            if ! node -e "process.exit(/^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/.test(process.argv[1]) ? 0 : 1)" "$next_version"; then
+              echo "Invalid existing tag: $EXISTING_TAG" >&2
+              exit 1
+            fi
+            if [ -n "$VERSION_OVERRIDE" ] && [ "${VERSION_OVERRIDE#v}" != "$next_version" ]; then
+              echo "version and existing_tag must refer to the same release" >&2
+              exit 1
+            fi
+            if [ "$current_version" != "$next_version" ]; then
+              echo "Tag $EXISTING_TAG contains package version $current_version, not $next_version" >&2
+              exit 1
+            fi
+            if ! git rev-parse --verify --quiet "refs/tags/$EXISTING_TAG" >/dev/null; then
+              echo "Release tag $EXISTING_TAG does not exist" >&2
+              exit 1
+            fi
+            tag_commit="$(git rev-list -n 1 "refs/tags/$EXISTING_TAG")"
+            if [ "$tag_commit" != "$(git rev-parse HEAD)" ]; then
+              echo "Checkout does not match release tag $EXISTING_TAG" >&2
+              exit 1
+            fi
+
+            {
+              echo "should_release=true"
+              echo "publish_existing=true"
+              echo "version=$next_version"
+              echo "tag=$EXISTING_TAG"
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ -n "$VERSION_OVERRIDE" ]; then
+            next_version="${VERSION_OVERRIDE#v}"
+            if ! node -e "process.exit(/^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/.test(process.argv[1]) ? 0 : 1)" "$next_version"; then
+              echo "Invalid version override: $VERSION_OVERRIDE" >&2
+              exit 1
+            fi
+            echo "Using explicit version override: $next_version"
+          else
+            next_version="$(git-cliff --bumped-version | sed 's/^v//')"
+          fi
+
+          if [ -z "$next_version" ]; then
+            echo "git-cliff did not infer a version" >&2
+            exit 1
+          fi
+
+          if [ -z "$VERSION_OVERRIDE" ] && [ "$next_version" = "$current_version" ]; then
+            echo "git-cliff inferred $next_version, which matches package.json; skipping release."
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if git rev-parse --verify --quiet "v$next_version" >/dev/null; then
+            echo "Release tag v$next_version already exists" >&2
+            exit 1
+          fi
+
+          {
+            echo "should_release=true"
+            echo "publish_existing=false"
+            echo "version=$next_version"
+            echo "tag=v$next_version"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Install dependencies
+        if: steps.version.outputs.should_release == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Bump package version
+        if: steps.version.outputs.should_release == 'true' && steps.version.outputs.publish_existing != 'true'
+        run: npm pkg set version="${{ steps.version.outputs.version }}"
+
+      - name: Build
+        if: steps.version.outputs.should_release == 'true'
+        run: pnpm run --if-present build
+
+      - name: Commit release updates
+        if: steps.version.outputs.should_release == 'true' && steps.version.outputs.publish_existing != 'true'
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json
+          if git diff --cached --quiet; then
+            git commit --allow-empty -m "chore(release): ${{ steps.version.outputs.tag }}"
+          else
+            git commit -m "chore(release): ${{ steps.version.outputs.tag }}"
+          fi
+          git tag "${{ steps.version.outputs.tag }}"
+          git push origin HEAD:main
+          git push origin "${{ steps.version.outputs.tag }}"
+
+      - name: Publish to npm with provenance
+        if: steps.version.outputs.should_release == 'true'
+        env:
+          RELEASE_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          publish_args=(--provenance --access public)
+          if [[ "$RELEASE_VERSION" == *-* ]]; then
+            publish_args+=(--tag next)
+          fi
+          npm publish "${publish_args[@]}"

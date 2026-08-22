@@ -18,7 +18,8 @@ import { getSQL } from '../utils'
  * object. Any objects within must be JSON-serializable.
  *
  * - `undefined` values are ignored
- * - primitive values (including `null`) are wrapped with `sql` template
+ * - strings, dates, and JSON values are parameterized
+ * - numbers, booleans, and `null` are emitted as SQL literals
  * - `Date` values are treated as ISO strings
  * - subqueries and `SQL` objects are preserved
  */

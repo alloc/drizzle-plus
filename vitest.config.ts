@@ -11,7 +11,10 @@ export default defineConfig({
       enabled: true,
       tsconfig: './test/tsconfig.json',
     },
-    globalSetup: ['./test/config/globalSetup.ts'],
+    globalSetup: [
+      './test/config/codegenSetup.ts',
+      './test/config/globalSetup.ts',
+    ],
     setupFiles: ['./test/config/localSetup.ts'],
   },
   plugins: [tsconfigPaths()],

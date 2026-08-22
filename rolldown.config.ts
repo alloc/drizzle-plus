@@ -21,7 +21,6 @@ const dialectEntries = ['pg', 'mysql', 'sqlite'].flatMap(dialect => {
 export default defineConfig({
   input: mapToOutputFiles([
     'src/index.ts',
-    'src/orThrow.ts',
     'src/utils.ts',
     'src/types.ts',
     'src/types/json.ts',
@@ -31,6 +30,7 @@ export default defineConfig({
     {
       dir: 'dist',
       format: 'es',
+      sanitizeFileName: false,
       // preserveModules: true,
       // preserveModulesRoot: 'src',
     },

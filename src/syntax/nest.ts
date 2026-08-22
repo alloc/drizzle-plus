@@ -8,7 +8,10 @@ import { buildRelationalQuery, getDecoder, getSQL } from '../utils'
  * **Please note** that the subquery must have exactly one column.
  */
 export function nest<T extends AnyQuery>(subquery: T) {
-  if (subquery instanceof QueryPromise) {
+  if (
+    subquery instanceof QueryPromise ||
+    typeof (subquery as any)._getQuery === 'function'
+  ) {
     const builtQuery = buildRelationalQuery(subquery)
 
     if (builtQuery.selection.length === 1) {

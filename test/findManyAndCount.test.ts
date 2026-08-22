@@ -42,18 +42,12 @@ describe('findManyAndCount', () => {
             100,
           ],
           "sql": "select count(*) AS "count" from "user" where "user"."id" > ?",
-          "typings": [
-            "none",
-          ],
         },
         "findMany": {
           "params": [
             100,
           ],
           "sql": "select "d0"."id" as "id", "d0"."name" as "name", "d0"."age" as "age", "d0"."handle" as "handle" from "user" as "d0" where "d0"."id" > ?",
-          "typings": [
-            "none",
-          ],
         },
       }
     `)

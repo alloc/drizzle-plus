@@ -6,8 +6,8 @@ import type {
   InferInsertModel,
   OrderByOperators,
   Placeholder,
+  Query,
   QueryPromise,
-  QueryWithTypings,
   RelationsFieldFilter,
   SQL,
   SQLOperator,
@@ -17,7 +17,6 @@ import type {
   ValueOrArray,
   View,
 } from 'drizzle-orm'
-import { CasingCache } from 'drizzle-orm/casing'
 import type { SelectResultFields } from 'drizzle-orm/query-builders/select.types'
 import { JSONObjectCodable } from './types/json'
 
@@ -113,6 +112,11 @@ export type QueryToSQL<
 export interface AnyRelationsFilter {
   [key: string]:
     | boolean
+    | string
+    | number
+    | bigint
+    | Date
+    | null
     | RelationsFieldFilter<unknown>
     | undefined
     // Nested relations / NOT operator
@@ -223,8 +227,7 @@ export type InferFindFirstArgs<T extends { findFirst(args?: any): any }> =
   T extends { findFirst(args?: infer TArgs): any } ? TArgs : never
 
 export type AnyDialect = {
-  casing: CasingCache
-  sqlToQuery(sql: SQL): QueryWithTypings
+  sqlToQuery(sql: SQL): Query
 }
 
 /**

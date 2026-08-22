@@ -25,9 +25,6 @@ describe('nest', () => {
           1,
         ],
         "sql": "(select ("d0"."id") as "id" from "user" as "d0" limit ?)",
-        "typings": [
-          "none",
-        ],
       }
     `)
 
@@ -55,9 +52,6 @@ describe('nest', () => {
           "John",
         ],
         "sql": "(select "id" from "user" where "user"."name" = ?)",
-        "typings": [
-          "none",
-        ],
       }
     `)
 

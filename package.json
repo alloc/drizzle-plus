@@ -2,7 +2,8 @@
   "name": "drizzle-plus",
   "type": "module",
   "sideEffects": true,
-  "version": "1.0.0-rc.4",
+  "version": "1.0.0-rc.7",
+  "packageManager": "pnpm@11.21.0",
   "license": "MIT",
   "author": "Alec Larson",
   "repository": {
@@ -11,11 +12,15 @@
   },
   "prettier": "@alloc/prettier-config",
   "scripts": {
-    "dev": "rimraf dist && picorun --names generate,build 'watchlist -e scripts/* src/generated/*.ts -- tsx scripts/generate.ts --no-remove' 'tsup --sourcemap --watch'",
-    "build": "rimraf dist && tsx scripts/generate.ts && rolldown -c rolldown.config.ts",
+    "dev": "rimraf dist && picorun --names generate,build 'watchlist -e scripts/* src/codegen/*.ts src/extensions/*.ts -- tsx scripts/generate.ts --no-remove' 'tsup --sourcemap --watch'",
+    "build": "rimraf dist && tsx scripts/generate.ts && rolldown -c rolldown.config.ts && pnpm run verify:package",
+    "verify:package": "tsx scripts/verify-package.ts",
+    "docs:build": "pnpm run build && lildocs build ./docs --out ./dist/docs",
+    "docs:dev": "pnpm run build && lildocs dev ./docs",
     "format": "prettier --write .",
     "lint": "tsc-lint",
     "test": "vitest",
+    "test:extensions": "tsc -p tsconfig.extensions.json",
     "prepublishOnly": "pnpm build"
   },
   "devDependencies": {
@@ -23,9 +28,10 @@
     "@alloc/prettier-config": "^1.0.0",
     "@libsql/client": "^0.15.9",
     "@types/node": "^24.0.5",
-    "drizzle-kit": "beta",
-    "drizzle-orm": "beta",
+    "drizzle-kit": "rc",
+    "drizzle-orm": "rc",
     "drizzle-plus": "link:",
+    "lildocs": "^0.1.26",
     "picorun": "^0.1.5",
     "picospawn": "^0.3.2",
     "prettier": "^3.6.2",
@@ -45,16 +51,13 @@
   },
   "files": [
     "dist",
+    "docs",
     "!**/*.map"
   ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    },
-    "./orThrow": {
-      "types": "./dist/orThrow.d.ts",
-      "default": "./dist/orThrow.js"
     },
     "./utils": {
       "types": "./dist/utils.d.ts",
@@ -67,90 +70,6 @@
     "./types/*": {
       "types": "./dist/types/*.d.ts",
       "default": "./dist/types/*.js"
-    },
-    "./sqlite/$cursor": {
-      "types": "./dist/generated/sqlite/_cursor.d.ts",
-      "default": "./dist/generated/sqlite/_cursor.js"
-    },
-    "./sqlite/$findMany": {
-      "types": "./dist/generated/sqlite/_findMany.d.ts",
-      "default": "./dist/generated/sqlite/_findMany.js"
-    },
-    "./sqlite/$select": {
-      "types": "./dist/generated/sqlite/_select.d.ts",
-      "default": "./dist/generated/sqlite/_select.js"
-    },
-    "./sqlite/$values": {
-      "types": "./dist/generated/sqlite/_values.d.ts",
-      "default": "./dist/generated/sqlite/_values.js"
-    },
-    "./sqlite/$withMaterialized": {
-      "types": "./dist/generated/sqlite/_withMaterialized.d.ts",
-      "default": "./dist/generated/sqlite/_withMaterialized.js"
-    },
-    "./sqlite/$without": {
-      "types": "./dist/generated/sqlite/_without.d.ts",
-      "default": "./dist/generated/sqlite/_without.js"
-    },
-    "./sqlite/$withRecursive": {
-      "types": "./dist/generated/sqlite/_withRecursive.d.ts",
-      "default": "./dist/generated/sqlite/_withRecursive.js"
-    },
-    "./mysql/$cursor": {
-      "types": "./dist/generated/mysql/_cursor.d.ts",
-      "default": "./dist/generated/mysql/_cursor.js"
-    },
-    "./mysql/$findMany": {
-      "types": "./dist/generated/mysql/_findMany.d.ts",
-      "default": "./dist/generated/mysql/_findMany.js"
-    },
-    "./mysql/$select": {
-      "types": "./dist/generated/mysql/_select.d.ts",
-      "default": "./dist/generated/mysql/_select.js"
-    },
-    "./mysql/$values": {
-      "types": "./dist/generated/mysql/_values.d.ts",
-      "default": "./dist/generated/mysql/_values.js"
-    },
-    "./mysql/$withMaterialized": {
-      "types": "./dist/generated/mysql/_withMaterialized.d.ts",
-      "default": "./dist/generated/mysql/_withMaterialized.js"
-    },
-    "./mysql/$without": {
-      "types": "./dist/generated/mysql/_without.d.ts",
-      "default": "./dist/generated/mysql/_without.js"
-    },
-    "./mysql/$withRecursive": {
-      "types": "./dist/generated/mysql/_withRecursive.d.ts",
-      "default": "./dist/generated/mysql/_withRecursive.js"
-    },
-    "./pg/$cursor": {
-      "types": "./dist/generated/pg/_cursor.d.ts",
-      "default": "./dist/generated/pg/_cursor.js"
-    },
-    "./pg/$findMany": {
-      "types": "./dist/generated/pg/_findMany.d.ts",
-      "default": "./dist/generated/pg/_findMany.js"
-    },
-    "./pg/$select": {
-      "types": "./dist/generated/pg/_select.d.ts",
-      "default": "./dist/generated/pg/_select.js"
-    },
-    "./pg/$values": {
-      "types": "./dist/generated/pg/_values.d.ts",
-      "default": "./dist/generated/pg/_values.js"
-    },
-    "./pg/$withMaterialized": {
-      "types": "./dist/generated/pg/_withMaterialized.d.ts",
-      "default": "./dist/generated/pg/_withMaterialized.js"
-    },
-    "./pg/$without": {
-      "types": "./dist/generated/pg/_without.d.ts",
-      "default": "./dist/generated/pg/_without.js"
-    },
-    "./pg/$withRecursive": {
-      "types": "./dist/generated/pg/_withRecursive.d.ts",
-      "default": "./dist/generated/pg/_withRecursive.js"
     },
     "./sqlite": {
       "types": "./dist/generated/sqlite/index.d.ts",

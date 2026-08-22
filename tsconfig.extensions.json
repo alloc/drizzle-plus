@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["src/extensions/**/*.ts", "src/extensions/**/*.d.ts"],
+  "exclude": [],
+  "compilerOptions": {
+    "noEmit": true,
+    "emitDeclarationOnly": false
+  }
+}

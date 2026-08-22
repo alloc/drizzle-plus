@@ -1,0 +1,89 @@
+// @ts-nocheck
+import { mapRelationalRow, sql, SQL } from 'drizzle-orm'
+import {
+  MySqlColumn as Column,
+  MySqlSelectHKTBase as SelectHKTBase,
+  MySqlSelectBuilder as SelectBuilder,
+  SelectedFields,
+  SelectedFieldsOrdered,
+  WithSubqueryWithSelection,
+} from 'drizzle-orm/mysql-core'
+import { MySqlRelationalQuery as RelationalQuery, MySqlRelationalQueryHKTBase as RelationalQueryHKTBase } from 'drizzle-orm/mysql-core/query-builders/query'
+import { DecodedFields, ResultFieldsToSelection } from 'drizzle-plus/types'
+import {
+  mapSelectedFieldsToDecoders,
+  orderSelectedFields,
+} from 'drizzle-plus/utils'
+import { buildRelationalQuery, createWithSubquery } from './internal'
+
+export type MySqlRelationalSubquery<
+  TResult,
+  TAlias extends string,
+> = WithSubqueryWithSelection<ResultFieldsToSelection<TResult>, TAlias>
+
+declare module 'drizzle-orm/mysql-core/query-builders/query' {
+  interface MySqlRelationalQuery<
+    THKT extends MySqlRelationalQueryHKTBase,
+    TResult,
+  > {
+    as<TAlias extends string>(
+      alias: TAlias
+    ): MySqlRelationalSubquery<TResult, TAlias>
+  }
+}
+
+RelationalQuery.prototype.as = function (alias: string): any {
+  const { sql, selection } = buildRelationalQuery(this)
+
+  const decodedFields: DecodedFields = {}
+  for (const item of selection) {
+    decodedFields[item.key] = {
+      mapFromDriverValue(value: unknown) {
+        const row = mapRelationalRow(
+          { [item.key]: value },
+          true,
+          [item]
+        ) as Record<string, unknown>
+        return row[item.key]
+      },
+    }
+  }
+
+  return createWithSubquery(sql, alias, decodedFields)
+}
+
+declare module 'drizzle-orm/mysql-core' {
+  interface MySqlSelectBuilder<
+    TSelection extends SelectedFields | undefined,
+    THKT extends SelectHKTBase,
+    TPreparedQueryHKT extends import('drizzle-orm/mysql-core').MySqlPreparedQueryHKT,
+  > {
+    as<TAlias extends string>(
+      alias: TAlias
+    ): TSelection extends SelectedFields
+      ? WithSubqueryWithSelection<TSelection, TAlias>
+      : never
+  }
+}
+
+SelectBuilder.prototype.as = function (alias): any {
+  const {
+    fields,
+    dialect,
+  }: {
+    fields: SelectedFields | undefined
+    dialect: { buildSelection: (fields: SelectedFieldsOrdered) => SQL }
+  } = this as any
+
+  if (!fields) {
+    throw new Error('Cannot alias a select query without a selection')
+  }
+
+  const orderedFields = orderSelectedFields<Column>(fields)
+
+  return createWithSubquery(
+    sql`select ${dialect.buildSelection(orderedFields)}`,
+    alias,
+    mapSelectedFieldsToDecoders(orderedFields)
+  )
+}

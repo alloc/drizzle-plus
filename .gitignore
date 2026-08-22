@@ -2,7 +2,3 @@ dist
 node_modules
 
 tmp.db
-
-src/generated/mysql
-src/generated/pg
-src/generated/sqlite

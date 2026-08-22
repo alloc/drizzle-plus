@@ -1,0 +1,23 @@
+[bump]
+features_always_bump_minor = false
+breaking_always_bump_major = false
+initial_tag = "0.1.0"
+
+[git]
+conventional_commits = true
+filter_unconventional = true
+protect_breaking_commits = false
+filter_commits = true
+commit_parsers = [
+  { message = "^[a-z]+\\(ci\\)!?:", skip = true },
+  { message = "^[a-z]+(\\([^)]*\\))?!:", group = "Breaking Changes" },
+  { footer = "BREAKING[ -]CHANGE", group = "Breaking Changes" },
+  { message = "^feat", group = "Features" },
+  { message = "^fix", group = "Bug Fixes" },
+  { message = "^perf", group = "Performance" },
+  { message = "^revert", group = "Reverts" },
+  { message = "^docs?", group = "Documentation" },
+  { message = "^test", skip = true },
+  { message = "^ci", skip = true },
+  { message = "^chore", skip = true },
+]
