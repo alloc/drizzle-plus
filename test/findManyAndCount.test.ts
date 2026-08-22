@@ -20,7 +20,7 @@ describe('findManyAndCount', () => {
       {
         "count": {
           "params": [],
-          "sql": "select count(*) AS "count" from "user"",
+          "sql": "select count(*) AS "count" from "user" as "dp0"",
         },
         "findMany": {
           "params": [],
@@ -41,7 +41,7 @@ describe('findManyAndCount', () => {
           "params": [
             100,
           ],
-          "sql": "select count(*) AS "count" from "user" where "user"."id" > ?",
+          "sql": "select count(*) AS "count" from "user" as "dp0" where "dp0"."id" > ?",
         },
         "findMany": {
           "params": [

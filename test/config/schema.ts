@@ -2,6 +2,7 @@ import {
   integer,
   primaryKey,
   sqliteTable,
+  sqliteView,
   text,
   unique,
 } from 'drizzle-orm/sqlite-core'
@@ -38,3 +39,5 @@ export const userEmail = sqliteTable(
   },
   table => [unique('user_email_unique').on(table.userId, table.email)]
 )
+
+export const userView = sqliteView('user_view').as(qb => qb.select().from(user))

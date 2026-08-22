@@ -1,8 +1,9 @@
-import { SQL } from 'drizzle-orm'
+import { gte, SQL } from 'drizzle-orm'
 import { nest } from 'drizzle-plus'
 import 'drizzle-plus/sqlite/count'
 import { getDialect } from 'drizzle-plus/utils'
 import { db } from './config/client'
+import { userView } from './config/schema'
 
 describe('count', () => {
   test('SQL output', () => {
@@ -11,7 +12,7 @@ describe('count', () => {
     expect(query.toSQL()).toMatchInlineSnapshot(`
       {
         "params": [],
-        "sql": "select count(*) AS "count" from "user"",
+        "sql": "select count(*) AS "count" from "user" as "dp0"",
       }
     `)
 
@@ -24,7 +25,7 @@ describe('count', () => {
         "params": [
           100,
         ],
-        "sql": "select count(*) AS "count" from "user" where "user"."id" > ?",
+        "sql": "select count(*) AS "count" from "user" as "dp0" where "dp0"."id" > ?",
       }
     `)
   })
@@ -38,7 +39,7 @@ describe('count', () => {
     expect(getDialect(query).sqlToQuery(nestedQuery)).toMatchInlineSnapshot(`
       {
         "params": [],
-        "sql": "(select count(*) AS "count" from "user")",
+        "sql": "(select count(*) AS "count" from "user" as "dp0")",
       }
     `)
 
@@ -53,8 +54,23 @@ describe('count', () => {
     expect(query.toSQL()).toMatchInlineSnapshot(`
       {
         "params": [],
-        "sql": "select count(*) AS "count" from "user" where exists (select * from "user_email" as "f0" where "user"."id" = "f0"."userId" limit 1)",
+        "sql": "select count(*) AS "count" from "user" as "dp0" where exists (select * from "user_email" as "f0" where "dp0"."id" = "f0"."userId" limit 1)",
       }
     `)
+  })
+
+  test('on view', async () => {
+    const expectedCount = await db.$count(userView, gte(userView.age, 30))
+    const query = db.query.userView.count({ age: { gte: 30 } })
+
+    expect(query.toSQL()).toMatchInlineSnapshot(`
+      {
+        "params": [
+          30,
+        ],
+        "sql": "select count(*) AS "count" from "user_view" as "dp0" where "dp0"."age" >= ?",
+      }
+    `)
+    expect(await query).toBe(expectedCount)
   })
 })
