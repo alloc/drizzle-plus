@@ -1,6 +1,7 @@
 {
   "name": "drizzle-plus",
   "type": "module",
+  "sideEffects": true,
   "version": "1.0.0-rc.7",
   "packageManager": "pnpm@11.21.0",
   "license": "MIT",
